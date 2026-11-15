@@ -98,11 +98,6 @@ type Server struct {
 	// Remote access (ngrok tunnel as an extra listener); see remote_access.go.
 	remoteAccess *remoteaccess.Manager
 
-	// Licensing (enforced only in licensed builds); see license.go.
-	license        licenseService
-	licenseStop    context.CancelFunc
-	licenseHandler *handlers.LicenseHandler
-
 	// n0 (MCP over OAuth)
 	n0Manager  *n0.Manager
 	n0Loopback *n0.LoopbackServer
@@ -280,6 +275,9 @@ func (s *Server) Setup() error {
 	// Serve static files
 	s.ServeStaticFiles()
 
+	// Sandbox env files of CLIs that died with the previous run (each CLI start
+	// writes its own again, also for sessions resumed below).
+	agents.SweepSandboxEnv(s.agentHandler.SessionManager)
 	// Sessions stopped by the previous shutdown: continue or offer them.
 	s.setupResumeAfterRestart()
 	if s.agentHandler != nil && s.agentHandler.SessionManager != nil {
@@ -330,7 +328,6 @@ func (s *Server) setupRoutes() {
 	routes.RegisterRefero(api, s.referoHandler)
 	routes.RegisterMemory(api, s.memoryHandler)
 	routes.RegisterReview(api, s.reviewHandler)
-	routes.RegisterLicense(api, s.licenseHandler)
 
 	// Agent routes (needs app and agentHandler for WebSocket)
 	routes.RegisterAgent(api, s.app, s.agentSessionHandler, s.agentHandler, s.config.CORS.AllowedOrigins)
@@ -443,9 +440,6 @@ func (s *Server) Shutdown() error {
 
 	if s.perfStop != nil {
 		s.perfStop()
-	}
-	if s.licenseStop != nil {
-		s.licenseStop()
 	}
 
 	// Stop remote access first: the public listener goes away before the

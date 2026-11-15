@@ -3,6 +3,7 @@
  * derived from its id, so it looks the same every time it is shown.
  */
 import { parseToolLine } from './subagentOutput'
+import { stripInlineMarkdown } from '../plainText'
 
 export type CharacterBody = 'bean' | 'boombox' | 'cassette' | 'acid' | 'alien' | 'cat'
 export type CharacterEyes = 'shades' | 'aviators' | 'visor' | 'wide'
@@ -76,13 +77,13 @@ export interface SpeechBubble {
   text: string
 }
 
-/** What a subagent says: its latest tool call or line of text. */
+/** What a subagent says: its latest tool call or line of text (markdown markers removed: bubbles are plain text). */
 export function speechFor(lines: string[], status: string, error?: string, max = 90): SpeechBubble {
-  const clip = (text: string) => {
-    const flat = text.replace(/\s+/g, ' ').trim()
+  const clip = (text: string, markdown = false) => {
+    const flat = (markdown ? stripInlineMarkdown(text) : text).replace(/\s+/g, ' ').trim()
     return flat.length > max ? `${flat.slice(0, max - 1)}…` : flat
   }
-  if (status === 'failed') return { glyph: '✕', text: clip(error ? `Ouch: ${error}` : 'Ouch, that failed') }
+  if (status === 'failed') return { glyph: '✕', text: clip(error ? `Ouch: ${error}` : 'Ouch, that failed', true) }
   if (status === 'completed') return { glyph: '✓', text: 'Done!' }
   for (let i = lines.length - 1; i >= 0; i--) {
     const line = lines[i] ?? ''
@@ -91,7 +92,7 @@ export function speechFor(lines: string[], status: string, error?: string, max =
     if (!line.trim() || line === 'RESULT_START' || line === 'RESULT_END') continue
     // Tool output is what the tool said, not the subagent: skip it.
     if (lines.lastIndexOf('RESULT_START', i) > lines.lastIndexOf('RESULT_END', i)) continue
-    return { glyph: '💬', text: clip(line) }
+    return { glyph: '💬', text: clip(line, true) }
   }
   return { glyph: '…', text: 'Getting started…' }
 }

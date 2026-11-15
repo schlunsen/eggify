@@ -12,6 +12,7 @@ import {
 import { latestTool, plainLine, subagentTimeline, type TimelineEntry, type TimelineTool } from './subagentTimeline'
 import { isKeyStep, subagentProducts, type SubagentProducts } from './subagentBrief'
 import { modelLabel, modelTitle } from './modelLabel'
+import { homeDir } from '~/utils/homeDir'
 
 export interface SubagentItem {
   id: string
@@ -26,6 +27,8 @@ export interface SubagentItem {
   /** The model comes from the launch call, not yet from the agent itself. */
   modelRequested: boolean
   parentTitle: string
+  /** The home folder its paths were shortened with (they are rebuilt when it becomes known). */
+  home: string
   status: SubagentDisplayStatus
   lines: string[]
   /** When each line was produced (unix ms, 0 = unknown), parallel to lines; [] when none is known. */
@@ -96,6 +99,7 @@ export function buildSubagentItem(agent: BackgroundAgent, lines: string[], paren
     modelTitle: modelTitle(agent.model, agent.model_source),
     modelRequested: !!agent.model && agent.model_source === 'requested',
     parentTitle,
+    home: homeDir.value,
     status,
     lines,
     times,
@@ -133,5 +137,5 @@ export function itemInputsChanged(item: SubagentItem, agent: BackgroundAgent, li
     item.title !== (agent.description || agent.subagent_type || 'Subagent') ||
     item.interrupted !== agent.interrupted ||
     item.model !== modelLabel(agent.model) || item.modelRequested !== (!!agent.model && agent.model_source === 'requested') ||
-    item.last_output !== agent.last_output
+    item.last_output !== agent.last_output || item.home !== homeDir.value
 }

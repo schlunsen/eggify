@@ -1,0 +1,35 @@
+{
+  "number": 0,
+  "slug": "demo",
+  "dev": true,
+  "title": "Engine test",
+  "summary": "Every kind of beat on borrowed screens from the film: cuts, zooms, rings, the cursor, labels and a clip.",
+  "next": "A real episode",
+  "scenes": [
+    { "id": "title", "kind": "title", "lines": [
+      { "id": "t1", "text": "This is the engine test. It is not an episode, and nobody should publish it." }
+    ] },
+    { "id": "zoom", "kind": "shot", "heading": "Zoom and ring", "shot": "session", "lines": [
+      { "id": "z1", "text": "A shot fills the frame. Then the camera eases in on one part of it, and a ring is drawn around what matters." },
+      { "id": "z2", "text": "The cursor travels to a button and clicks it, a label names the thing, and the camera pulls back out." }
+    ], "beats": [
+      { "line": "z1", "at": 1.6, "zoom": "bashCard", "highlight": "bashCard", "label": "Every command, as it runs" },
+      { "line": "z2", "at": 0.2, "zoom": "sessions", "highlight": null },
+      { "line": "z2", "at": 1.4, "cursor": "newSession", "click": true, "highlight": "newSession", "label": "Starts a new session" },
+      { "line": "z2", "at": 5.0, "zoom": null, "highlight": null, "cursor": null }
+    ] },
+    { "id": "cut", "kind": "shot", "heading": "Cut to another shot", "shot": "overview", "lines": [
+      { "id": "c1", "text": "A new chapter pushes its screen in from the right." },
+      { "id": "c2", "text": "Inside a chapter, a beat can cut to another shot, already zoomed in on a rectangle given in pixels." }
+    ], "beats": [
+      { "line": "c2", "at": 0.8, "shot": "session", "zoom": { "x": 1522, "y": 80, "w": 384, "h": 270 } },
+      { "line": "c2", "at": 2.6, "highlight": "model", "label": "Switch model here" }
+    ] },
+    { "id": "clip", "kind": "clip", "heading": "A clip", "clip": "zen", "lines": [
+      { "id": "v1", "text": "And a clip plays in the same frame, for things that only make sense in motion." }
+    ] },
+    { "id": "outro", "kind": "outro", "lines": [
+      { "id": "o1", "text": "That is everything the engine can do. Do try to keep up." }
+    ] }
+  ]
+}

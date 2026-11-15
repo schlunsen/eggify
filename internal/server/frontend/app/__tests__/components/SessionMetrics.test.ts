@@ -46,7 +46,7 @@ it('sums up each collapsed row in one line', () => {
 it('says when nothing has run yet', () => {
   const wrapper = mount(SessionMetrics, { props: { session: { id: 'test', status: 'idle', message_count: 0, options: { dangerously_skip_permissions: true } } }, global: { stubs: { Icon: true, ProjectPermissions: true, GitStatus: true } } })
   const summaries = wrapper.findAll('.row-header .row-summary').map(el => el.text())
-  expect(summaries).toEqual(['YOLO', 'No tool calls yet'])
+  expect(summaries).toEqual(['Full access · Not sandboxed', 'No tool calls yet'])
   wrapper.unmount()
 })
 
@@ -195,4 +195,26 @@ it('stops replaying the update glow and the remote lookup while git status is un
     vi.useRealTimers()
     vi.unstubAllGlobals()
   }
+})
+
+describe('names the combination of prompts and sandbox', () => {
+  const nameOf = (options: Record<string, unknown>) => {
+    const wrapper = mount(SessionMetrics, { props: { session: { id: 'x', status: 'idle', message_count: 0, options } as any }, global: { stubs: { Icon: true, ProjectPermissions: true, GitStatus: true } } })
+    const out = { name: wrapper.get('[data-testid="work-mode-name"]').text(), mode: wrapper.get('.yolo-mode-metric').attributes('data-work-mode'), full: wrapper.get('.yolo-mode-metric').classes().includes('full-access') }
+    wrapper.unmount()
+    return out
+  }
+  it('Autopilot: prompts off inside the sandbox', () => {
+    expect(nameOf({ dangerously_skip_permissions: true, sandboxed: true })).toEqual({ name: 'Autopilot · sandboxed', mode: 'autopilot', full: false })
+  })
+  it('Full access: prompts off, no sandbox, in the warning colour', () => {
+    expect(nameOf({ dangerously_skip_permissions: true, sandboxed: false })).toEqual({ name: 'Full access · not sandboxed', mode: 'full', full: true })
+  })
+  it('Ask first, sandboxed or not', () => {
+    expect(nameOf({ sandboxed: true }).name).toBe('Ask first')
+    expect(nameOf({}).name).toBe('Ask first')
+  })
+  it('Codex keeps the plain YOLO wording', () => {
+    expect(nameOf({ provider: 'codex', dangerously_skip_permissions: true, sandboxed: true })).toMatchObject({ name: 'YOLO Mode', full: false })
+  })
 })

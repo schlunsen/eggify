@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { useAuthenticatedFetch } from './useAuthenticatedFetch'
+import type { SandboxGrantInfo } from '~/utils/agents/sandboxGrants'
 
 /**
  * Global sandbox settings: the default for new sessions and the egress
@@ -10,8 +11,12 @@ import { useAuthenticatedFetch } from './useAuthenticatedFetch'
 export interface SandboxSettings {
   can_authorize_codex_network: boolean
   default_enabled: boolean
+  /** true while the user never saved the default: the built-in default applies (Claude CLI sessions only). */
+  default_implicit?: boolean
   allowed_domains: string[]
   default_allowed_domains: string[]
+  /** What an admin can give a session, and whether this machine can now. */
+  grants?: SandboxGrantInfo[]
 }
 
 export function useSandboxSettings() {

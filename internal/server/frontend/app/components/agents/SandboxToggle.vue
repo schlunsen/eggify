@@ -64,12 +64,15 @@ const emit = defineEmits<{
 
 const support = computed(() => sandboxSupportForProvider(props.provider))
 const defaultEnabled = ref<boolean | null>(null)
+const defaultImplicit = ref(false)
 const canAuthorizeNetwork = ref(false)
 const isCodex = computed(() => props.provider?.trim().toLowerCase() === 'codex')
 
 const effective = computed(() => {
   if (support.value === 'unsupported') return false
   if (props.modelValue === true || props.modelValue === false) return props.modelValue
+  // A built-in default only applies to Claude CLI sessions: Codex and direct ones start unsandboxed.
+  if (defaultImplicit.value && isCodex.value) return false
   return defaultEnabled.value === true
 })
 
@@ -107,6 +110,7 @@ onMounted(async () => {
   const { load } = useSandboxSettings()
   const s = await load()
   defaultEnabled.value = s ? s.default_enabled : false
+  defaultImplicit.value = s?.default_implicit === true
   canAuthorizeNetwork.value = s?.can_authorize_codex_network === true
 })
 </script>

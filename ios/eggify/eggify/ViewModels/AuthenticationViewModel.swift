@@ -73,7 +73,6 @@ final class AuthenticationViewModel: ObservableObject {
     /// Switch to a saved host. Signs in silently if a valid token is stored.
     func switchHost(hostId: String) async throws {
         SessionsWebSocketViewModel.shared.stopMonitoring()
-        LicenseMonitor.shared.reset()
         try await apiClient.switchHost(hostId: hostId)
         try await hostManager.switchHost(id: hostId)
         loadSavedHosts()
@@ -210,7 +209,6 @@ final class AuthenticationViewModel: ObservableObject {
         MediaCache.shared.clear(host: apiClient.currentHostId)
         ComposerModel.clearDrafts()
         await apiClient.logout()
-        LicenseMonitor.shared.reset()
         isAuthenticated = false
         pendingMFAToken = nil
         errorMessage = nil

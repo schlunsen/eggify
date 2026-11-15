@@ -1,0 +1,208 @@
+[
+  {
+    "area": "zen",
+    "name": "zen-circus",
+    "boxes": [
+      "stage",
+      "plate",
+      "plateName",
+      "plateSummary",
+      "reply",
+      "vizPicker",
+      "sound",
+      "avatarCard",
+      "composer",
+      "liveSwitch"
+    ],
+    "how": "seeded session and digest; sound is off and motion reduced for the still (a clip would show the stage moving to the music)",
+    "shows": "A session in Zen on the Circus stage: the engraved paper backdrop with the egg gentleman as the agent, the name plate (session name and summary), the latest reply as a paper panel on the right, the composer below"
+  },
+  {
+    "area": "zen",
+    "name": "zen-viz-picker",
+    "boxes": [
+      "picker",
+      "options",
+      "backdrop"
+    ],
+    "how": "seeded",
+    "shows": "The Zen scene picker opened: Circus, Waves, Galaxy, Ink, and the Circus backdrop button"
+  },
+  {
+    "area": "zen",
+    "name": "zen-fullscreen",
+    "boxes": [
+      "stage",
+      "plate",
+      "reply",
+      "vizPicker",
+      "sound",
+      "avatarCard",
+      "composer"
+    ],
+    "how": "seeded session and digest; sound off, motion reduced for the still",
+    "shows": "Zen in full screen: the whole window is the Circus stage, with the name plate on top, the latest reply printed on paper as a panel on the right, \"Your message\" and the composer in the middle"
+  },
+  {
+    "area": "zen",
+    "name": "zen-fullscreen-stage",
+    "boxes": [
+      "stage",
+      "plate",
+      "showReply",
+      "vizPicker",
+      "sound"
+    ],
+    "how": "seeded; the reply was closed with its own × button",
+    "shows": "The same full-screen stage with the reply card closed (×): the egg gentleman, the backdrop, the name plate and \"Your message\"; \"Show reply\" brings the card back"
+  },
+  {
+    "area": "zen",
+    "name": "zen-backdrop-seaside",
+    "boxes": [
+      "stage",
+      "plate"
+    ],
+    "how": "seeded; backdrop pinned through the picker's own setting",
+    "shows": "The same Zen session in full screen with the \"seaside\" Circus backdrop (each session gets its own; the picker overrides it), reply card closed"
+  },
+  {
+    "area": "zen",
+    "name": "zen-backdrop-gothic",
+    "boxes": [
+      "stage",
+      "plate"
+    ],
+    "how": "seeded; backdrop pinned through the picker's own setting",
+    "shows": "The same Zen session in full screen with the \"gothic\" Circus backdrop (each session gets its own; the picker overrides it), reply card closed"
+  },
+  {
+    "area": "zen",
+    "name": "zen-backdrop-snow",
+    "boxes": [
+      "stage",
+      "plate"
+    ],
+    "how": "seeded; backdrop pinned through the picker's own setting",
+    "shows": "The same Zen session in full screen with the \"snow\" Circus backdrop (each session gets its own; the picker overrides it), reply card closed"
+  },
+  {
+    "area": "zen",
+    "name": "zen-working",
+    "boxes": [
+      "stage",
+      "plate",
+      "reply",
+      "avatarCard",
+      "agents"
+    ],
+    "how": "seeded as working; subagents are a stubbed API answer",
+    "shows": "A working session in Zen, full screen: status chips, the agent's latest words, its subagents counted on the avatar card"
+  },
+  {
+    "area": "zen",
+    "name": "zen-circus-theatre-dark",
+    "boxes": [
+      "stage",
+      "plate",
+      "reply"
+    ],
+    "how": "seeded",
+    "shows": "The Zen Circus stage with the app in Puppet Theatre Dark"
+  },
+  {
+    "area": "zen",
+    "name": "theme-theatre-light",
+    "boxes": [
+      "sidebar",
+      "chat",
+      "rightSidebar"
+    ],
+    "how": "seeded",
+    "shows": "The same chat (sidebar, Edit diff, right sidebar) in the Puppet Theatre Light (the default) theme"
+  },
+  {
+    "area": "zen",
+    "name": "theme-theatre-dark",
+    "boxes": [
+      "sidebar",
+      "chat",
+      "rightSidebar"
+    ],
+    "how": "seeded",
+    "shows": "The same chat (sidebar, Edit diff, right sidebar) in the Puppet Theatre Dark theme"
+  },
+  {
+    "area": "zen",
+    "name": "theme-flyingcircus-light",
+    "boxes": [
+      "sidebar",
+      "chat",
+      "rightSidebar"
+    ],
+    "how": "seeded",
+    "shows": "The same chat (sidebar, Edit diff, right sidebar) in the Flying Circus Light theme"
+  },
+  {
+    "area": "zen",
+    "name": "theme-nord-dark",
+    "boxes": [
+      "sidebar",
+      "chat",
+      "rightSidebar"
+    ],
+    "how": "seeded",
+    "shows": "The same chat (sidebar, Edit diff, right sidebar) in the Nord Dark theme"
+  },
+  {
+    "area": "zen",
+    "name": "theme-dracula-dark",
+    "boxes": [
+      "sidebar",
+      "chat",
+      "rightSidebar"
+    ],
+    "how": "seeded",
+    "shows": "The same chat (sidebar, Edit diff, right sidebar) in the Dracula Dark theme"
+  },
+  {
+    "area": "zen",
+    "name": "theme-eggify-light",
+    "boxes": [
+      "sidebar",
+      "chat",
+      "rightSidebar"
+    ],
+    "how": "seeded",
+    "shows": "The same chat (sidebar, Edit diff, right sidebar) in the Eggify Light theme"
+  },
+  {
+    "area": "zen",
+    "name": "settings-menu",
+    "boxes": [
+      "menu",
+      "themeRow",
+      "button"
+    ],
+    "how": "seeded",
+    "shows": "The header's settings menu: What's New, keyboard shortcuts, the theme row"
+  },
+  {
+    "area": "zen",
+    "name": "theme-picker",
+    "boxes": [
+      "picker",
+      "current",
+      "firstOption"
+    ],
+    "how": "seeded",
+    "shows": "The theme picker opened from the settings menu: every theme with its light / dark badge, the current one ticked"
+  },
+  {
+    "area": "zen",
+    "name": "themes-page",
+    "boxes": [],
+    "how": "seeded",
+    "shows": "The Themes page: previews of every theme"
+  }
+]

@@ -56,7 +56,7 @@
           <TeamSetupFields v-if="show && !formData.spawnedBySessionId" v-model="team" :providers="providers" :disabled="loadingProviders || creating" />
           <button type="button" class="settings-toggle" :aria-expanded="settingsExpanded" aria-controls="session-settings" @click="settingsExpanded = !settingsExpanded" @keydown.enter.stop>
             <span>{{ settingsExpanded ? '▾' : '▸' }} Session settings</span>
-            <small>{{ permissionOptions.find(p => p.value === formData.permissionMode)?.label || formData.permissionMode }} · {{ sessionMode === 'loop' ? 'Loop' : 'Interactive' }}{{ team.enabled ? ' · Team' : '' }}</small>
+            <small>{{ permissionSummary }} · {{ sessionMode === 'loop' ? 'Loop' : 'Interactive' }}{{ team.enabled ? ' · Team' : '' }}</small>
           </button>
         </div>
         <div v-show="settingsExpanded" id="session-settings" class="modal-columns">
@@ -79,35 +79,8 @@
               ></textarea>
             </div>
 
-            <!-- Inline row: Permission + Project Area -->
+            <!-- Project Area -->
             <div class="form-row">
-              <div class="form-group form-group-half">
-                <label for="permission-mode">Permission Mode</label>
-                <CustomDropdown
-                  id="permission-mode"
-                  v-model="formData.permissionMode"
-                  :options="permissionOptions"
-                  :searchable="false"
-                  placeholder="Select permission mode"
-                  label-id="permission-mode-label"
-                >
-                  <template #trigger="{ selectedOption }">
-                    <div class="dropdown-trigger-custom">
-                      <span class="trigger-icon">{{ selectedOption?.icon }}</span>
-                      <span class="trigger-label">{{ selectedOption?.label }}</span>
-                    </div>
-                  </template>
-                  <template #option="{ option }">
-                    <div class="permission-option">
-                      <span class="option-icon">{{ option.icon }}</span>
-                      <div class="option-text">
-                        <div class="option-label">{{ option.label }}</div>
-                        <div class="option-description">{{ option.description }}</div>
-                      </div>
-                    </div>
-                  </template>
-                </CustomDropdown>
-              </div>
               <div v-if="loadingProjectAreas || projectAreas.length > 0" class="form-group form-group-half">
                 <label for="project-area">Project Area</label>
                 <CustomDropdown
@@ -140,9 +113,73 @@
               </div>
             </div>
 
-            <!-- Sandboxed mode -->
+            <!-- How should it work? Claude CLI: Autopilot / Ask first / Full access; other runtimes keep the permission mode and the sandbox switch -->
             <div class="form-group">
-              <SandboxToggle v-model="formData.sandboxed" v-model:network-access="formData.codexNetworkAccess" :provider="formData.modelProvider" />
+              <WorkModeChoice
+                :permission-mode="formData.permissionMode"
+                :sandboxed="formData.sandboxed"
+                :provider="formData.modelProvider"
+                :apply-default="applyWorkModeDefault"
+                @update:permission-mode="formData.permissionMode = $event"
+                @update:sandboxed="formData.sandboxed = $event"
+              >
+                <template #autopilot>
+                  <SandboxGrants
+                    v-model:grant-ids="formData.sandboxGrants"
+                    v-model:paths="formData.sandboxGrantPaths"
+                    :sandboxed="true"
+                    :provider="formData.modelProvider"
+                    :project-key="currentProjectId || ''"
+                  />
+                </template>
+                <template #ask>
+                  <SandboxToggle v-model="formData.sandboxed" :provider="formData.modelProvider" />
+                  <SandboxGrants
+                    v-model:grant-ids="formData.sandboxGrants"
+                    v-model:paths="formData.sandboxGrantPaths"
+                    :sandboxed="formData.sandboxed"
+                    :provider="formData.modelProvider"
+                    :project-key="currentProjectId || ''"
+                  />
+                </template>
+                <template #classic>
+                  <div class="form-group">
+                    <label for="permission-mode">Permission Mode</label>
+                    <CustomDropdown
+                      id="permission-mode"
+                      v-model="formData.permissionMode"
+                      :options="permissionOptions"
+                      :searchable="false"
+                      placeholder="Select permission mode"
+                      label-id="permission-mode-label"
+                    >
+                      <template #trigger="{ selectedOption }">
+                        <div class="dropdown-trigger-custom">
+                          <span class="trigger-icon">{{ selectedOption?.icon }}</span>
+                          <span class="trigger-label">{{ selectedOption?.label }}</span>
+                        </div>
+                      </template>
+                      <template #option="{ option }">
+                        <div class="permission-option">
+                          <span class="option-icon">{{ option.icon }}</span>
+                          <div class="option-text">
+                            <div class="option-label">{{ option.label }}</div>
+                            <div class="option-description">{{ option.description }}</div>
+                          </div>
+                        </div>
+                      </template>
+                    </CustomDropdown>
+                  </div>
+                  <SandboxToggle v-model="formData.sandboxed" v-model:network-access="formData.codexNetworkAccess" :provider="formData.modelProvider" />
+                  <SandboxGrants
+                    v-model:grant-ids="formData.sandboxGrants"
+                    v-model:paths="formData.sandboxGrantPaths"
+                    :sandboxed="formData.sandboxed"
+                    :provider="formData.modelProvider"
+                    :project-key="currentProjectId || ''"
+                  />
+                </template>
+              </WorkModeChoice>
             </div>
 
             <!-- Agent questions: what happens when nobody answers (Claude CLI only) -->
@@ -418,7 +455,7 @@
                   <input type="checkbox" :value="connector.slug" v-model="selectedConnectorSlugs" />
                   <span class="checkbox-custom"></span>
                   <span class="checkbox-label">
-                    <span class="skill-name">{{ connector.icon }} {{ connector.name }}</span>
+                    <span class="skill-name"><Icon :name="connectorIconName(connector.icon)" class="connector-icon" size="14" aria-hidden="true" /> {{ connector.name }}</span>
                     <span v-if="connector.slug === N0_SLUG" class="skill-desc n0-tools-hint" data-testid="n0-tools-hint">adds your workspace's app tools</span>
                     <span v-else-if="connector.category" class="skill-desc">{{ connector.category }}</span>
                   </span>
@@ -502,6 +539,7 @@
 <script setup lang="ts">
 import { computed, watch, nextTick, ref, onBeforeUnmount } from 'vue'
 import { useSessionStore } from '~/stores/session/sessionStore'
+import { connectorIconName } from '~/utils/connectorIcon'
 import CustomDropdown from '../ui/CustomDropdown.vue'
 import SessionModelPicker from './SessionModelPicker.vue'
 import type { ModelChoice } from '~/utils/agents/modelShortcuts'
@@ -513,6 +551,9 @@ import {
 } from '~/composables/useN0Connections'
 import AvatarPicker from '../avatars/AvatarPicker.vue'
 import SandboxToggle from './SandboxToggle.vue'
+import SandboxGrants from './SandboxGrants.vue'
+import WorkModeChoice from './WorkModeChoice.vue'
+import { WORK_MODE_INFO, autopilotAvailable, workModeOfForm } from '~/utils/agents/workMode'
 import TeamSetupFields from './TeamSetupFields.vue'
 import { defaultTeamSetup, loadTeamSetup, offeredTeamSetup, teamSetupProblem, type TeamSetup } from '~/utils/agents/team'
 import { useQuestionPolicy } from '~/composables/agents/useQuestionPolicy'
@@ -566,6 +607,9 @@ interface SessionFormData {
   /** null = follow the global sandbox default (Settings → Sandbox). */
   sandboxed?: boolean | null
   codexNetworkAccess?: boolean
+  /** Sandbox grants (SandboxGrants.vue): only held while the sandbox is on. */
+  sandboxGrants?: string[]
+  sandboxGrantPaths?: { path: string; write: boolean }[]
   /** Agent questions: 'default' (global policy) or a policyKey() value. */
   questionPolicy?: string
   /** Set when an agent's proposal is edited here: the session stays linked to it. */
@@ -908,6 +952,20 @@ onBeforeUnmount(() => { if (validationTimeout !== null) clearTimeout(validationT
 const availableModels = computed(() => {
   const provider = props.providers.find(p => p.id === props.formData.modelProvider)
   return provider?.models || []
+})
+
+// "How should it work?": a form that a caller prefilled (a handoff, a loop
+// proposal's Edit first) or the user already set keeps its fields.
+const applyWorkModeDefault = computed(() =>
+  !props.formData.spawnedBySessionId && !props.formData.parentSessionId && props.formData.sandboxed == null)
+
+// What the collapsed "Session settings" line says about permissions.
+const permissionSummary = computed(() => {
+  const mode = autopilotAvailable(props.formData.modelProvider)
+    ? workModeOfForm(props.formData.permissionMode, props.formData.sandboxed)
+    : null
+  if (mode) return WORK_MODE_INFO[mode].label
+  return permissionOptions.value.find(p => p.value === props.formData.permissionMode)?.label || props.formData.permissionMode
 })
 
 // Permission mode options with icons and descriptions
@@ -1615,6 +1673,10 @@ watch(() => props.show, async (show) => {
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.connector-icon {
+  vertical-align: -2px;
 }
 
 .skill-name {

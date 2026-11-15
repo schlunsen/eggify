@@ -38,6 +38,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/schlunsen/claude-agent-sdk-go/types"
 	"github.com/schlunsen/eggify/internal/database"
 	"github.com/schlunsen/eggify/internal/logging"
@@ -67,6 +68,10 @@ var DefaultSandboxAllowedDomains = []string{
 	"api.github.com",
 	"codeload.github.com",
 	"objects.githubusercontent.com",
+	"raw.githubusercontent.com",
+	"crates.io",
+	"static.crates.io",
+	"index.crates.io",
 }
 
 // sandboxDeniedEnvVars are removed from the environment of sandboxed commands:
@@ -86,7 +91,11 @@ var sandboxDeniedEnvVars = []string{
 // SandboxPreferences are the global sandbox settings.
 type SandboxPreferences struct {
 	// DefaultEnabled is applied to new sessions that do not choose explicitly.
+	// On until the user saves a choice (Autopilot is the default way to run).
 	DefaultEnabled bool `json:"default_enabled"`
+	// DefaultIsImplicit is true while the user never saved the default: the
+	// session paths that cannot be sandboxed then start unsandboxed instead of failing.
+	DefaultIsImplicit bool `json:"-"`
 	// AllowedDomains is the egress allowlist for sandboxed sessions.
 	AllowedDomains []string `json:"allowed_domains"`
 }
@@ -130,14 +139,17 @@ func NormalizeSandboxDomains(in []string) ([]string, error) {
 }
 
 // LoadSandboxPreferences reads the global preferences; missing or invalid
-// values fall back to off + DefaultSandboxAllowedDomains.
+// values fall back to on (an explicit saved false is respected) +
+// DefaultSandboxAllowedDomains. Without a database (unit tests) it stays off.
 func LoadSandboxPreferences(repo *database.Repository) SandboxPreferences {
 	prefs := SandboxPreferences{AllowedDomains: append([]string(nil), DefaultSandboxAllowedDomains...)}
 	if repo == nil {
 		return prefs
 	}
+	prefs.DefaultEnabled, prefs.DefaultIsImplicit = true, true
 	if s, err := repo.GetUserSetting(SandboxSettingDefaultKey); err == nil && s != nil {
 		prefs.DefaultEnabled = strings.EqualFold(strings.TrimSpace(s.Value), "true")
+		prefs.DefaultIsImplicit = false
 	}
 	if s, err := repo.GetUserSetting(SandboxSettingDomainsKey); err == nil && s != nil {
 		var domains []string
@@ -173,11 +185,15 @@ func SaveSandboxPreferences(repo *database.Repository, prefs SandboxPreferences)
 	}); err != nil {
 		return prefs, err
 	}
-	if err := repo.SetUserSetting(&database.UserSetting{
-		Key: SandboxSettingDefaultKey, Value: fmt.Sprintf("%t", prefs.DefaultEnabled), ValueType: "boolean",
-		Description: "New agent sessions are sandboxed by default",
-	}); err != nil {
-		return prefs, err
+	// Only a choice the user made is written: saving the allowlist alone must
+	// not turn the built-in default into a saved one.
+	if !prefs.DefaultIsImplicit {
+		if err := repo.SetUserSetting(&database.UserSetting{
+			Key: SandboxSettingDefaultKey, Value: fmt.Sprintf("%t", prefs.DefaultEnabled), ValueType: "boolean",
+			Description: "New agent sessions are sandboxed by default",
+		}); err != nil {
+			return prefs, err
+		}
 	}
 	return prefs, nil
 }
@@ -241,8 +257,6 @@ func eggifyProtectedPaths(home, workingDir string) protectedPaths {
 		filepath.Join(eggifyDir, "mfa_encryption.key"),
 		// Encrypted remote access (ngrok) settings: authtoken, domain, autostart.
 		filepath.Join(eggifyDir, "remote_access.json"),
-		// Encrypted license: install private key and the signed license token.
-		filepath.Join(eggifyDir, "license.json"),
 		// Encrypted paired machines (desktop app): session tokens for other Macs.
 		filepath.Join(eggifyDir, "desktop-machines.json"),
 		// Encrypts connector credentials and n0 tokens (secretstore.LegacyPath).
@@ -428,6 +442,11 @@ func sandboxWriteProtected(home, workingDir string) []string {
 			filepath.Join(home, ".claude", "settings.json"),
 			filepath.Join(home, ".claude", "settings.local.json"),
 			filepath.Join(home, ".claude.json"),
+			// Other sessions' env files (sourced in their commands) and the CLI
+			// launchers: protected whatever folder this session works in, which
+			// matters when it works inside ~/.claude/eggify (no editDirs then).
+			sandboxEnvDir(home),
+			filepath.Join(home, ".claude", "eggify", "launchers"),
 		)
 	}
 	return out
@@ -449,23 +468,32 @@ type claudeSettingsPermissions struct {
 // claudeSandboxSettings mirrors the `sandbox` settings schema of Claude Code
 // 2.1.280 (keys taken from the CLI's own settings schema).
 type claudeSandboxSettings struct {
-	Enabled                  bool                      `json:"enabled"`
-	FailIfUnavailable        bool                      `json:"failIfUnavailable"`
-	AutoAllowBashIfSandboxed bool                      `json:"autoAllowBashIfSandboxed"`
-	AllowUnsandboxedCommands bool                      `json:"allowUnsandboxedCommands"`
-	Network                  claudeSandboxNetwork      `json:"network"`
-	Filesystem               claudeSandboxFilesystem   `json:"filesystem"`
-	Credentials              *claudeSandboxCredentials `json:"credentials,omitempty"`
+	Enabled bool `json:"enabled"`
+	// EnableWeakerNetworkIsolation lets Go programs verify TLS certificates
+	// through trustd (gh, and anything built in Go).
+	EnableWeakerNetworkIsolation bool                      `json:"enableWeakerNetworkIsolation,omitempty"`
+	FailIfUnavailable            bool                      `json:"failIfUnavailable"`
+	AutoAllowBashIfSandboxed     bool                      `json:"autoAllowBashIfSandboxed"`
+	AllowUnsandboxedCommands     bool                      `json:"allowUnsandboxedCommands"`
+	Network                      claudeSandboxNetwork      `json:"network"`
+	Filesystem                   claudeSandboxFilesystem   `json:"filesystem"`
+	Credentials                  *claudeSandboxCredentials `json:"credentials,omitempty"`
 }
 
 type claudeSandboxNetwork struct {
 	AllowedDomains  []string `json:"allowedDomains"`
 	StrictAllowlist bool     `json:"strictAllowlist"`
+	// AllowUnixSockets (the ssh-agent socket and its folder) and
+	// AllowLocalBinding (dev servers) are only set by grants.
+	AllowUnixSockets  []string `json:"allowUnixSockets,omitempty"`
+	AllowLocalBinding bool     `json:"allowLocalBinding,omitempty"`
 }
 
 type claudeSandboxFilesystem struct {
-	DenyRead  []string `json:"denyRead,omitempty"`
-	DenyWrite []string `json:"denyWrite,omitempty"`
+	DenyRead   []string `json:"denyRead,omitempty"`
+	DenyWrite  []string `json:"denyWrite,omitempty"`
+	AllowRead  []string `json:"allowRead,omitempty"`
+	AllowWrite []string `json:"allowWrite,omitempty"`
 }
 
 type claudeSandboxCredentials struct {
@@ -480,8 +508,18 @@ type claudeSandboxEnvVar struct {
 // eggifyToolsCoreTools are eggify-tools' Bash/Read/Write/... for direct sessions.
 var eggifyToolsCoreTools = []string{"Bash", "Read", "Write", "Edit", "Glob", "Grep"}
 
-// buildClaudeSessionSettings returns the --settings payload for a session.
+// buildClaudeSessionSettings returns the --settings payload for a session
+// without grants; the cache folder is the one of its working directory.
 func buildClaudeSessionSettings(home, workingDir string, sandboxed bool, allowedDomains []string) claudeSessionSettings {
+	return buildClaudeSessionSettingsWith(home, workingDir, sandboxed, allowedDomains, nil)
+}
+
+// buildClaudeSessionSettingsWith is buildClaudeSessionSettings with the cache
+// folder and grants a session was given (nil: no grants).
+func buildClaudeSessionSettingsWith(home, workingDir string, sandboxed bool, allowedDomains []string, extras *sandboxExtras) claudeSessionSettings {
+	if extras == nil {
+		extras = &sandboxExtras{CacheDir: sandboxCacheDir(home, workingDir)}
+	}
 	paths := eggifyProtectedPaths(home, workingDir)
 	settings := claudeSessionSettings{
 		Permissions: claudeSettingsPermissions{Deny: protectedDenyRules(paths)},
@@ -503,7 +541,7 @@ func buildClaudeSessionSettings(home, workingDir string, sandboxed bool, allowed
 
 	// Agent tools must not rewrite config that runs code outside the sandbox.
 	for _, p := range sandboxWriteProtected(home, workingDir) {
-		if strings.HasSuffix(p, string(filepath.Separator)+"hooks") {
+		if strings.HasSuffix(p, string(filepath.Separator)+"hooks") || p == sandboxEnvDir(home) || p == filepath.Join(home, ".claude", "eggify", "launchers") {
 			settings.Permissions.Deny = append(settings.Permissions.Deny, fmt.Sprintf("Edit(%s/**)", permissionPath(p)))
 			continue
 		}
@@ -512,11 +550,16 @@ func buildClaudeSessionSettings(home, workingDir string, sandboxed bool, allowed
 	// Web tools run in the CLI process, outside the sandbox's network proxy.
 	settings.Permissions.Ask = []string{"WebFetch", "WebSearch"}
 
+	// Personal credentials are hidden from sandboxed sessions (a grant can leave
+	// some readable), for the file tools as well as for commands.
+	personal := hiddenPersonalSecrets(grantGOOS, home, workingDir, extras.Unhide)
+	settings.Permissions.Deny = append(settings.Permissions.Deny, protectedDenyRules(personal)...)
+
 	var denyRead []string
-	for _, d := range paths.dirs {
+	for _, d := range append(append([]string{}, paths.dirs...), personal.dirs...) {
 		denyRead = append(denyRead, withResolved(d)...)
 	}
-	for _, f := range paths.files {
+	for _, f := range append(append([]string{}, paths.files...), personal.files...) {
 		denyRead = append(denyRead, withResolved(f)...)
 	}
 	envVars := make([]claudeSandboxEnvVar, 0, len(sandboxDeniedEnvVars))
@@ -532,14 +575,33 @@ func buildClaudeSessionSettings(home, workingDir string, sandboxed bool, allowed
 		FailIfUnavailable:        true,
 		AutoAllowBashIfSandboxed: true,
 		AllowUnsandboxedCommands: false,
-		Network:                  claudeSandboxNetwork{AllowedDomains: domains, StrictAllowlist: true},
+		Network: claudeSandboxNetwork{
+			AllowedDomains: domains, StrictAllowlist: true,
+			AllowUnixSockets: extras.UnixSockets, AllowLocalBinding: extras.AllowLocalBinding,
+		},
+		EnableWeakerNetworkIsolation: extras.WeakerNetworkIsolation,
 		Filesystem: claudeSandboxFilesystem{
-			DenyRead:  denyRead,
-			DenyWrite: append(sandboxWriteProtected(home, workingDir), paths.editDirs...),
+			DenyRead:   denyRead,
+			DenyWrite:  append(sandboxWriteProtected(home, workingDir), paths.editDirs...),
+			AllowRead:  extras.AllowRead,
+			AllowWrite: sandboxAllowWrite(extras),
 		},
 		Credentials: &claudeSandboxCredentials{EnvVars: envVars},
 	}
 	return settings
+}
+
+// sandboxAllowWrite is the session's cache folder plus the folders a write
+// grant opens, each with its symlink-resolved spelling.
+func sandboxAllowWrite(x *sandboxExtras) []string {
+	var out []string
+	if x.CacheDir != "" {
+		out = append(out, withResolved(x.CacheDir)...)
+	}
+	for _, p := range x.AllowWrite {
+		out = append(out, withResolved(p)...)
+	}
+	return out
 }
 
 // sessionWorkingDir returns the session's working directory, or "".
@@ -556,7 +618,8 @@ func sessionWorkingDir(opts *SessionOptions) string {
 // ~/.claude/eggify and its sandbox.network.allowedDomains adds egress.
 var sandboxWideningKeys = []string{"allowRead", "allowWrite", "allowedDomains", "allowUnixSockets",
 	"allowAllUnixSockets", "allowLocalBinding", "allowMachLookup", "enableWeakerNetworkIsolation",
-	"enableWeakerNestedSandbox", "httpProxyPort", "socksProxyPort", "disabled", "ignoreViolations"}
+	"enableWeakerNestedSandbox", "httpProxyPort", "socksProxyPort", "disabled", "ignoreViolations",
+	"excludedCommands"}
 
 // projectSandboxOverrides lists sandbox keys configured in the project's
 // .claude/settings.json or .claude/settings.local.json. A sandboxed session
@@ -613,6 +676,12 @@ var ErrSandboxUnsupported = fmt.Errorf("sandboxed mode is only available for Cla
 // sandbox for sandboxed sessions) to the CLI. It must be called on every path
 // that builds options before claude.NewClient(), next to applyRTKHook.
 func (sm *SessionManager) applyClaudeSessionSettings(opts *types.ClaudeAgentOptions, options *SessionOptions) (*types.ClaudeAgentOptions, error) {
+	return sm.applyClaudeSessionSettingsFor(uuid.Nil, nil, opts, options)
+}
+
+// applyClaudeSessionSettingsFor is applyClaudeSessionSettings for the session
+// sessionID; notice (optional) shows a line in its chat.
+func (sm *SessionManager) applyClaudeSessionSettingsFor(sessionID uuid.UUID, notice func(string), opts *types.ClaudeAgentOptions, options *SessionOptions) (*types.ClaudeAgentOptions, error) {
 	if opts == nil {
 		return opts, nil
 	}
@@ -629,7 +698,47 @@ func (sm *SessionManager) applyClaudeSessionSettings(opts *types.ClaudeAgentOpti
 		}
 		domains = sm.SandboxPreferences().AllowedDomains
 	}
-	settings := buildClaudeSessionSettings(home, wd, sandboxed, domains)
+	var extras *sandboxExtras
+	if sandboxed {
+		sid := sessionID.String()
+		if sessionID == uuid.Nil {
+			sid = "adhoc"
+		}
+		extras = resolveSandboxExtrasFor(sid, home, sm.sandboxProjectRoot(options), options, opts.Env)
+		for _, n := range extras.Notices {
+			if notice != nil {
+				notice(n)
+			}
+		}
+		// Grant variables (GH_TOKEN, GIT_SSH_COMMAND, git config) go into the CLI's
+		// environment; they survive agentenv's allowlist and the launcher's
+		// `env -u` (ScrubClaudeOptions keeps names in opts.Env).
+		for k, v := range extras.Env {
+			opts.WithEnvVar(k, v)
+		}
+		// The cache variables must reach sandboxed commands only, not the hooks and
+		// MCP servers the CLI starts outside the sandbox (they would resolve packages
+		// from a folder the agent can write): CLAUDE_ENV_FILE is sourced before each
+		// sandboxed Bash command. Skipped when the session works inside Eggify's own
+		// folder, where the sandbox does not write-protect the file.
+		if len(extras.CacheEnv) > 0 && !(wd != "" && pathWithin(cleanAbs(wd), cleanAbs(filepath.Join(home, ".claude", "eggify")))) {
+			prior := opts.Env["CLAUDE_ENV_FILE"]
+			if prior == "" {
+				prior = grantGetenv("CLAUDE_ENV_FILE")
+			}
+			if path, err := writeSandboxEnvFile(home, sid, prior, extras.CacheEnv); err != nil {
+				logging.Warning("sandbox: cannot write the environment file: %v", err)
+			} else {
+				opts.WithEnvVar("CLAUDE_ENV_FILE", path)
+			}
+		}
+	}
+	settings := buildClaudeSessionSettingsWith(home, wd, sandboxed, domains, extras)
+	if autopilotSession(options) {
+		// A trusted project's permissions.allow must not approve a file write on its own:
+		// ask rules send these tools to the permission callback (autopilotDecide).
+		settings.Permissions.Ask = appendUnique(settings.Permissions.Ask, readOnlyDeniedTools...)
+	}
 	if options != nil && options.ReadOnly {
 		if !sandboxed || wd == "" {
 			return opts, fmt.Errorf("a read-only session needs the sandbox and a working directory")
@@ -641,7 +750,7 @@ func (sm *SessionManager) applyClaudeSessionSettings(opts *types.ClaudeAgentOpti
 		return opts, fmt.Errorf("failed to build session settings: %w", err)
 	}
 	if sandboxed {
-		logging.Info("🧱 Sandboxed session: Bash sandbox on, %d egress domains allowed", len(domains))
+		logging.Info("🧱 Sandboxed session: Bash sandbox on, %d egress domains allowed, grants %v, %d extra paths", len(domains), options.SandboxGrants, len(options.SandboxGrantPaths))
 	}
 	return opts.WithSettings(string(data)), nil
 }

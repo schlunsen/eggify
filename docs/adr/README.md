@@ -29,5 +29,4 @@ Each ADR follows the format:
 | [010](010-multi-layer-authentication.md) | Multi-Layered Authentication Strategy | Accepted |
 | [011](011-monorepo-structure.md) | Monorepo Project Structure | Accepted |
 | [012](012-session-handoff.md) | AI-Powered Session Handoff Mechanism | Accepted |
-| [013](013-licensing.md) | Paid licenses (serial numbers) and a Rust license server | Accepted |
 | [014](014-multi-machine.md) | Switching between your own Eggify machines (relay, native apps) | Accepted |

@@ -11,7 +11,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/schlunsen/eggify/internal/logging"
-	"github.com/schlunsen/eggify/internal/relay"
 	"github.com/schlunsen/eggify/internal/remoteaccess"
 	"github.com/schlunsen/eggify/internal/version"
 )
@@ -62,7 +61,7 @@ func (s *Server) setupRemoteAccess(key []byte) {
 		},
 		Guard:            s.remoteAccessGuard,
 		API:              newNgrokAPI(),
-		RelayProvider:    s.withRelayLicense(newRelayProvider()),
+		RelayProvider:    newRelayProvider(),
 		DefaultRelayAddr: os.Getenv("EGGIFY_RELAY_ADDR"),
 		Logf:             func(format string, args ...any) { logging.Info(format, args...) },
 	})
@@ -224,22 +223,4 @@ func (s *Server) tunnelPathGuard(c *fiber.Ctx) error {
 		}
 	}
 	return c.Next()
-}
-
-// withRelayLicense lets the relay provider present this install's license,
-// so the Eggify relay (subscribers only) admits it.
-func (s *Server) withRelayLicense(p remoteaccess.Provider) remoteaccess.Provider {
-	if rp, ok := p.(*remoteaccess.RelayProvider); ok && rp.License == nil {
-		rp.License = func() *relay.LicenseCredentials {
-			if s.license == nil {
-				return nil
-			}
-			token, key := s.license.RelayCredentials()
-			if token == "" {
-				return nil
-			}
-			return &relay.LicenseCredentials{Token: token, Key: key}
-		}
-	}
-	return p
 }

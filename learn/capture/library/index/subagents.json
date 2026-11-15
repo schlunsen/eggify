@@ -1,0 +1,166 @@
+[
+  {
+    "area": "subagents",
+    "name": "pip-card",
+    "boxes": [
+      "pip",
+      "runningRow",
+      "finishedRow",
+      "openView",
+      "agentCards",
+      "sidebarSubagents",
+      "sessionRow"
+    ],
+    "how": "seeded session; its subagents are a stubbed API answer (/subagents) with times near now",
+    "shows": "A working session's chat with the Subagents card (PiP) in the top-right corner: three running subagents with their Now line and model chip, finished ones below; Agent tool cards in the chat; \"subagents\" counts in the right sidebar"
+  },
+  {
+    "area": "subagents",
+    "name": "zoom-modal-running",
+    "boxes": [
+      "modal",
+      "title",
+      "next",
+      "openView",
+      "now",
+      "steps"
+    ],
+    "how": "seeded session; its subagents are a stubbed API answer (/subagents) with times near now",
+    "shows": "Subagent zoom modal on a running subagent: Now box with the running command and folder, Task, key steps; ‹ 1 of 6 › to step through, Open in Subagents view"
+  },
+  {
+    "area": "subagents",
+    "name": "zoom-modal-finished",
+    "boxes": [
+      "modal",
+      "report",
+      "produced",
+      "steps"
+    ],
+    "how": "seeded session; its subagents are a stubbed API answer (/subagents) with times near now",
+    "shows": "Subagent zoom modal on a finished subagent: its report, what it produced (pull request, commit, pushed branch, changed files) and key steps"
+  },
+  {
+    "area": "subagents",
+    "name": "view-activity-running",
+    "boxes": [
+      "view",
+      "filters",
+      "list",
+      "selectedRow",
+      "detail",
+      "now",
+      "steps",
+      "modes"
+    ],
+    "how": "seeded session; its subagents are a stubbed API answer (/subagents) with times near now",
+    "shows": "Subagents view, Activity: list of every subagent (running first, filter chips with counts) and the selected running one briefed on the right: Now, Task, Key steps"
+  },
+  {
+    "area": "subagents",
+    "name": "view-activity-finished",
+    "boxes": [
+      "view",
+      "selectedRow",
+      "detail",
+      "report",
+      "produced",
+      "steps"
+    ],
+    "how": "seeded session; its subagents are a stubbed API answer (/subagents) with times near now",
+    "shows": "Subagents view with a finished subagent selected: report gist, Task, Produced (PR #41, commit, pushed branch, changed files), Key steps newest first"
+  },
+  {
+    "area": "subagents",
+    "name": "view-all-steps",
+    "boxes": [
+      "view",
+      "steps",
+      "chips"
+    ],
+    "how": "seeded session; its subagents are a stubbed API answer (/subagents) with times near now",
+    "shows": "The same subagent with All steps: every tool call with its time and duration, the agent's notes in between"
+  },
+  {
+    "area": "subagents",
+    "name": "view-failed",
+    "boxes": [
+      "view",
+      "filters",
+      "detail"
+    ],
+    "how": "seeded session; its subagents are a stubbed API answer (/subagents) with times near now",
+    "shows": "Subagents view filtered to Failed: the failed subagent with its error in plain words"
+  },
+  {
+    "area": "subagents",
+    "name": "view-zen-circus",
+    "boxes": [
+      "view",
+      "modes",
+      "stageSwitch"
+    ],
+    "how": "seeded session; its subagents are a stubbed API answer (/subagents) with times near now; motion is reduced for the still (a clip would show them wandering)",
+    "shows": "Subagents view, Zen (Circus stage): the main agent as the egg gentleman on a soapbox, each subagent an engraved costume egg with a speech bubble of its latest action; finished ones on the bench"
+  },
+  {
+    "area": "subagents",
+    "name": "view-zen-synthwave",
+    "boxes": [
+      "view",
+      "stageSwitch"
+    ],
+    "how": "seeded session; its subagents are a stubbed API answer (/subagents) with times near now",
+    "shows": "The same Zen view on the Synthwave stage: neon skyline, the main agent as the DJ, subagents as characters"
+  },
+  {
+    "area": "subagents",
+    "name": "all-agents-running",
+    "boxes": [
+      "overlay",
+      "filters",
+      "search",
+      "tree",
+      "detail",
+      "firstSession",
+      "firstAgent",
+      "loop"
+    ],
+    "how": "seeded sessions; subagents stubbed API; loops and waiting states patched into the session list",
+    "shows": "All agents overlay (⇧⌘S), Running filter: every working session with its running subagents and loops in a tree (Needs you / Working / Recent), header counts"
+  },
+  {
+    "area": "subagents",
+    "name": "all-agents-subagent",
+    "boxes": [
+      "overlay",
+      "tree",
+      "selected",
+      "detail"
+    ],
+    "how": "seeded sessions; subagents stubbed API",
+    "shows": "All agents with a running subagent selected: its live detail (Now, Task, key steps) on the right, nested subagent below it in the tree"
+  },
+  {
+    "area": "subagents",
+    "name": "all-agents-all",
+    "boxes": [
+      "overlay",
+      "filters",
+      "tree"
+    ],
+    "how": "seeded sessions; subagents stubbed API",
+    "shows": "All agents, All filter: finished and failed subagents too, recent idle sessions"
+  },
+  {
+    "area": "subagents",
+    "name": "all-agents-loop",
+    "boxes": [
+      "overlay",
+      "selected",
+      "detail"
+    ],
+    "how": "loop state patched into the session list (in-memory on a real install)",
+    "shows": "All agents with a loop selected: its schedule or goal, check command, iteration and last output, Open session"
+  }
+]

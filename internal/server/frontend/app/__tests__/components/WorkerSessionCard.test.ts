@@ -1,4 +1,5 @@
 import { mount } from '@vue/test-utils'
+import { setHomeDir } from '../../utils/homeDir'
 import UserQuestionModal from '../../components/agents/UserQuestionModal.vue'
 import { workerProposalBadges, workerProposalOf, workerProposalTitle } from '../../utils/agents/workerProposal'
 
@@ -39,6 +40,8 @@ const cardFor = (proposal: Record<string, unknown>) => ({
   multiSelect: false, timestamp: new Date(), status: 'pending',
   requires_user: true, kind: 'worker_session', proposal,
 }) as any
+
+beforeEach(() => setHomeDir('/Users/alex'))
 
 it('shows a build worker proposal as a dedicated card with its settings', () => {
   const wrapper = mount(UserQuestionModal, { props: { show: true, question: cardFor(build) } })
@@ -113,4 +116,15 @@ it('builds the title and badges from the proposal', () => {
   // The server always sandboxes; if it ever did not, the card says so.
   const unsandboxed = workerProposalBadges({ ...build, sandboxed: false } as any)[0]!
   expect(unsandboxed).toMatchObject({ text: 'Not sandboxed', danger: true })
+})
+
+it('shortens the folder only inside the real home, never a guessed /Users/<name>', () => {
+  setHomeDir('/Users/Shared/praline')
+  const at = (dir: string) => mount(UserQuestionModal, {
+    props: { show: true, question: cardFor({ ...build, working_directory: dir }) },
+  }).find('[data-testid="worker-session-card"] .loop-path').text()
+  expect(at('/Users/Shared/praline/projects/cheese-shop')).toBe('~/projects/cheese-shop')
+  expect(at('/Users/Shared/other/x')).toBe('/Users/Shared/other/x')
+  setHomeDir('')
+  expect(at('/Users/Shared/praline/projects/cheese-shop')).toBe('/Users/Shared/praline/projects/cheese-shop')
 })

@@ -45,11 +45,29 @@ func (sm *SessionManager) applyConfigDefaults(options *SessionOptions) {
 		options.AllowDangerouslySkipPermissions = &t
 	}
 
+	// While the user never saved the default, a client that sends sandboxed=true
+	// blindly (it started from the reported default) must not fail on a path with
+	// no sandbox: such a session starts unsandboxed. Once the user chose, the error is back.
+	if options.Sandboxed != nil && *options.Sandboxed && !options.ReadOnly &&
+		sm.SandboxPreferences().DefaultIsImplicit &&
+		sm.resolveExecutionPath(&AgentSession{Session: Session{Options: *options}}) == ExecutionPathDirect {
+		f := false
+		options.Sandboxed = &f
+		options.sandboxDowngraded = true
+	}
+
 	// Sandboxed: the global default applies when the client does not choose.
 	// Stored explicitly so a later change of the default never flips an
 	// existing session.
 	if options.Sandboxed == nil {
-		v := sm.SandboxPreferences().DefaultEnabled
+		prefs := sm.SandboxPreferences()
+		v := prefs.DefaultEnabled
+		// Never chosen by the user: only Claude CLI sessions follow the built-in
+		// default; Codex and Eggify's own OpenAI-compatible loop (which has no
+		// sandbox and would refuse to run) start as they always did.
+		if v && prefs.DefaultIsImplicit && sm.resolveExecutionPath(&AgentSession{Session: Session{Options: *options}}) != ExecutionPathClaudeSDK {
+			v = false
+		}
 		options.Sandboxed = &v
 	}
 	// A read-only session is enforced by the sandbox, so it is always sandboxed.
@@ -92,6 +110,7 @@ func (sm *SessionManager) CreateSession(sessionID uuid.UUID, options SessionOpti
 		restoredOptions := options // Start with request options as fallback
 		// An old/corrupt record cannot acquire a grant from reopen parameters.
 		restoredOptions.CodexNetworkAccess = false
+		restoredOptions.SandboxGrants, restoredOptions.SandboxGrantPaths = nil, nil
 		if existingMeta.OptionsJSON != "" {
 			var dbOptions SessionOptions
 			if err := json.Unmarshal([]byte(existingMeta.OptionsJSON), &dbOptions); err == nil {
@@ -247,6 +266,14 @@ func (sm *SessionManager) CreateSession(sessionID uuid.UUID, options SessionOpti
 		if strings.TrimSpace(codexStr(options.WorkingDirectory)) == "" {
 			return nil, fmt.Errorf("Codex network access requires a working directory")
 		}
+	}
+	// Grants are only given to a session a user starts: never to a worker
+	// (its config is only ever written by start_worker_session).
+	if options.Worker != nil {
+		options.SandboxGrants, options.SandboxGrantPaths = nil, nil
+	}
+	if err := sm.ValidateSandboxGrantsForCreate(&options); err != nil {
+		return nil, err
 	}
 	// A team is set up once, for a session a user starts (team.go).
 	if options.Team != nil {
@@ -585,6 +612,10 @@ func (sm *SessionManager) CreateSession(sessionID uuid.UUID, options SessionOpti
 
 	logging.Info("Session created: %s (total sessions: %d)", sessionID, len(sm.sessions))
 
+	if options.sandboxDowngraded {
+		go sm.emitSessionNotice(session, "This model can't run sandboxed: its tools run inside Eggify, so the session started without the sandbox.")
+	}
+
 	return &session.Session, nil
 }
 
@@ -771,6 +802,7 @@ func (sm *SessionManager) endSession(sessionID uuid.UUID, keepUpdatedAt bool) er
 	if !exists {
 		return fmt.Errorf("session not found: %s: %w", sessionID, errSessionNotLoaded)
 	}
+	defer removeSandboxEnv(sessionID)
 
 	// Close streaming client if exists
 	session.mu.Lock()
@@ -822,6 +854,7 @@ func (sm *SessionManager) endSession(sessionID uuid.UUID, keepUpdatedAt bool) er
 }
 
 func (sm *SessionManager) DeleteSession(sessionID uuid.UUID) error {
+	defer removeSandboxEnv(sessionID)
 	sm.mu.Lock()
 	defer sm.mu.Unlock()
 

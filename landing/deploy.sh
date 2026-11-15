@@ -9,7 +9,6 @@ source ../scripts/release-env.sh
 HOST=${DEPLOY_HOST:?Set DEPLOY_HOST (ssh target, e.g. user@your-host)}
 DEST=${LANDING_DEPLOY_DIR:?Set LANDING_DEPLOY_DIR (site root on the host, e.g. /var/www/example)}
 
-[ -n "${PUBLIC_LICENSE_URL:-}" ] || echo "WARNING: PUBLIC_LICENSE_URL is unset: the interest form will say the server cannot be reached" >&2
 [ -n "${PUBLIC_DOWNLOAD_BASE_URL:-}" ] || echo "NOTE: PUBLIC_DOWNLOAD_BASE_URL is unset: download links are site-relative (/download/...)" >&2
 npm ci --no-audit --no-fund
 npm run build

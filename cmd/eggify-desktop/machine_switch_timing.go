@@ -88,7 +88,7 @@ func rememberablePath(p string) bool {
 			return false
 		}
 	}
-	for _, skip := range []string{"/login", "/setup", "/activate", "/oauth-callback", "/access-denied", "/__"} {
+	for _, skip := range []string{"/login", "/setup", "/oauth-callback", "/access-denied", "/__"} {
 		if p == skip || strings.HasPrefix(p, skip+"/") || strings.HasPrefix(p, skip+"?") || (skip == "/__" && strings.HasPrefix(p, skip)) {
 			return false
 		}

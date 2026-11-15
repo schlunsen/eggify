@@ -2,6 +2,8 @@
 // Agent-written items start pending and are kept out of every prompt until a
 // user approves them.
 
+import { shortenHome } from '~/utils/homeDir'
+
 export type ReviewStatus = 'pending' | 'approved' | 'rejected'
 export type ReviewKind = 'memory' | 'skill'
 
@@ -227,19 +229,8 @@ export function fileOrigin(createdBy: string): string | null {
   return createdBy.startsWith('file:') ? createdBy.slice('file:'.length) : null
 }
 
-/**
- * Replace the home folder at the start of a path with ~. Without a known
- * home, /Users/<name>, /home/<name> and C:\Users\<name> are recognised.
- */
-export function shortenHome(path: string, home?: string): string {
-  if (home) {
-    const h = home.replace(/[\\/]+$/, '')
-    if (path === h) return '~'
-    if (path.startsWith(h + '/') || path.startsWith(h + '\\')) return '~' + path.slice(h.length)
-    return path
-  }
-  return path.replace(/^(\/Users\/[^/]+|\/home\/[^/]+|[A-Za-z]:\\Users\\[^\\]+)(?=[\\/]|$)/, '~')
-}
+/** Replace the server's home folder at the start of a path with ~ (see utils/homeDir.ts); other paths stay absolute. */
+export { shortenHome }
 
 /** Parent folder of a path ('/a/b/c' -> '/a/b'). */
 function parentDir(path: string): string {

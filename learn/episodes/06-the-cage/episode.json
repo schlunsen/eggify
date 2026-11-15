@@ -1,0 +1,354 @@
+{
+ "number": 6,
+ "slug": "the-cage",
+ "title": "Keeping agents in the cage",
+ "summary": "Sandbox a session, trust a folder on purpose, review what an agent writes, and know what turning permission prompts off means.",
+ "next": "Git page and worktrees",
+ "scenes": [
+  {
+   "id": "title",
+   "kind": "title",
+   "lines": [
+    {
+     "id": "t1",
+     "text": "Keeping agents in the cage. Three fences, and one door that only you open."
+    }
+   ]
+  },
+  {
+   "id": "sandbox",
+   "kind": "shot",
+   "heading": "The sandbox",
+   "shot": "create",
+   "lines": [
+    {
+     "id": "s1",
+     "text": "An agent runs as you, with your files and your keys. Do not let it feel too at home."
+    },
+    {
+     "id": "s2",
+     "text": "So when you create a session, leave Filesystem sandbox switched on."
+    },
+    {
+     "id": "s3",
+     "text": "Its commands cannot read Eggify's own secrets, and they write only in the workspace and temporary folders."
+    },
+    {
+     "id": "s4",
+     "text": "It is fixed for that session. The Permissions row says Sandboxed, or Not sandboxed."
+    }
+   ],
+   "beats": [
+    {
+     "line": "s1",
+     "at": 0,
+     "zoom": {
+      "x": 531,
+      "y": 330,
+      "w": 800,
+      "h": 450
+     }
+    },
+    {
+     "line": "s2",
+     "at": 0.3,
+     "highlight": "sandbox",
+     "zoom": {
+      "x": 480,
+      "y": 330,
+      "w": 800,
+      "h": 450
+     }
+    },
+    {
+     "line": "s3",
+     "at": 0,
+     "zoom": {
+      "x": 500,
+      "y": 420,
+      "w": 640,
+      "h": 360
+     }
+    },
+    {
+     "line": "s4",
+     "at": 0,
+     "shot": "sandboxed",
+     "zoom": {
+      "x": 1280,
+      "y": 400,
+      "w": 640,
+      "h": 360
+     },
+     "highlight": "sandbox"
+    },
+    {
+     "line": "s4",
+     "at": 3.0,
+     "shot": "not-sandboxed",
+     "zoom": {
+      "x": 1280,
+      "y": 400,
+      "w": 640,
+      "h": 360
+     },
+     "highlight": "sandbox"
+    }
+   ]
+  },
+  {
+   "id": "domains",
+   "kind": "shot",
+   "heading": "Allowed domains",
+   "shot": "settings",
+   "lines": [
+    {
+     "id": "d1",
+     "text": "The network is fenced too. In Settings, Sandbox, this list holds the domains Claude's commands may reach."
+    },
+    {
+     "id": "d2",
+     "text": "Edit it, then press Save allowlist. The switch above decides whether new sessions start sandboxed."
+    }
+   ],
+   "beats": [
+    {
+     "line": "d1",
+     "at": 0,
+     "zoom": {
+      "x": 804,
+      "y": 80,
+      "w": 960,
+      "h": 540
+     },
+     "highlight": "domains"
+    },
+    {
+     "line": "d2",
+     "at": 0,
+     "highlight": "save"
+    },
+    {
+     "line": "d2",
+     "at": 3.0,
+     "highlight": "defaultSwitch"
+    }
+   ]
+  },
+  {
+   "id": "trust",
+   "kind": "shot",
+   "heading": "Workspace trust",
+   "shot": "trust",
+   "lines": [
+    {
+     "id": "w1",
+     "text": "A project folder can carry its own hooks, tools and servers."
+    },
+    {
+     "id": "w2",
+     "text": "Until you trust it, Eggify does not load them, and the chat says so."
+    },
+    {
+     "id": "w3",
+     "text": "Press Review to see every command and server it would start."
+    },
+    {
+     "id": "w4",
+     "text": "If those files change later, Eggify stops loading them and asks again."
+    },
+    {
+     "id": "w5",
+     "text": "Trust folder is your decision, so read the list first."
+    }
+   ],
+   "beats": [
+    {
+     "line": "w1",
+     "at": 0,
+     "zoom": {
+      "x": 560,
+      "y": 170,
+      "w": 1040,
+      "h": 585
+     },
+     "highlight": "banner"
+    },
+    {
+     "line": "w3",
+     "at": 0.3,
+     "highlight": "review",
+     "cursor": "review",
+     "click": true
+    },
+    {
+     "line": "w3",
+     "at": 1.8,
+     "shot": "trust-review",
+     "zoom": {
+      "x": 576,
+      "y": 213,
+      "w": 1000,
+      "h": 562
+     }
+    },
+    {
+     "line": "w4",
+     "at": 0,
+     "zoom": {
+      "x": 592,
+      "y": 400,
+      "w": 800,
+      "h": 450
+     }
+    },
+    {
+     "line": "w5",
+     "at": 0,
+     "zoom": {
+      "x": 1000,
+      "y": 200,
+      "w": 640,
+      "h": 360
+     },
+     "highlight": "trust"
+    }
+   ]
+  },
+  {
+   "id": "review",
+   "kind": "shot",
+   "heading": "The review queue",
+   "shot": "memories",
+   "lines": [
+    {
+     "id": "r1",
+     "text": "A memory that an agent writes waits for your approval before anything uses it."
+    },
+    {
+     "id": "r2",
+     "text": "No session uses them until you approve, and you read them as text from a stranger."
+    },
+    {
+     "id": "r3",
+     "text": "A skill found on disk waits in the same queue."
+    },
+    {
+     "id": "r4",
+     "text": "The review lists the hook it would run, the tools it may use unasked, and each file, scripts marked executable."
+    },
+    {
+     "id": "r5",
+     "text": "Then Approve, Edit and Approve, or Reject."
+    }
+   ],
+   "beats": [
+    {
+     "line": "r1",
+     "at": 0,
+     "zoom": {
+      "x": 296,
+      "y": 180,
+      "w": 900,
+      "h": 506
+     },
+     "highlight": {
+      "x": 317,
+      "y": 213,
+      "w": 860,
+      "h": 161
+     }
+    },
+    {
+     "line": "r2",
+     "at": 0,
+     "highlight": "approve"
+    },
+    {
+     "line": "r3",
+     "at": 0,
+     "shot": "skill",
+     "zoom": {
+      "x": 322,
+      "y": 330,
+      "w": 960,
+      "h": 540
+     }
+    },
+    {
+     "line": "r4",
+     "at": 0.3,
+     "highlight": "hook"
+    },
+    {
+     "line": "r4",
+     "at": 3.8,
+     "highlight": "exec"
+    },
+    {
+     "line": "r5",
+     "at": 0,
+     "highlight": "actions"
+    }
+   ]
+  },
+  {
+   "id": "yolo",
+   "kind": "shot",
+   "heading": "Permission prompts",
+   "shot": "yolo",
+   "lines": [
+    {
+     "id": "y1",
+     "text": "Permission prompts stay on by default: the session asks first."
+    },
+    {
+     "id": "y2",
+     "text": "YOLO mode switches them off for that one session."
+    },
+    {
+     "id": "y3",
+     "text": "That is your choice. The agent then acts without asking, and only a sandbox, if you chose one, still limits it."
+    }
+   ],
+   "beats": [
+    {
+     "line": "y1",
+     "at": 0,
+     "zoom": {
+      "x": 1280,
+      "y": 340,
+      "w": 640,
+      "h": 360
+     },
+     "highlight": "header"
+    },
+    {
+     "line": "y2",
+     "at": 0,
+     "highlight": "yolo"
+    },
+    {
+     "line": "y3",
+     "at": 0,
+     "zoom": {
+      "x": 1280,
+      "y": 420,
+      "w": 640,
+      "h": 360
+     }
+    }
+   ]
+  },
+  {
+   "id": "outro",
+   "kind": "outro",
+   "lines": [
+    {
+     "id": "o1",
+     "text": "None of this is a promise. It is three fences, and you choose which to build. Next: Git page and worktrees."
+    }
+   ]
+  }
+ ]
+}

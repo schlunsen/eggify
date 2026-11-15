@@ -1,0 +1,17 @@
+node_modules/
+out/
+.venv/
+__pycache__/
+capture/bin/
+# Generated per episode; rebuilt by the capture and voice scripts.
+public/episodes/*/shots/
+public/episodes/*/clips/
+public/episodes/*/vo/
+capture/.cache/
+capture/logs/
+capture/node_modules/
+tts/out/
+public/episodes/demo/
+public/episodes/*/placeholders.json
+# The screen library for later episodes is rebuilt by capture/library.
+public/library/shots/

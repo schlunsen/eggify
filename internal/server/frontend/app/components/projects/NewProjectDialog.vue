@@ -314,10 +314,11 @@
 import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue'
 import ProjectsGlyph from './ProjectsGlyph.vue'
 import { desktopSelectFolder, isDesktop } from '~/utils/desktop'
+import { setHomeDir } from '~/utils/homeDir'
 import { announceUserRequired, isUserRequiredBody } from '~/utils/userRequired'
 import {
   PROJECT_COLORS, folderNameError, folderNameFromPath, folderNameFromProjectName, guessRepo,
-  joinPath, randomProjectColor, shortenPath, type ProjectSetupMode,
+  joinPath, PROJECT_START_OPTIONS, randomProjectColor, shortenPath, type ProjectSetupMode,
 } from '~/utils/projects/projectSetup'
 
 interface MiniProject { id: string, name: string, path: string, color?: string }
@@ -361,11 +362,7 @@ const ids = {
   parent: `np-parent-${uid}`, folder: `np-folder-${uid}`, color: `np-color-${uid}`,
 }
 
-const options: { mode: ProjectSetupMode, icon: string, title: string, desc: string }[] = [
-  { mode: 'existing', icon: 'folderOpen', title: 'Open an existing folder', desc: 'A project you already have on this computer.' },
-  { mode: 'clone', icon: 'download', title: 'Clone a repository', desc: 'Paste a git URL or owner/repo and Eggify clones it for you.' },
-  { mode: 'empty', icon: 'folderPlus', title: 'Start a new empty project', desc: 'Create a fresh folder, optionally with git.' },
-]
+const options = PROJECT_START_OPTIONS
 
 const step = ref<'choose' | 'form' | 'done'>('choose')
 const mode = ref<ProjectSetupMode>('existing')
@@ -811,6 +808,7 @@ async function loadDefaults() {
     const body = await res.json().catch(() => ({}))
     if (res.ok) {
       defaults.value = body
+      setHomeDir(body.home)
       if (!form.parent || form.parent === '~/projects') form.parent = body.projects_dir_display
       form.gitInit = !!body.git_available
     } else if (res.status === 403 && isUserRequiredBody(body)) {

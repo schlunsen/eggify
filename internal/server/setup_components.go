@@ -152,11 +152,6 @@ func (s *Server) setupMiddleware() error {
 		s.app.Use(s.authMiddleware.Handler())
 	}
 
-	// Licensing: 402 license_required for everything but the activation page's
-	// needs while not activated (no-op unless enforced). s.license is set later
-	// (setupHandlers); the middleware reads it per request.
-	s.app.Use(s.licenseGate)
-
 	return nil
 }
 

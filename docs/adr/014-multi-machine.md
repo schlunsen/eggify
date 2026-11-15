@@ -60,7 +60,7 @@ app without signing in again.
 
 On the **second Mac** ("Studio"), once:
 
-1. Install the Eggify desktop app and activate it with your serial (each Mac uses one seat).
+1. Install the Eggify desktop app.
 2. Create its account on first run (its own account; it does not need to match the first Mac's).
 3. Settings → Remote access → **Eggify relay** → switch it on, and turn on **Start at login**
    so it is reachable after a reboot. It must stay awake (Energy settings) to be reachable.

@@ -181,11 +181,13 @@ func (sm *SessionManager) UpdateSessionOptions(sessionID uuid.UUID, updateFn fun
 	}
 	networkAccess := session.Options.CodexNetworkAccess
 	readOnly := session.Options.ReadOnly
+	grants, grantPaths := session.Options.SandboxGrants, session.Options.SandboxGrantPaths
 	updateFn(&session.Options)
 	// Permission grants are fixed at creation, including generic option updates;
 	// so is a read-only session's restriction.
 	session.Options.CodexNetworkAccess = networkAccess
 	session.Options.ReadOnly = readOnly
+	session.Options.SandboxGrants, session.Options.SandboxGrantPaths = grants, grantPaths
 	sessionCopy := session.Session
 	sm.mu.Unlock()
 

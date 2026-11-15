@@ -62,6 +62,10 @@ func (h *AgentHandler) handleFiberCreateSession(c *fiberws.Conn, rawMsg map[stri
 		// Reopening: the stored choice wins, nothing is granted.
 		msg.Options.CodexNetworkAccess = false
 	}
+	if hasSandboxGrants(&msg.Options) && h.sessionExists(msg.SessionID) {
+		// Reopening: the stored grants win, nothing is granted.
+		msg.Options.SandboxGrants, msg.Options.SandboxGrantPaths = nil, nil
+	}
 	if msg.Options.CodexNetworkAccess {
 		// Unlike legacy permission controls, never bypass this check when
 		// authentication is disabled: an API key cannot establish user consent.
@@ -204,12 +208,6 @@ func (h *AgentHandler) handleFiberSendPrompt(c *fiberws.Conn, rawMsg map[string]
 
 	if !hasContent && !hasPrompt {
 		return fmt.Errorf("either prompt or content must be provided")
-	}
-
-	// No turns while Eggify is not activated (code license_required).
-	if err := checkLicense(); err != nil {
-		h.sendLicenseRequired(c, err)
-		return nil
 	}
 
 	// SECURITY: Get authenticated user from WebSocket connection context

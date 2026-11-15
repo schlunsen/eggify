@@ -2,7 +2,6 @@ package relay
 
 import (
 	"bufio"
-	"crypto/ed25519"
 	"crypto/rand"
 	"crypto/tls"
 	"errors"
@@ -36,19 +35,9 @@ type ServerConfig struct {
 	HelloTimeout time.Duration
 	// Logf receives one line per install connect/disconnect (never traffic).
 	Logf func(format string, args ...any)
-	// Allowlist and LicenseKey limit who may connect (admission.go): an
-	// install on the allowlist, or one with a valid license token signed by
-	// LicenseKey. With neither set, every install is admitted.
-	Allowlist  *Allowlist
-	LicenseKey ed25519.PublicKey
-	// LicenseKeys are further accepted license server keys (key rotation).
-	LicenseKeys []ed25519.PublicKey
-	// MaxIDsPerLicense caps the relay addresses (install ids) one license
-	// install may hold at once (default DefaultMaxIDsPerLicense).
-	MaxIDsPerLicense int
-	// RequireBoundLicenseProof refuses the plain (v1) license proof of apps
-	// that predate the bound one; off while those apps are still around.
-	RequireBoundLicenseProof bool
+	// Allowlist limits who may connect (admission.go): only installs on it.
+	// Without one, every install is admitted.
+	Allowlist *Allowlist
 	// AdmissionRecheck is how often admissions are re-checked (default 1 minute).
 	AdmissionRecheck time.Duration
 	// IPLimits are the per-source-address limits (iplimit.go).
@@ -78,11 +67,8 @@ type install struct {
 	id      string
 	session *yamux.Session
 	streams chan struct{}
-	// until ends the admission (zero: never); viaAllowlist installs are
-	// re-checked against the file; licenseInstall counts toward the cap per license.
-	until          time.Time
-	viaAllowlist   bool
-	licenseInstall string
+	// viaAllowlist installs are re-checked against the file.
+	viaAllowlist bool
 }
 
 // NewServer validates cfg and returns a relay; call Serve.
@@ -103,9 +89,6 @@ func NewServer(cfg ServerConfig) (*Server, error) {
 	}
 	if cfg.Logf == nil {
 		cfg.Logf = log.Printf
-	}
-	if cfg.MaxIDsPerLicense <= 0 {
-		cfg.MaxIDsPerLicense = DefaultMaxIDsPerLicense
 	}
 	if cfg.AdmissionRecheck <= 0 {
 		cfg.AdmissionRecheck = time.Minute
@@ -263,25 +246,19 @@ func (s *Server) handleControl(raw net.Conn, key string) {
 		return
 	}
 	id := IDFromSPKI(hello.SPKI)
-	adm := s.admit(id, hello, proof, nonce, time.Now())
+	adm := s.admit(id)
 	if !adm.ok {
 		s.cfg.Logf("relay: install %s refused from %s: %s", id, remoteIP(raw), adm.reason)
-		fail(adm.code, adm.message, adm.permanent)
+		fail(adm.code, adm.message, true)
 		return
 	}
 
 	s.mu.Lock()
 	_, replacing := s.installs[id]
 	full := !replacing && len(s.installs) >= s.cfg.MaxInstalls
-	overCap := s.overLicenseCapLocked(id, adm.licenseInstall)
 	s.mu.Unlock()
 	if full {
 		fail(CodeRelayFull, "relay is full, try again later", false)
-		return
-	}
-	if overCap {
-		s.cfg.Logf("relay: install %s refused from %s: license already holds %d relay addresses", id, remoteIP(raw), s.cfg.MaxIDsPerLicense)
-		fail(CodeTooManyInstalls, tooManyInstallsMessage, false)
 		return
 	}
 	if err := writeLine(c, resultMsg{OK: true, ID: id, URL: s.URLFor(id)}); err != nil {
@@ -298,11 +275,9 @@ func (s *Server) handleControl(raw net.Conn, key string) {
 		return
 	}
 	in := &install{id: id, session: session, streams: make(chan struct{}, s.cfg.MaxStreamsPerInstall),
-		until: adm.until, viaAllowlist: adm.viaAllowlist, licenseInstall: adm.licenseInstall}
+		viaAllowlist: adm.viaAllowlist}
 	s.mu.Lock()
-	if s.closed || s.overLicenseCapLocked(id, adm.licenseInstall) {
-		// Closed, or concurrent handshakes of one license filled the cap
-		// since the check above: the install reconnects and gets the refusal.
+	if s.closed {
 		s.mu.Unlock()
 		_ = session.Close()
 		return
@@ -319,7 +294,7 @@ func (s *Server) handleControl(raw net.Conn, key string) {
 	handshakeFinished = true
 	s.ips.handshakeDone(key)
 	s.cfg.Logf("relay: install %s connected from %s", id, remoteIP(raw))
-	if !in.until.IsZero() || in.viaAllowlist {
+	if in.viaAllowlist {
 		s.watchOnce.Do(func() { go s.watchAdmissions(s.cfg.AdmissionRecheck) })
 	}
 
@@ -330,21 +305,6 @@ func (s *Server) handleControl(raw net.Conn, key string) {
 	}
 	s.mu.Unlock()
 	s.cfg.Logf("relay: install %s disconnected", id)
-}
-
-// overLicenseCapLocked reports whether admitting id would give the license
-// install more than MaxIDsPerLicense relay addresses. Caller holds s.mu.
-func (s *Server) overLicenseCapLocked(id, licenseInstall string) bool {
-	if licenseInstall == "" {
-		return false
-	}
-	n := 0
-	for other, in := range s.installs {
-		if other != id && in.licenseInstall == licenseInstall {
-			n++
-		}
-	}
-	return n >= s.cfg.MaxIDsPerLicense
 }
 
 func (s *Server) handleVisitor(id string, c net.Conn) {

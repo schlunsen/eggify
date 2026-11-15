@@ -1,0 +1,455 @@
+{
+ "number": 3,
+ "slug": "watching-and-steering",
+ "title": "Watching and steering an agent",
+ "summary": "Follow what an agent does in the chat, approve its commands, answer its questions, stop a turn, switch the model and read the session's numbers.",
+ "next": "Subagents and All agents",
+ "scenes": [
+  {
+   "id": "title",
+   "kind": "title",
+   "lines": [
+    {
+     "id": "t1",
+     "text": "Watching and steering an agent. See what it does, and change course."
+    }
+   ]
+  },
+  {
+   "id": "watch",
+   "kind": "shot",
+   "heading": "Watch it work",
+   "shot": "tools",
+   "lines": [
+    {
+     "id": "w1",
+     "text": "The chat shows each step as it happens: the files it reads and the searches it runs."
+    },
+    {
+     "id": "w2",
+     "text": "Edits appear as a diff, and commands as cards."
+    }
+   ],
+   "beats": [
+    {
+     "line": "w1",
+     "at": 0.0,
+     "zoom": {
+      "x": 576,
+      "y": 380,
+      "w": 1010,
+      "h": 568
+     }
+    },
+    {
+     "line": "w1",
+     "at": 1.2,
+     "highlight": "readCard"
+    },
+    {
+     "line": "w1",
+     "at": 3.4,
+     "highlight": "grepCard"
+    },
+    {
+     "line": "w2",
+     "at": 0.0,
+     "shot": "edit",
+     "zoom": {
+      "x": 576,
+      "y": 290,
+      "w": 1010,
+      "h": 568
+     },
+     "highlight": "editDiff"
+    },
+    {
+     "line": "w2",
+     "at": 1.5,
+     "shot": "commands",
+     "zoom": {
+      "x": 576,
+      "y": 340,
+      "w": 1010,
+      "h": 568
+     },
+     "highlight": "bashCard"
+    }
+   ]
+  },
+  {
+   "id": "permission",
+   "kind": "shot",
+   "heading": "Approve a command",
+   "shot": "permission",
+   "lines": [
+    {
+     "id": "p1",
+     "text": "When the agent needs permission, a card appears, and the session moves to Needs you."
+    },
+    {
+     "id": "p3",
+     "text": "Approve Once allows just this command. Deny refuses it."
+    },
+    {
+     "id": "p4",
+     "text": "Allow Similar covers every git command; Always Exact, only this one."
+    },
+    {
+     "id": "p5",
+     "text": "Would rather not be asked? YOLO Mode, under Permissions, switches the prompts off for this session. More on that in episode six.",
+     "say": "Would rather not be asked? Yolo mode, under Permissions, switches the prompts off for this session. More on that in episode six."
+    }
+   ],
+   "beats": [
+    {
+     "line": "p1",
+     "at": 0.0,
+     "zoom": {
+      "x": 600,
+      "y": 520,
+      "w": 960,
+      "h": 540
+     },
+     "highlight": "card"
+    },
+    {
+     "line": "p1",
+     "at": 3.0,
+     "zoom": {
+      "x": 264,
+      "y": 130,
+      "w": 800,
+      "h": 450
+     },
+     "highlight": "needsRow"
+    },
+    {
+     "line": "p3",
+     "at": 0.0,
+     "zoom": {
+      "x": 600,
+      "y": 520,
+      "w": 960,
+      "h": 540
+     },
+     "highlight": "approveOnce"
+    },
+    {
+     "line": "p3",
+     "at": 2.0,
+     "highlight": "deny"
+    },
+    {
+     "line": "p4",
+     "at": 0.0,
+     "highlight": "allowSimilar"
+    },
+    {
+     "line": "p4",
+     "at": 1.0,
+     "highlight": "pattern"
+    },
+    {
+     "line": "p4",
+     "at": 2.8,
+     "highlight": "alwaysExact"
+    },
+    {
+     "line": "p5",
+     "at": 0.0,
+     "shot": "yolo",
+     "zoom": {
+      "x": 1160,
+      "y": 368,
+      "w": 760,
+      "h": 428
+     },
+     "highlight": "yolo",
+     "cursor": null
+    }
+   ]
+  },
+  {
+   "id": "question",
+   "kind": "shot",
+   "heading": "Answer a question",
+   "shot": "question",
+   "lines": [
+    {
+     "id": "q1",
+     "text": "Sometimes the agent asks a question. Pick an option, or write your own."
+    },
+    {
+     "id": "q2",
+     "text": "If nobody answers, Eggify picks the recommended one when the countdown ends."
+    },
+    {
+     "id": "q3",
+     "text": "That is more than most committees manage."
+    },
+    {
+     "id": "q4",
+     "text": "Keep waiting gives you more time. Later hides it for now."
+    }
+   ],
+   "beats": [
+    {
+     "line": "q1",
+     "at": 0.0,
+     "zoom": {
+      "x": 600,
+      "y": 380,
+      "w": 720,
+      "h": 405
+     },
+     "highlight": {
+      "x": 690,
+      "y": 420,
+      "w": 540,
+      "h": 306
+     }
+    },
+    {
+     "line": "q1",
+     "at": 3.2,
+     "highlight": null,
+     "cursor": {
+      "x": 970,
+      "y": 424,
+      "w": 258,
+      "h": 160
+     },
+     "click": true
+    },
+    {
+     "line": "q2",
+     "at": 0.0,
+     "shot": "question-picked",
+     "zoom": {
+      "x": 600,
+      "y": 290,
+      "w": 720,
+      "h": 405
+     },
+     "cursor": null,
+     "highlight": {
+      "x": 662,
+      "y": 340,
+      "w": 596,
+      "h": 50
+     }
+    },
+    {
+     "line": "q4",
+     "at": 0.0,
+     "highlight": {
+      "x": 1120,
+      "y": 348,
+      "w": 110,
+      "h": 34
+     }
+    },
+    {
+     "line": "q4",
+     "at": 2.2,
+     "zoom": {
+      "x": 600,
+      "y": 450,
+      "w": 720,
+      "h": 405
+     },
+     "highlight": {
+      "x": 966,
+      "y": 790,
+      "w": 82,
+      "h": 40
+     }
+    }
+   ]
+  },
+  {
+   "id": "steer",
+   "kind": "shot",
+   "heading": "Stop and steer",
+   "shot": "working",
+   "lines": [
+    {
+     "id": "s1",
+     "text": "To stop a turn, press Command period, or click Stop."
+    },
+    {
+     "id": "s2",
+     "text": "Then type what you want instead, and send it."
+    }
+   ],
+   "beats": [
+    {
+     "line": "s1",
+     "at": 0.0,
+     "zoom": {
+      "x": 576,
+      "y": 512,
+      "w": 1010,
+      "h": 568
+     },
+     "highlight": "processing"
+    },
+    {
+     "line": "s1",
+     "at": 1.6,
+     "zoom": {
+      "x": 850,
+      "y": 600,
+      "w": 800,
+      "h": 450
+     },
+     "highlight": "stop"
+    },
+    {
+     "line": "s2",
+     "at": 0.0,
+     "shot": "working-typing",
+     "zoom": {
+      "x": 576,
+      "y": 512,
+      "w": 1010,
+      "h": 568
+     },
+     "highlight": "textarea"
+    },
+    {
+     "line": "s2",
+     "at": 2.4,
+     "highlight": "send",
+     "cursor": "send",
+     "click": true
+    }
+   ]
+  },
+  {
+   "id": "model",
+   "kind": "shot",
+   "heading": "Switch the model",
+   "shot": "sidebar",
+   "lines": [
+    {
+     "id": "m1",
+     "text": "To change model, press Switch in the right sidebar, or Shift Command M."
+    },
+    {
+     "id": "m2",
+     "text": "Pick any model from any provider. It applies to your next reply."
+    }
+   ],
+   "beats": [
+    {
+     "line": "m1",
+     "at": 0.0,
+     "zoom": {
+      "x": 1260,
+      "y": 70,
+      "w": 640,
+      "h": 360
+     },
+     "highlight": "modelRow"
+    },
+    {
+     "line": "m1",
+     "at": 1.6,
+     "cursor": "modelRow",
+     "click": true
+    },
+    {
+     "line": "m2",
+     "at": 0.0,
+     "shot": "model",
+     "zoom": {
+      "x": 560,
+      "y": 120,
+      "w": 800,
+      "h": 450
+     },
+     "cursor": null,
+     "highlight": "firstResult"
+    },
+    {
+     "line": "m2",
+     "at": 2.2,
+     "zoom": {
+      "x": 560,
+      "y": 330,
+      "w": 800,
+      "h": 450
+     },
+     "highlight": "note"
+    }
+   ]
+  },
+  {
+   "id": "numbers",
+   "kind": "shot",
+   "heading": "Read the numbers",
+   "shot": "sidebar",
+   "lines": [
+    {
+     "id": "c1",
+     "text": "The sidebar also tracks duration, messages and context. Click the context tile for a breakdown."
+    }
+   ],
+   "beats": [
+    {
+     "line": "c1",
+     "at": 0.0,
+     "zoom": {
+      "x": 1330,
+      "y": 130,
+      "w": 640,
+      "h": 360
+     },
+     "highlight": "duration"
+    },
+    {
+     "line": "c1",
+     "at": 1.4,
+     "highlight": "messages"
+    },
+    {
+     "line": "c1",
+     "at": 2.2,
+     "highlight": "context"
+    },
+    {
+     "line": "c1",
+     "at": 3.6,
+     "highlight": "context",
+     "cursor": "context",
+     "click": true
+    },
+    {
+     "line": "c1",
+     "at": 4.4,
+     "shot": "context",
+     "zoom": {
+      "x": 1330,
+      "y": 130,
+      "w": 640,
+      "h": 360
+     },
+     "highlight": "usageBar",
+     "cursor": null
+    }
+   ]
+  },
+  {
+   "id": "outro",
+   "kind": "outro",
+   "lines": [
+    {
+     "id": "o1",
+     "text": "That is watching and steering. Next: Subagents and All agents."
+    }
+   ]
+  }
+ ]
+}

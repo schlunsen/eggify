@@ -1,3 +1,5 @@
+import { stripInlineMarkdown } from './plainText'
+
 /** Text limits for the Zen name plate, so a long name or summary never grows the plate. */
 export const PLATE_NAME_MAX = 44
 export const PLATE_SUMMARY_MAX = 200
@@ -9,4 +11,4 @@ export function clip(text: string, max: number): string {
 }
 
 export const plateName = (name: string) => clip(name, PLATE_NAME_MAX)
-export const plateSummary = (summary: string) => clip(summary, PLATE_SUMMARY_MAX)
+export const plateSummary = (summary: string) => clip(stripInlineMarkdown(summary), PLATE_SUMMARY_MAX)

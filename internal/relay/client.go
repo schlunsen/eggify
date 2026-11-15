@@ -3,7 +3,6 @@ package relay
 import (
 	"bufio"
 	"context"
-	"crypto/ed25519"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
@@ -27,12 +26,6 @@ type ClientConfig struct {
 	Identity *Identity
 	// RootCAs validates the relay's certificate (nil: system roots).
 	RootCAs *x509.CertPool
-	// License, when set, is presented so a subscribers-only relay admits the
-	// install. Called once per dial, so a renewed token is picked up.
-	License func() *LicenseCredentials
-
-	// legacyProofOnly (tests): send only the v1 license proof, like older apps.
-	legacyProofOnly bool
 }
 
 // RefusedError is a refusal from the relay. Permanent ones (bad version,
@@ -93,15 +86,6 @@ func Dial(ctx context.Context, cfg ClientConfig) (*Listener, error) {
 
 	br := bufio.NewReaderSize(c, maxLineBytes)
 	hello := helloMsg{V: ProtocolVersion, SPKI: cfg.Identity.SPKI}
-	var lic *LicenseCredentials
-	if cfg.License != nil {
-		if lic = cfg.License(); lic != nil && lic.Token != "" && len(lic.Key) == ed25519.PrivateKeySize {
-			hello.License = lic.Token
-			hello.LicenseKey = b64url.EncodeToString(lic.Key.Public().(ed25519.PublicKey))
-		} else {
-			lic = nil
-		}
-	}
 	if err := writeLine(c, hello); err != nil {
 		return nil, err
 	}
@@ -117,12 +101,6 @@ func Dial(ctx context.Context, cfg ClientConfig) (*Listener, error) {
 		return nil, err
 	}
 	proof := proofMsg{Sig: sig}
-	if lic != nil {
-		proof.LicenseSig = b64url.EncodeToString(ed25519.Sign(lic.Key, licenseProofMessage(host, ch.Nonce)))
-		if !cfg.legacyProofOnly {
-			proof.LicenseSigBound = b64url.EncodeToString(ed25519.Sign(lic.Key, licenseProofMessageBound(host, ch.Nonce, cfg.Identity.SPKI)))
-		}
-	}
 	if err := writeLine(c, proof); err != nil {
 		return nil, err
 	}

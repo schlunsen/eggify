@@ -162,6 +162,10 @@ func (sm *SessionManager) ChangeSessionModel(sessionID uuid.UUID, provider, mode
 	}
 
 	nextPath := sm.resolveExecutionPath(&AgentSession{Session: updated})
+	if nextPath != ExecutionPathClaudeSDK && hasSandboxGrants(&updated.Options) {
+		sm.mu.Unlock()
+		return nil, errGrantsNeedClaudeSandbox
+	}
 	if nextPath == ExecutionPathDirect && isSandboxed(&updated.Options) {
 		sm.mu.Unlock()
 		return nil, ErrSandboxUnsupported

@@ -1,0 +1,310 @@
+{
+  "number": 8,
+  "slug": "from-the-sofa",
+  "title": "From the sofa",
+  "summary": "Reach your Eggify from the phone: switch on remote access with the Eggify relay (or ngrok), pair the iPhone with a QR code, see what the phone can do, and sign devices out.",
+  "next": "Skills and connectors",
+  "scenes": [
+    {
+      "id": "title",
+      "kind": "title",
+      "lines": [
+        {
+          "id": "t1",
+          "text": "From the sofa."
+        }
+      ]
+    },
+    {
+      "id": "away",
+      "kind": "shot",
+      "heading": "Away from the desk",
+      "shot": "phone-home",
+      "lines": [
+        {
+          "id": "a1",
+          "text": "Agents do not stop when you leave the desk. They do not even look up."
+        },
+        {
+          "id": "a2",
+          "text": "With remote access, your phone shows which ones are still working."
+        }
+      ],
+      "beats": [
+        {
+          "line": "a1",
+          "at": 0,
+          "zoom": {
+            "x": 520,
+            "y": 40,
+            "w": 880,
+            "h": 495
+          }
+        },
+        {
+          "line": "a2",
+          "at": 0.3,
+          "zoom": {
+            "x": 560,
+            "y": 380,
+            "w": 800,
+            "h": 450
+          },
+          "highlight": "working"
+        }
+      ]
+    },
+    {
+      "id": "relay",
+      "kind": "shot",
+      "heading": "Eggify relay",
+      "shot": "relay-off",
+      "lines": [
+        {
+          "id": "r1",
+          "text": "Open Settings, Remote access, and choose Eggify relay."
+        },
+        {
+          "id": "r2",
+          "text": "It needs no account. The relay only passes encrypted traffic along, and cannot open it. It sees only which address connects, and when."
+        },
+        {
+          "id": "r3",
+          "text": "Switch it on."
+        },
+        {
+          "id": "r4",
+          "text": "Your Eggify now has an address of its own."
+        }
+      ],
+      "beats": [
+        {
+          "line": "r1",
+          "at": 0.5,
+          "zoom": {
+            "x": 820,
+            "y": 150,
+            "w": 800,
+            "h": 450
+          },
+          "highlight": {
+            "x": 826,
+            "y": 364,
+            "w": 380,
+            "h": 68
+          }
+        },
+        {
+          "line": "r3",
+          "at": 0,
+          "highlight": "toggle",
+          "cursor": "toggle",
+          "click": true
+        },
+        {
+          "line": "r3",
+          "at": 1.0,
+          "shot": "relay-on",
+          "zoom": {
+            "x": 820,
+            "y": 180,
+            "w": 800,
+            "h": 450
+          },
+          "highlight": "status",
+          "cursor": null
+        },
+        {
+          "line": "r4",
+          "at": 0.3,
+          "highlight": "url"
+        }
+      ]
+    },
+    {
+      "id": "ngrok",
+      "kind": "shot",
+      "heading": "Or ngrok",
+      "shot": "ngrok-no-token",
+      "lines": [
+        {
+          "id": "n1",
+          "text": "Already use ngrok? Choose Your ngrok account and paste your authtoken instead."
+        },
+        {
+          "id": "n2",
+          "text": "ngrok decrypts the traffic at its edge. The relay cannot."
+        }
+      ],
+      "beats": [
+        {
+          "line": "n1",
+          "at": 0.3,
+          "zoom": {
+            "x": 820,
+            "y": 250,
+            "w": 800,
+            "h": 450
+          },
+          "highlight": {
+            "x": 1211,
+            "y": 364,
+            "w": 380,
+            "h": 68
+          }
+        },
+        {
+          "line": "n1",
+          "at": 3.2,
+          "highlight": "tokenInput"
+        }
+      ]
+    },
+    {
+      "id": "pair",
+      "kind": "shot",
+      "heading": "Pair the phone",
+      "shot": "relay-on",
+      "lines": [
+        {
+          "id": "p1",
+          "text": "Press Show pairing code."
+        },
+        {
+          "id": "p2",
+          "text": "A QR code appears. Point the iPhone camera at it, tap Open in Eggify, and the app signs in. No password to type."
+        },
+        {
+          "id": "p3",
+          "text": "Only show it to your own device. The code works once, and expires in five minutes."
+        }
+      ],
+      "beats": [
+        {
+          "line": "p1",
+          "at": 0,
+          "zoom": {
+            "x": 820,
+            "y": 180,
+            "w": 800,
+            "h": 450
+          },
+          "highlight": "pairButton",
+          "cursor": "pairButton",
+          "click": true
+        },
+        {
+          "line": "p2",
+          "at": 0.2,
+          "shot": "pair-device",
+          "zoom": {
+            "x": 830,
+            "y": 420,
+            "w": 760,
+            "h": 428
+          },
+          "highlight": "qr",
+          "cursor": null
+        },
+        {
+          "line": "p3",
+          "at": 0.3,
+          "highlight": "countdown"
+        }
+      ]
+    },
+    {
+      "id": "phone",
+      "kind": "shot",
+      "heading": "On the phone",
+      "shot": "phone-home",
+      "lines": [
+        {
+          "id": "h1",
+          "text": "On the phone you see your sessions, answer approvals and questions, and send prompts."
+        },
+        {
+          "id": "h2",
+          "text": "Working sessions sit at the top, the rest below."
+        }
+      ],
+      "beats": [
+        {
+          "line": "h1",
+          "at": 0.3,
+          "zoom": {
+            "x": 560,
+            "y": 560,
+            "w": 800,
+            "h": 450
+          },
+          "highlight": "recent"
+        },
+        {
+          "line": "h2",
+          "at": 0.3,
+          "zoom": {
+            "x": 560,
+            "y": 380,
+            "w": 800,
+            "h": 450
+          },
+          "highlight": "working"
+        }
+      ]
+    },
+    {
+      "id": "devices",
+      "kind": "shot",
+      "heading": "Signed-in devices",
+      "shot": "signed-in-devices",
+      "lines": [
+        {
+          "id": "d1",
+          "text": "In Settings, Account and security, Signed-in devices lists everything signed in as you."
+        },
+        {
+          "id": "d2",
+          "text": "The phone is here, marked QR pairing. Press Sign out on any device you do not recognise."
+        },
+        {
+          "id": "d3",
+          "text": "Over remote access, the A P I key is not accepted. Only signed-in sessions work."
+        }
+      ],
+      "beats": [
+        {
+          "line": "d1",
+          "at": 0.3,
+          "zoom": {
+            "x": 800,
+            "y": 380,
+            "w": 800,
+            "h": 450
+          },
+          "highlight": "devices"
+        },
+        {
+          "line": "d2",
+          "at": 0.2,
+          "highlight": "phone"
+        },
+        {
+          "line": "d2",
+          "at": 3.5,
+          "highlight": "signOut"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "kind": "outro",
+      "lines": [
+        {
+          "id": "o1",
+          "text": "Turn remote access off when you do not need it. Next: skills and connectors."
+        }
+      ]
+    }
+  ]
+}

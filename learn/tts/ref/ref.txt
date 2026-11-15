@@ -1,0 +1,1 @@
+This is Eggify. A workstation for AI coding agents. Your agents, your code, your machine. Run Claude Code, Codex and friends side by side, each with its own repository, branch and terminal.

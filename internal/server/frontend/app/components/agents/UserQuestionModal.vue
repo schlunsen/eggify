@@ -242,6 +242,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import type { UserQuestion } from '~/stores/session/types'
+import { shortenHome } from '~/utils/homeDir'
 import { useClosable } from '~/composables/useKeyboardShortcuts'
 import { LOOP_DENY, LOOP_EDIT, LOOP_START, loopProposalOf } from '~/utils/agents/loopProposal'
 import { WORKER_DENY, WORKER_START, workerProposalBadges, workerProposalOf, workerProposalTitle } from '~/utils/agents/workerProposal'
@@ -308,7 +309,7 @@ function handleHold() {
 }
 
 function shortPath(p: string): string {
-  return (p || '').replace(/^\/(Users|home)\/[^/]+/, '~')
+  return shortenHome(p || '')
 }
 const otherInputRef = ref<HTMLTextAreaElement | null>(null)
 const selectedAnswers = ref<string[]>([])

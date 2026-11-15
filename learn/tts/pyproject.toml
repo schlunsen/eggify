@@ -1,0 +1,6 @@
+[project]
+name = "video-tts"
+version = "0.1.0"
+description = "Narration for the Eggify learning videos: a local OmniVoice clone of the promo film's narrator"
+requires-python = ">=3.10,<3.13"
+dependencies = ["torch==2.8.0", "torchaudio==2.8.0", "omnivoice", "soundfile"]

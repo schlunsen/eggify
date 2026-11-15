@@ -83,6 +83,9 @@ func (h *HealthHandler) HandleGetSystemInfo(c *fiber.Ctx) error {
 	// Get hostname
 	hostname, _ := os.Hostname()
 
+	// The home folder the dashboard shortens to ~ (paths elsewhere stay absolute)
+	home, _ := os.UserHomeDir()
+
 	// Get Go runtime information
 	var memStats struct {
 		Alloc      uint64
@@ -150,6 +153,7 @@ func (h *HealthHandler) HandleGetSystemInfo(c *fiber.Ctx) error {
 		"system": fiber.Map{
 			"hostname": hostname,
 			"cwd":      cwd,
+			"home":     home,
 			"memory":   memStats,
 		},
 		"server":   serverConfig,

@@ -142,6 +142,18 @@ describe('create_session payload', () => {
     promptMode: 'custom', systemPrompt: '', tools: [], selectedAvatarId: 1, ...extra,
   })
 
+  it.each([
+    ['Autopilot', { permissionMode: 'yolo', sandboxed: true }, { dangerously_skip_permissions: true, sandboxed: true }],
+    ['Ask first', { permissionMode: 'default', sandboxed: null }, { dangerously_skip_permissions: false, sandboxed: undefined }],
+    ['Full access', { permissionMode: 'yolo', sandboxed: false }, { dangerously_skip_permissions: true, sandboxed: false }],
+  ])('sends the fields of the %s choice', async (_name, fields, expected) => {
+    const send = vi.fn()
+    await actions(send).createSessionWithOptions(form(fields))
+    const msg = send.mock.calls.find(c => c[0].type === 'create_session')![0]
+    expect(msg.options.dangerously_skip_permissions).toBe(expected.dangerously_skip_permissions)
+    expect(msg.options.sandboxed).toBe(expected.sandboxed)
+  })
+
   it('sends an empty connectors array when none are selected', async () => {
     const send = vi.fn()
     await actions(send).createSessionWithOptions(form({ connectors: [], connectorsOffered: ['github', 'n0'] }))
@@ -237,5 +249,25 @@ describe('compact session launcher', () => {
     picker.vm.$emit('launch')
     expect(wrapper.emitted('create')).toBeUndefined()
     wrapper.unmount()
+  })
+})
+
+describe('CreateSessionModal connector icons', () => {
+  it('draws each connector\'s icon instead of printing its name', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => url.startsWith('/api/connectors')
+      ? { ok: true, json: async () => ({ connectors: [
+        { slug: 'github', name: 'GitHub', icon: 'github', is_connected: true },
+        { slug: 'linear', name: 'Linear', icon: 'layers', is_connected: true },
+        { slug: 'sentry', name: 'Sentry', icon: 'alert-triangle', is_connected: true },
+        { slug: 'odd', name: 'Odd', icon: 'no-such-icon', is_connected: true },
+      ] }) }
+      : { ok: true, json: async () => ({ valid: true, skills: [] }) }))
+    const { wrapper } = mountModal()
+    await flushPromises()
+    const rows = wrapper.findAll('.skill-name').filter(r => /GitHub|Linear|Sentry|Odd/.test(r.text()))
+    expect(rows.map(r => r.text().trim())).toEqual(['GitHub', 'Linear', 'Sentry', 'Odd'])
+    expect(rows.map(r => r.find('icon-stub, icon, .connector-icon').attributes('name'))).toEqual([
+      'lucide:github', 'lucide:layers', 'lucide:alert-triangle', 'lucide:plug',
+    ])
   })
 })

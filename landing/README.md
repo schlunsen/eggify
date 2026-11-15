@@ -18,5 +18,5 @@ npm run deploy    # build + rsync to $DEPLOY_HOST:$LANDING_DEPLOY_DIR (see deplo
 
 Any static host works. `deploy.sh` rsyncs `dist/` to `$DEPLOY_HOST:$LANDING_DEPLOY_DIR`
 (both from the environment or `~/.config/eggify/release.env`) and leaves `/download/` and
-`/media/` alone. Set `PUBLIC_SITE_URL`, `PUBLIC_LICENSE_URL` and `PUBLIC_DOWNLOAD_BASE_URL`
-at build time to point the page at your own site, license server and release folder.
+`/media/` alone. Set `PUBLIC_SITE_URL` and `PUBLIC_DOWNLOAD_BASE_URL`
+at build time to point the page at your own site and release folder.

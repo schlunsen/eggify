@@ -17,7 +17,6 @@
 # Endpoints compiled into release builds (scripts/build-desktop-wails.sh passes
 # them as -ldflags -X; a plain source build has none and the feature is off):
 #   EGGIFY_BUILD_RELAY_ADDR=relay.example.com:8443   # Eggify relay for remote access
-#   EGGIFY_BUILD_LICENSE_URL=https://license.example.com
 #   EGGIFY_BUILD_UPDATE_MANIFEST_URL=https://updates.example.com/latest.json
 #   EGGIFY_BUILD_DOWNLOAD_URL=https://example.com/download/Eggify.dmg
 #   EGGIFY_BUILD_RELAY_ATS_DOMAIN=r.example.com      # iOS: ATS exception for the relay's wildcard

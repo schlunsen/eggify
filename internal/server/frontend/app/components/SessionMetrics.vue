@@ -63,12 +63,12 @@
             </div>
           </div>
 
-          <!-- YOLO Mode Toggle Card (NEW) -->
-          <div class="metric-card yolo-mode-metric" :class="{ enabled: yoloModeEnabled }">
+          <!-- Permission prompts: Autopilot / Ask first / Full access -->
+          <div class="metric-card yolo-mode-metric" :class="{ enabled: yoloModeEnabled, 'full-access': claudeSession && workMode === 'full' }" :data-work-mode="claudeSession ? workMode : (yoloModeEnabled ? 'yolo' : 'ask')">
             <div class="metric-content">
               <div class="metric-label yolo-header">
                 <Icon name="mdi:alert-circle" class="warning-icon" size="20" />
-                <span>YOLO Mode</span>
+                <span data-testid="work-mode-name">{{ workModeName }}</span>
               </div>
 
               <div class="yolo-toggle-container">
@@ -88,8 +88,11 @@
               </div>
 
               <p class="yolo-description">
-                <template v-if="yoloModeEnabled">
-                  <strong>Tools execute without approval.</strong>
+                <template v-if="claudeSession && workMode === 'autopilot'">
+                  <strong>No permission prompts.</strong> File changes stay inside the project and what it was given access to.
+                </template>
+                <template v-else-if="claudeSession && workMode === 'full'">
+                  <strong>Tools execute without approval and without a sandbox.</strong>
                 </template>
                 <template v-else>
                   Ask for approval before restricted tool actions.
@@ -106,6 +109,14 @@
                 <Icon name="mdi:wall" class="metric-label-icon" size="20" />
                 <span>{{ sandboxedSession ? 'Sandboxed' : 'Not sandboxed' }}</span>
               </div>
+              <p v-if="sandboxedSession && grantText" class="yolo-description" data-testid="sandbox-grants-summary" :title="grantTooltip">
+                Access given: {{ grantText }}.
+              </p>
+              <ul v-if="sandboxedSession && grantPaths.length" class="grant-path-list" data-testid="sandbox-grant-paths">
+                <li v-for="p in grantPaths" :key="p.path">
+                  <code>{{ shortenHome(p.path) }}</code> · {{ p.write ? 'read and write' : 'read' }}
+                </li>
+              </ul>
               <p class="yolo-description">
                 <template v-if="sandboxedSession">
                   Filesystem sandbox: workspace and temporary-directory writes only; protected secrets
@@ -264,6 +275,9 @@ import { useUIStore } from '~/stores/ui/uiStore'
 import ProjectPermissions from '~/components/agents/ProjectPermissions.vue'
 import GitStatus from '~/components/agents/GitStatus.vue'
 import { isSessionSandboxed } from '~/utils/agents/sandbox'
+import { workModeOfSession, workModeRuntime, workModeSummary } from '~/utils/agents/workMode'
+import { grantsSummary, grantPathsOf } from '~/utils/agents/sandboxGrants'
+import { shortenHome } from '~/utils/homeDir'
 import { isCodexRuntime } from '~/utils/agents/limitWait'
 
 interface SessionMetricsData {
@@ -285,6 +299,8 @@ interface SessionMetricsData {
     project_id?: string
     sandboxed?: boolean
     codex_network_access?: boolean
+    sandbox_grants?: string[] | null
+    sandbox_grant_paths?: Array<{ path: string; write?: boolean }> | null
   }
   created_at?: string
   updated_at?: string
@@ -390,6 +406,11 @@ const yoloModeEnabled = computed(() => {
 })
 
 const sandboxedSession = computed(() => isSessionSandboxed(props.session))
+// Autopilot / Ask first / Full access are the Claude CLI's modes; Codex and
+// direct sessions keep the plain YOLO wording.
+const claudeSession = computed(() => !codexSession.value && workModeRuntime(props.session?.options?.provider) === 'claude')
+const workMode = computed(() => workModeOfSession(props.session))
+const workModeName = computed(() => claudeSession.value ? workModeSummary(props.session) : (yoloModeEnabled.value ? 'YOLO Mode' : 'Ask first'))
 const codexSession = computed(() => isCodexRuntime(props.session?.options?.provider, props.session?.model_name || props.session?.options?.model))
 
 // Method: Toggle YOLO Mode with confirmation
@@ -404,10 +425,19 @@ const toggleYOLOMode = async (event?: Event) => {
 
   const newState = !yoloModeEnabled.value
 
-  // Show confirmation dialog when enabling
-  if (newState) {
+  // Show confirmation dialog when enabling. A sandboxed session keeps its limits (Autopilot).
+  if (newState && claudeSession.value && sandboxedSession.value) {
     const confirmed = window.confirm(
-      'Enable YOLO Mode?\n\n' +
+      'Switch to Autopilot?\n\n' +
+      'This will restart the session with permission prompts off.\n' +
+      'It stays sandboxed: file changes only inside the project and what it was given access to.\n' +
+      'The conversation history will be preserved.\n\n' +
+      'Continue?'
+    )
+    if (!confirmed) return
+  } else if (newState) {
+    const confirmed = window.confirm(
+      'Switch to Full access?\n\n' +
       'This will restart the session with ALL permissions bypassed.\n' +
       'The conversation history will be preserved.\n\n' +
       'Only use in sandboxed environments with no internet access.\n\n' +
@@ -552,9 +582,13 @@ const gitSummary = computed(() => {
   return `${changed} changed`
 })
 
+const grantText = computed(() => grantsSummary(props.session))
+const grantPaths = computed(() => grantPathsOf(props.session))
+const grantTooltip = computed(() => grantPaths.value.map((p) => `${shortenHome(p.path)} (${p.write ? 'read and write' : 'read'})`).join('\n'))
+
 const permissionsSummary = computed(() => [
-  yoloModeEnabled.value ? 'YOLO' : 'Ask first',
-  sandboxedSession.value ? 'Sandboxed' : '',
+  !claudeSession.value ? (yoloModeEnabled.value ? 'YOLO' : 'Ask first') : workMode.value === 'autopilot' ? 'Autopilot' : workMode.value === 'full' ? 'Full access' : 'Ask first',
+  sandboxedSession.value ? (grantText.value ? `Sandboxed · ${grantText.value}` : 'Sandboxed') : (claudeSession.value ? 'Not sandboxed' : ''),
   sandboxedSession.value && codexSession.value ? (props.session?.options?.codex_network_access ? 'Network unrestricted' : 'Network off') : '',
   autoHandoffEnabled.value ? `Handoff at ${autoHandoffThreshold.value}` : ''
 ].filter(Boolean).join(' · '))
@@ -629,6 +663,13 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.grant-path-list {
+  margin: 4px 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary, inherit);
+  overflow-wrap: anywhere;
+}
 .session-metrics {
   display: flex;
   flex-direction: column;
@@ -1066,6 +1107,7 @@ onBeforeUnmount(() => {
   transition: all 0.3s ease;
 }
 
+.yolo-mode-metric.full-access .yolo-header, .yolo-mode-metric.full-access .warning-icon { color: var(--accent-orange, #d97706); }
 .yolo-mode-metric.enabled {
   background: color-mix(in srgb, var(--status-error) 15%, transparent);
   border-color: var(--status-error);

@@ -4,8 +4,17 @@
  * paths and clone URLs; these only derive friendly defaults and format data.
  */
 
+import { homeDir, shortenHome } from '../homeDir'
+
 export type ProjectSetupMode = 'existing' | 'clone' | 'empty'
 export type ProjectSort = 'recent' | 'name'
+
+/** The three ways to add a project: the dialog's first step and the first-run nudge. */
+export const PROJECT_START_OPTIONS: { mode: ProjectSetupMode, icon: string, title: string, desc: string }[] = [
+  { mode: 'existing', icon: 'folderOpen', title: 'Open an existing folder', desc: 'A project you already have on this computer.' },
+  { mode: 'clone', icon: 'download', title: 'Clone a repository', desc: 'Paste a git URL or owner/repo and Eggify clones it for you.' },
+  { mode: 'empty', icon: 'folderPlus', title: 'Start a new empty project', desc: 'Create a fresh folder, optionally with git.' },
+]
 
 /** Colors offered in the dialog (a subset of the server's palette). */
 export const PROJECT_COLORS = [
@@ -19,12 +28,7 @@ export function randomProjectColor(): string {
 
 /** /Users/me/code/app → ~/code/app when home is /Users/me. */
 export function shortenPath(path: string, home?: string | null): string {
-  if (!path) return ''
-  if (!home) return path
-  const h = home.replace(/\/+$/, '')
-  if (path === h) return '~'
-  if (path.startsWith(h + '/')) return '~' + path.slice(h.length)
-  return path
+  return shortenHome(path, home ?? homeDir.value)
 }
 
 /** Last segment of a path ("~/code/my-app/" → "my-app"). */

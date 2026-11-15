@@ -7,7 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/schlunsen/eggify/internal/agentenv"
+	"os"
 	"os/exec"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -779,6 +781,26 @@ func (sm *SessionManager) createPermissionCallback(session *AgentSession) types.
 		requestID := uuid.New().String()
 		logging.Info("🔐 PERMISSION CALLBACK: tool=%s, requestID=%s", toolName, requestID)
 
+		// Autopilot (sandboxed, prompts off): answered at once from the session's
+		// write scope, no card. AskUserQuestion and ExitPlanMode fall through.
+		sm.mu.RLock()
+		var autopilotOpts *SessionOptions
+		if cur, ok := sm.sessions[sessionID]; ok && autopilotSession(&cur.Options) {
+			o := cur.Options
+			autopilotOpts = &o
+		}
+		sm.mu.RUnlock()
+		if autopilotOpts != nil {
+			home, _ := os.UserHomeDir()
+			d := autopilotDecide(newAutopilotScope(home, autopilotOpts, sm.SandboxPreferences().AllowedDomains), toolName, input)
+			if d.Handled && d.Allow {
+				return types.PermissionResultAllow{}, nil
+			} else if d.Handled {
+				logging.Info("🧱 Autopilot: %s denied: %s", toolName, d.Message)
+				return types.PermissionResultDeny{Message: d.Message}, nil
+			}
+		}
+
 		// Sandboxed sessions: web tools run outside the sandbox's egress
 		// proxy, so they are auto-approved only for allowlisted hosts and
 		// otherwise always go to the user (always-allow rules do not apply).
@@ -931,7 +953,12 @@ func (sm *SessionManager) buildSDKOptions(options SessionOptions, sessionID ...u
 
 	// Set permission mode
 	// Check if YOLO Mode is enabled first (takes precedence)
-	if options.DangerouslySkipPermissions != nil && *options.DangerouslySkipPermissions {
+	if autopilotSession(&options) {
+		// Sandboxed with prompts off: the CLI's default mode, no skip flags;
+		// the permission callback decides every request (autopilot.go).
+		logging.Info("Autopilot: sandboxed with prompts off - default permission mode, callback decides")
+		sdkOptions = sdkOptions.WithPermissionMode(types.PermissionModeDefault)
+	} else if options.DangerouslySkipPermissions != nil && *options.DangerouslySkipPermissions {
 		// YOLO Mode enabled - bypass all permissions
 		// Must set BOTH DangerouslySkipPermissions flags AND PermissionMode
 		// The SDK requires all three to fully bypass permission checks
@@ -1106,6 +1133,24 @@ func (sm *SessionManager) injectConnectorCredentials(sessionID uuid.UUID, sdkOpt
 	return sdkOptions
 }
 
+// permissionModeForYOLO is the permission mode after the YOLO switch is set to
+// on: "yolo" when on; when off, "default" if the mode kept prompts off
+// (yolo, bypassPermissions, allow-all), else the mode as it was.
+func permissionModeForYOLO(current *string, on bool) *string {
+	if on {
+		m := "yolo"
+		return &m
+	}
+	if current != nil {
+		m := strings.ToLower(strings.TrimSpace(*current))
+		if !isYOLOMode(m) && m != "allow-all" {
+			return current
+		}
+	}
+	d := "default"
+	return &d
+}
+
 // ReloadSessionWithOptions reloads a session with updated options.
 // This is used for hot-swapping configuration (like YOLO mode) on running sessions.
 //
@@ -1133,6 +1178,9 @@ func (sm *SessionManager) ReloadSessionWithOptions(sessionID uuid.UUID, newOptio
 	if newOptions.DangerouslySkipPermissions != nil {
 		mergedOptions.DangerouslySkipPermissions = newOptions.DangerouslySkipPermissions
 		logging.Info("  → DangerouslySkipPermissions: %v", *newOptions.DangerouslySkipPermissions)
+		// The permission mode must follow the flag: a stale "yolo" mode would keep
+		// prompts off (and start an unsandboxed CLI in bypass mode) after the switch is turned off.
+		mergedOptions.PermissionMode = permissionModeForYOLO(mergedOptions.PermissionMode, *newOptions.DangerouslySkipPermissions)
 	}
 	if newOptions.AllowDangerouslySkipPermissions != nil {
 		mergedOptions.AllowDangerouslySkipPermissions = newOptions.AllowDangerouslySkipPermissions
@@ -1172,7 +1220,7 @@ func (sm *SessionManager) ReloadSessionWithOptions(sessionID uuid.UUID, newOptio
 	reloadTrust := sm.workspaceTrustForOptions(&mergedOptions)
 	sdkOptions = applyWorkspaceTrust(sdkOptions, reloadTrust)
 	sdkOptions, reloadSkills := sm.applySessionSkills(sdkOptions, &mergedOptions)
-	sdkOptions, settingsErr := sm.applyClaudeSessionSettings(sdkOptions, &mergedOptions)
+	sdkOptions, settingsErr := sm.applyClaudeSessionSettingsFor(sessionID, nil, sdkOptions, &mergedOptions)
 	if settingsErr != nil {
 		session.Status = SessionStatusError
 		errMsg := settingsErr.Error()

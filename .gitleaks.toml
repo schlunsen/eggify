@@ -8,12 +8,11 @@ title = "Eggify"
 useDefault = true
 
 [[allowlists]]
-description = "Fake test values: provider keys, handover token, RFC 6455 sample key, ngrok keys/tokens, license-server test key material"
+description = "Fake test values: provider keys, handover token, RFC 6455 sample key, ngrok keys/tokens"
 regexes = [
   '''^(ds|glm)-secret-0123456789$''',                      # provider_proxy_test.go
   '''^0123456789abcdef0123$''',                            # fake handover token in the privileged WS tests
   '''^dGhlIHNhbXBsZSBub25jZQ==$''',                       # RFC 6455 sample Sec-WebSocket-Key
   '''^(attacker_key_1234567|tok_1234567890|2abcSECRETkey_77x9)$''', # tunnel tests
-  '''^PUAXw-hDiVqStwqnTRt-vJyYLM8uxJaMwM1V8Sr0Zgw$''',    # license-server test install key (vectors.json)
   '''^-----BEGIN PRIVATE KEY-----\\nMFECAQEwBQYDK2VwBCIEIJ1hsZ3v/VpguoRK9JLsLMREScVpezJpG''', # test server key (RFC 8032 test 1)
 ]

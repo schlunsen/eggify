@@ -1,48 +1,21 @@
-Eggify Software License
+MIT License
 
-Copyright (c) 2024-2026 Rasmus Schlunsen. All rights reserved.
+Copyright (c) 2024-2026 Rasmus Schlunsen
 
-Versions of Eggify before 2.18.0 were released under the MIT License. Copies
-you already received under that license stay under it. Eggify 2.18.0 and later,
-and everything in this repository from that release on, is licensed as follows.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-1. License. When you buy a license you get a serial number. It gives you a
-   personal, non-exclusive, non-transferable right to install and run Eggify on
-   as many computers at the same time as your serial's plan allows (the seats),
-   and to use the software on them for your own work or your own company's work.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-2. Relay. Remote access through the Eggify relay is a separate yearly
-   subscription that your serial can include. The base license does not
-   include it.
-
-3. What you may not do. You may not copy, sell, rent, lend, sublicense or
-   distribute Eggify or any part of it; share your serial number; run it on more
-   computers than your seats; modify, remove or get around the license check, the
-   activation or the relay's admission; or use it to build a competing product.
-   Source code you can see is not permission to do any of this.
-
-4. Source code. If you have access to the source code, you may read it and
-   build it for your own use as a licensed user, and make changes for that use.
-   Changes stay yours to use under this license; you may not distribute them or
-   the result.
-
-5. Updates and ending of the license. Updates released while your license is
-   valid are covered by it. We may end your license, and you must stop using
-   Eggify, if you break this license or your serial is revoked, for example after
-   a refund or a breach. Sections 6 and 7 survive the end of the license.
-
-6. No warranty. EGGIFY IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-   EXPRESS OR IMPLIED, INCLUDING THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-   PARTICULAR PURPOSE AND NONINFRINGEMENT. Eggify runs AI agents that can read,
-   change and delete files and run commands on your computer; you are responsible
-   for what you let them do.
-
-7. Limit of liability. TO THE EXTENT THE LAW ALLOWS, THE AUTHOR IS NOT LIABLE
-   FOR ANY INDIRECT OR CONSEQUENTIAL DAMAGE, LOST DATA OR LOST PROFIT, AND THE
-   TOTAL LIABILITY FOR ANY CLAIM IS LIMITED TO WHAT YOU PAID FOR THE LICENSE IN
-   THE 12 MONTHS BEFORE THE CLAIM.
-
-8. Third-party software. Eggify includes open-source components that stay under
-   their own licenses; their notices are included with each release.
-
-Questions about licensing: https://eggify.xyz
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

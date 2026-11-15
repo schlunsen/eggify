@@ -5,8 +5,6 @@ export const useAuth = () => {
   const requireLogin = useState('requireLogin', () => false)
   const showLoginModal = useState('showLoginModal', () => false)
   const needsSetup = useState('needsSetup', () => false) // Initial setup required
-  // A licensed build that isn't activated yet (see utils/license.ts)
-  const licenseRequired = useState('licenseRequired', () => false)
 
   // MFA state from session
   const mfaRequired = useState('mfaRequired', () => false)
@@ -29,11 +27,9 @@ export const useAuth = () => {
       mfa_required?: boolean
       mfa_verified?: boolean
       mfa_temp_token?: string
-      license_required?: boolean
     }
 
     authEnabled.value = response.enabled
-    licenseRequired.value = response.license_required || false
     requireLogin.value = response.requireLogin
     isAuthenticated.value = response.authenticated
     needsSetup.value = response.needs_setup || false
@@ -191,7 +187,6 @@ export const useAuth = () => {
     requireLogin,
     showLoginModal,
     needsSetup,
-    licenseRequired,
     mfaRequired,
     mfaVerified,
     mfaTempToken,

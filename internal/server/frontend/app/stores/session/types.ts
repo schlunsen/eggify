@@ -92,6 +92,8 @@ export interface SessionOptions {
   allow_dangerously_skip_permissions?: boolean | null
   sandboxed?: boolean | null
   codex_network_access?: boolean
+  sandbox_grants?: string[] | null
+  sandbox_grant_paths?: Array<{ path: string; write?: boolean }> | null
   parent_session_id?: string | null
   auto_handoff_after_messages?: number | null
   auto_handoff_prompt?: string | null

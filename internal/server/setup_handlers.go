@@ -87,11 +87,6 @@ func (s *Server) setupHandlers(configManager *ConfigManager) {
 	s.connectorHandler = handlers.NewConnectorHandler(s.repo, connectorKey)
 	s.connectorKey = connectorKey
 
-	// Licensing: the install key and token are encrypted with the connector
-	// key, like the remote access settings.
-	s.setupLicense(connectorKey)
-	s.authHandler.licenseRequired = s.licenseRequired
-
 	// Share connector encryption key with agent session manager and handler
 	// This enables hot-pluggable connector credential injection into agent sessions
 	if s.agentHandler != nil && s.agentHandler.SessionManager != nil {

@@ -38,10 +38,6 @@ const (
 type helloMsg struct {
 	V    int    `json:"v"`
 	SPKI []byte `json:"spki"`
-	// License and LicenseKey (base64url install key) are optional: a relay
-	// that only admits licensed installs checks them (admission.go).
-	License    string `json:"license,omitempty"`
-	LicenseKey string `json:"license_key,omitempty"`
 }
 
 type challengeMsg struct {
@@ -50,12 +46,6 @@ type challengeMsg struct {
 
 type proofMsg struct {
 	Sig []byte `json:"sig"`
-	// LicenseSig proves the install holds LicenseKey (licenseProofMessage).
-	LicenseSig string `json:"license_sig,omitempty"`
-	// LicenseSigBound is the version 2 proof (licenseProofMessageBound): the
-	// same key, also bound to this install's relay identity. Apps send both,
-	// so relays that only know v1 keep working.
-	LicenseSigBound string `json:"license_sig2,omitempty"`
 }
 
 type resultMsg struct {

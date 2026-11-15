@@ -323,6 +323,16 @@ type SessionOptions struct {
 	// Only the authenticated creation flow may mint a new network grant.
 	// Never deserialize this authorization from a client or a handover.
 	codexNetworkAuthorized bool
+	// sandboxDowngraded: an explicit sandboxed=true on a path with no sandbox was
+	// created unsandboxed (applyConfigDefaults); CreateSession adds a notice.
+	sandboxDowngraded bool
+
+	// SandboxGrants are the access a signed-in admin gave this sandboxed Claude
+	// session at creation (sandbox_grants.go: ssh, github, cloud, npm,
+	// localhost) and SandboxGrantPaths the extra folders and files. Fixed at
+	// creation, dropped from handovers and from sessions another session starts.
+	SandboxGrants     []string           `json:"sandbox_grants,omitempty"`
+	SandboxGrantPaths []SandboxGrantPath `json:"sandbox_grant_paths,omitempty"`
 
 	// QuestionPolicy is the session's own answer to "what if nobody answers
 	// the agent's question" (question_policy.go); nil follows the global

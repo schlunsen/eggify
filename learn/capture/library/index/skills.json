@@ -1,0 +1,78 @@
+[
+  {
+    "area": "skills",
+    "name": "skills-page",
+    "boxes": [
+      "queue",
+      "discover",
+      "firstPending"
+    ],
+    "how": "seeded (real SKILL.md folders in the demo home; four approved through the review API as the signed-in user)",
+    "shows": "Skills page: the review queue on top (skills found on disk wait for approval), then the approved skills"
+  },
+  {
+    "area": "skills",
+    "name": "skills-approved",
+    "boxes": [
+      "firstSkill",
+      "tabs",
+      "releaseChecklist"
+    ],
+    "how": "seeded",
+    "shows": "The approved skills as cards: name, description, scope (personal), what each may use"
+  },
+  {
+    "area": "skills",
+    "name": "skill-detail",
+    "boxes": [],
+    "how": "seeded",
+    "shows": "A skill opened: its SKILL.md text and settings"
+  },
+  {
+    "area": "skills",
+    "name": "session-skills-panel",
+    "boxes": [
+      "panel",
+      "active",
+      "row"
+    ],
+    "how": "seeded (the server's own list for the session)",
+    "shows": "A running session's Skills panel (from the right sidebar): the skills active in this session and why (everywhere), others that can be added, Use puts /name in the composer"
+  },
+  {
+    "area": "skills",
+    "name": "slash-command",
+    "boxes": [
+      "composer"
+    ],
+    "how": "seeded",
+    "shows": "Typing / in the composer: slash-command suggestions, with the approved skill release-checklist"
+  },
+  {
+    "area": "skills",
+    "name": "connectors-page",
+    "boxes": [
+      "n0",
+      "connectN0",
+      "github"
+    ],
+    "how": "seeded (three connections saved with made-up keys through the API; nothing is contacted)",
+    "shows": "Connectors page: the n0 card (not connected) and the catalogue; GitHub, Linear and Sentry show as connected with masked keys"
+  },
+  {
+    "area": "skills",
+    "name": "connectors-connected",
+    "boxes": [],
+    "how": "seeded (made-up keys)",
+    "shows": "The connectors catalogue scrolled to the connected ones (GitHub, Linear) with their status"
+  },
+  {
+    "area": "skills",
+    "name": "providers-page",
+    "boxes": [
+      "firstProvider"
+    ],
+    "how": "seeded (the server's own list; a made-up DeepSeek key marks one as configured)",
+    "shows": "Providers page: every model provider with its default model and whether it is ready"
+  }
+]

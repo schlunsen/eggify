@@ -191,7 +191,7 @@
           <SettingsSection id="agents" icon="bot" title="Agents" subtitle="Defaults for new sessions and how results are shown">
             <SettingsRow
               title="Default permission mode"
-              description="Pre-selected in the “Create new session” dialog."
+              description="Used for Codex and other non-Claude-CLI sessions. For Claude sessions the “Create new session” dialog starts on your last choice of Autopilot, Ask first or Full access, and on Autopilot the first time."
               stacked
             >
               <SettingsChoiceGroup
@@ -304,7 +304,7 @@
           <SettingsSection id="sandbox" icon="key" title="Sandbox" subtitle="Keep Eggify's secrets out of agent reach and limit network access">
             <SettingsRow
               title="Sandbox new sessions"
-              description="Protect Eggify's secrets and restrict filesystem writes in new Claude and Codex sessions. Claude uses the domain allowlist below. Codex command networking is off unless explicitly authorized when creating a session."
+              description="On unless you turn it off. Autopilot sessions (permission prompts off) run inside it: Eggify's secrets stay unreadable, file changes stay inside the project and what the session was given access to, and Claude commands only reach the domains below. Turning it off makes new Claude sessions start unsandboxed unless they choose otherwise. Codex command networking is off unless explicitly authorized when creating a session."
             >
               <label class="switch">
                 <input
@@ -440,11 +440,6 @@
             </SettingsRow>
           </SettingsSection>
 
-          <!-- License (licensed builds) -->
-          <SettingsSection id="license" icon="key" title="License" subtitle="Your serial number on this Mac: status, renewal and freeing this computer for another one">
-            <SettingsLicense />
-          </SettingsSection>
-
           <!-- Remote access (ngrok) -->
           <SettingsSection id="access" icon="globe" title="Remote access" subtitle="Reach this Eggify from your phone or another computer through a secure ngrok address">
             <SettingsRemoteAccess />
@@ -504,7 +499,6 @@ const navItems = [
   { id: 'voice', label: 'Voice input', icon: 'mic' },
   { id: 'avatars', label: 'Avatars', icon: 'user' },
   { id: 'git', label: 'Git', icon: 'git' },
-  { id: 'license', label: 'License', icon: 'key' },
   { id: 'access', label: 'Remote access', icon: 'globe' },
   { id: 'performance', label: 'Performance', icon: 'gauge' },
   { id: 'whats-new', label: "What's new", icon: 'bolt' },

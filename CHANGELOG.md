@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.25.0] - 2026-11-15
+
+### Added
+- **Autopilot.** Create Session asks "How should it work?" with three options for Claude sessions: **Autopilot** (no permission prompts, inside the sandbox: only this project, the sites you allow and what you give it access to), **Ask first**, and **Full access** (no prompts, no sandbox). It starts on your last choice, else Autopilot. The sidebar names the combination ("Autopilot · sandboxed", "Full access · not sandboxed"). Codex and OpenAI-compatible sessions keep the permission mode and sandbox switch.
+- **Sandbox grants.** When you start a sandboxed Claude session, a signed-in admin can give it access to more than its folder: your **SSH keys** (the ssh-agent only, never the key files), **GitHub** (your `gh` login), **cloud credentials** (`~/.aws`, `~/.azure`, `~/.config/gcloud`, `~/.kube`), your **npm login**, **local servers**, and up to ten extra folders or files (read, or read and write). Each grant says what the agent can then do; one that this Mac can't give (no ssh-agent, `gh` signed out) is greyed out with the reason. Grants are fixed at creation and shown under Permissions ("Sandboxed · SSH keys, GitHub"); they don't travel with handovers, auto-handoff successors or worker and loop sessions. Codex and OpenAI-compatible sessions have none yet.
+- `eggify sandbox-connect <host> <port>`: the ssh proxy command that makes git over SSH work inside the sandbox (through the sandbox's allowlisted proxy).
+- Settings → Sandbox's default allowlist gains `raw.githubusercontent.com`, `crates.io`, `static.crates.io` and `index.crates.io` (existing saved allowlists are unchanged).
+
+### Changed
+- **Eggify is free and open source again, under the MIT License.** There is no serial number, activation page or license check any more, and nothing to buy. The app runs as soon as you open it.
+- The Eggify relay no longer asks installs for a license. The relay program admits every install unless it is started with `-allow <file>`, which then limits it to the install ids in that file; the `-license-key` option is gone.
+- Release scripts no longer take `EGGIFY_BUILD_LICENSE_URL` or `LICENSE_REQUIRED`.
+- **The sandbox is on by default** for new Claude sessions until you save a choice in Settings → Sandbox (a saved "off" is respected). Codex and OpenAI-compatible sessions start as before. The iPhone app starts its Sandboxed switch from the reported default, so a Codex session created on the phone is now sandboxed unless the switch is turned off; an OpenAI-compatible one starts unsandboxed with a notice.
+- **Sandboxed Claude sessions can build.** Each project gets its own cache folder in `~/.cache/eggify-sandbox/` (separate ones for sessions with grants, read-only sessions and the workers a session starts, so one cannot plant code for another), which commands may write to, and Go, npm, uv, pip, yarn and bun keep their caches there. The cache variables reach only sandboxed commands, not hooks or MCP servers. `go build`, `go test`, `npm install` and `uv pip install` no longer fail on a read-only cache. Your shared caches stay read-only, and Go modules you already have are reused without a download.
+- **Sandboxed sessions hide your personal credentials**, for commands and for the file tools: `~/.ssh`, `~/.gnupg`, `~/.aws`, `~/.azure`, `~/.config/gcloud`, `~/.config/gh`, `~/.kube`, `~/.docker/config.json`, `~/.netrc`, `~/.npmrc`, `~/.pypirc`, cargo and gem credentials, shell histories, the macOS keychain folder, cookies, Mail, Messages and browser profiles. A folder that contains the session's own project is not hidden. Unsandboxed sessions are unchanged.
+
+### Removed
+- The license system: the activation page, Settings → License, the `/api/license` routes, the 402 `license_required` answer (REST, WebSocket and the iOS "license required" screen), `license_required` in `/api/auth/status`, the license token in the relay handshake and the license server (`services/license-server`). First run goes straight to creating your account.
+- `docs/adr/013-licensing.md` and `docs/licensing-protocol.md`.
+- An old `~/.claude/eggify/license.json` is no longer read or protected by Eggify; you can delete it.
+
+### Security
+- **File tools of sandboxed sessions with prompts off are confined to the project.** With the sandbox on and the Claude CLI in bypass mode, the Write and Edit tools could change any file you can, such as `~/.zshrc` or a LaunchAgent; only commands were confined. Such sessions (Autopilot, and every sandboxed build worker) now run with Eggify deciding each tool call: files may only change inside the working directory, write grants and the CLI's temp folder, never protected files (`.git/hooks`, `.mcp.json`, Claude settings, credentials), and a link that leads out is refused. Turning YOLO off in the sidebar now really turns prompts back on, and a trusted project's allow rules or `sandbox.excludedCommands` cannot reopen the file tools. Unsandboxed sessions, Codex and OpenAI-compatible sessions are unchanged.
+- Starting a session with sandbox grants needs a signed-in admin (or the only account), like YOLO mode: with user authentication on, the API key alone is refused, so an agent cannot give itself access to your keys. With user authentication turned off nothing tells you from an agent, and the API key can grant, as it can for YOLO mode. A granted folder is stored with its links resolved and cannot be swapped later; the ssh grant is refused when the agent socket sits in a shared folder (home, `/tmp`) or next to other sockets. Granted folders may never include Eggify's own files, the hidden credential folders or the sandbox caches, and a write grant never covers shell start-up files or login items.
+
+## [2.24.0] - 2026-11-15
+
+### Added
+- **Learn Eggify:** ten short narrated video lessons, from the quick start to teams, the sandbox, the Git page and Zen, at eggify.xyz/learn.
+- A first-run card on the Agents page invites you to open a folder, clone a repository or start an empty project when you have no projects yet. "Not now" hides it.
+
+### Fixed
+- Paths are shortened to `~` only inside your real home folder. Before, any `/Users/<name>/…` was taken for a home, so a home such as `/Users/Shared/praline` showed as `~/praline/…` in proposal cards, the skills review queue and subagent commands. Until the server has told the app its home, full paths are shown.
+- The Subagents Zen stage no longer shows raw markdown (`**bold**`, backticks, links) in the speech bubbles.
+- Create Session shows a connector's icon instead of printing its icon name before the connector's name.
+
 ## [2.23.0] - 2026-11-15
 
 ### Security

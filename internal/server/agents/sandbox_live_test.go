@@ -322,3 +322,227 @@ func TestLiveSandboxClaudeReadOnly(t *testing.T) {
 		t.Errorf("keep.txt was changed in a read-only session: %q", got)
 	}
 }
+
+// TestLiveSandboxAutopilot runs a sandboxed session with prompts off the way
+// Eggify starts it (default permission mode, no skip flags, the permission
+// callback deciding): the Write tool must work inside the project and fail for
+// the home folder and ~/Library/LaunchAgents, and Bash must run without anyone
+// answering.
+func TestLiveSandboxAutopilot(t *testing.T) {
+	dir := liveSandboxDir(t)
+	home, err := os.UserHomeDir()
+	if err != nil {
+		t.Fatal(err)
+	}
+	// A trusted project that allows Write and Edit must not approve writes on its own.
+	if err := os.MkdirAll(filepath.Join(dir, ".claude"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, ".claude", "settings.json"), []byte(`{"permissions":{"allow":["Write","Edit"]}}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	homeProbe := filepath.Join(home, "eggify-autopilot-probe.txt")
+	agentProbe := filepath.Join(home, "Library", "LaunchAgents", "eggify-autopilot-probe.txt")
+	cleanup := func() { os.Remove(homeProbe); os.Remove(agentProbe) }
+	cleanup()
+	defer cleanup()
+
+	sandboxed, yolo := true, true
+	options := SessionOptions{WorkingDirectory: &dir, Sandboxed: &sandboxed, DangerouslySkipPermissions: &yolo, AllowDangerouslySkipPermissions: &yolo}
+	if !autopilotSession(&options) {
+		t.Fatal("options are not an Autopilot session")
+	}
+	scope := newAutopilotScope(home, &options, DefaultSandboxAllowedDomains)
+	var asked []string
+	canUseTool := func(_ context.Context, tool string, input map[string]interface{}, _ types.ToolPermissionContext) (interface{}, error) {
+		d := autopilotDecide(scope, tool, input)
+		asked = append(asked, tool)
+		if d.Handled && d.Allow {
+			return types.PermissionResultAllow{}, nil
+		}
+		return types.PermissionResultDeny{Message: d.Message}, nil
+	}
+
+	sm := &SessionManager{}
+	opts := types.NewClaudeAgentOptions().
+		WithModel("haiku").
+		WithCWD(dir).
+		WithSettingSources(types.SettingSourceLocal, types.SettingSourceProject).
+		WithPermissionMode(types.PermissionModeDefault).
+		WithCanUseTool(canUseTool)
+	opts, err = sm.applyClaudeSessionSettings(opts, &options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if opts.DangerouslySkipPermissions || opts.AllowDangerouslySkipPermissions {
+		t.Fatal("skip flags set on an Autopilot session")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+	client, err := claude.NewClient(ctx, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := client.Connect(ctx); err != nil {
+		t.Fatal(err)
+	}
+	defer client.Close(context.Background())
+	prompt := "Do exactly these four steps, once each, in order; if one fails, do not retry or work around it, just go on to the next, then stop. " +
+		"1) Use the Write tool to create inside.txt in the current directory with the content hi. " +
+		"2) Use the Write tool to create " + homeProbe + " with the content hi. " +
+		"3) Use the Write tool to create " + agentProbe + " with the content hi. " +
+		"4) Run this one Bash command: sh -c 'go version > ./go_version.txt'"
+	if err := client.Query(ctx, prompt); err != nil {
+		t.Fatal(err)
+	}
+	for msg := range client.ReceiveResponse(ctx) {
+		if _, ok := msg.(*types.ResultMessage); ok {
+			break
+		}
+	}
+
+	if _, err := os.Stat(filepath.Join(dir, "inside.txt")); err != nil {
+		t.Errorf("the Write tool could not create a file inside the project: %v (callback saw %v)", err, asked)
+	}
+	for _, p := range []string{homeProbe, agentProbe} {
+		if _, err := os.Stat(p); err == nil {
+			t.Errorf("the Write tool created %s outside the project", p)
+		}
+	}
+	if got, _ := os.ReadFile(filepath.Join(dir, "go_version.txt")); !strings.HasPrefix(string(got), "go version") {
+		t.Errorf("go version did not run in the sandbox without an answer: %q (callback saw %v)", got, asked)
+	}
+}
+
+// liveProbeProject writes a small Go + npm project with a git repository and
+// the everyday-commands probe (scripts/tests/sandbox-probe.sh) into dir.
+func liveProbeProject(t *testing.T, dir string) {
+	t.Helper()
+	probe, err := os.ReadFile(filepath.Join("..", "..", "..", "scripts", "tests", "sandbox-probe.sh"))
+	if err != nil {
+		t.Fatalf("probe script: %v", err)
+	}
+	files := map[string]string{
+		"sandbox-probe.sh": string(probe),
+		"go.mod":           "module probe\n\ngo 1.21\n",
+		"main.go":          "package main\n\nfunc main() {}\n\nfunc Add(a, b int) int { return a + b }\n",
+		"main_test.go":     "package main\n\nimport \"testing\"\n\nfunc TestAdd(t *testing.T) {\n\tif Add(1, 2) != 3 {\n\t\tt.Fatal(\"add\")\n\t}\n}\n",
+		"package.json":     `{"name":"probe","version":"1.0.0","dependencies":{"is-odd":"3.0.1"}}`,
+		"ssh-check.sh": "#!/bin/sh\n" +
+			"git ls-remote git@github.com:google/uuid.git HEAD > ssh_out.txt 2>&1; echo rc=$? >> ssh_out.txt\n" +
+			"for f in ~/.ssh/id_*; do case $f in *.pub) ;; *) head -c 1 \"$f\" >/dev/null 2>&1 && echo key_readable >> ssh_out.txt || echo key_hidden >> ssh_out.txt;; esac; done\n",
+	}
+	for name, content := range files {
+		if err := os.WriteFile(filepath.Join(dir, name), []byte(content), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, args := range [][]string{{"init", "-q"}, {"add", "-A"}, {"-c", "user.name=probe", "-c", "user.email=p@example.com", "commit", "-q", "-m", "init"}} {
+		cmd := exec.Command("git", args...)
+		cmd.Dir = dir
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %v %s", args, err, out)
+		}
+	}
+}
+
+// probeLine returns the report line of one probe label ("exit=0 built ...").
+func probeLine(report, label string) string {
+	for _, line := range strings.Split(report, "\n") {
+		if strings.HasPrefix(line, label) {
+			return strings.TrimSpace(strings.TrimPrefix(line, label))
+		}
+	}
+	return ""
+}
+
+// TestLiveSandboxProbe runs the everyday-commands probe in a temporary
+// project inside a real sandboxed turn with Eggify's settings, caches and (when
+// EGGIFY_LIVE_SANDBOX_SSH=1 and an ssh-agent holds a key) the ssh grant. It
+// asserts that builds work and personal credentials are hidden.
+//
+//	EGGIFY_LIVE_SANDBOX=1 [EGGIFY_LIVE_SANDBOX_SSH=1] go test ./internal/server/agents -run TestLiveSandboxProbe -v
+func TestLiveSandboxProbe(t *testing.T) {
+	dir := liveSandboxDir(t)
+	liveProbeProject(t, dir)
+	withSSH := os.Getenv("EGGIFY_LIVE_SANDBOX_SSH") != ""
+	sandboxed := true
+	options := SessionOptions{WorkingDirectory: &dir, Sandboxed: &sandboxed}
+	if withSSH {
+		options.SandboxGrants = []string{GrantSSH}
+	}
+	sm := &SessionManager{}
+	opts := types.NewClaudeAgentOptions().
+		WithModel("haiku").
+		WithCWD(dir).
+		WithSettingSources(types.SettingSourceLocal, types.SettingSourceProject).
+		WithPermissionMode(types.PermissionModeBypassPermissions).
+		WithAllowDangerouslySkipPermissions(true).
+		WithDangerouslySkipPermissions(true)
+	opts, err := sm.applyClaudeSessionSettings(opts, &options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Minute)
+	defer cancel()
+	client, err := claude.NewClient(ctx, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := client.Connect(ctx); err != nil {
+		t.Fatal(err)
+	}
+	defer client.Close(context.Background())
+	prompt := "Run exactly this one Bash command and nothing else, then stop: bash ./sandbox-probe.sh > probe_report.txt 2>&1"
+	if withSSH {
+		prompt += " — after it finishes, also run: sh ./ssh-check.sh"
+	}
+	prompt += ". Do not retry and do not work around failures."
+	if err := client.Query(ctx, prompt); err != nil {
+		t.Fatal(err)
+	}
+	for msg := range client.ReceiveResponse(ctx) {
+		if _, ok := msg.(*types.ResultMessage); ok {
+			break
+		}
+	}
+	data, err := os.ReadFile(filepath.Join(dir, "probe_report.txt"))
+	if err != nil {
+		t.Fatalf("probe did not run: %v", err)
+	}
+	report := string(data)
+	t.Logf("probe report:\n%s", report)
+
+	for _, label := range []string{"go build", "go test", "npm install", "uv pip install"} {
+		line := probeLine(report, label)
+		if !strings.HasPrefix(strings.TrimSpace(strings.TrimLeft(line, " ")), "exit=0") {
+			t.Errorf("%s: %q, want exit=0", label, line)
+		}
+	}
+	if line := probeLine(report, "uv pip install"); strings.Contains(strings.ToLower(line), "error") {
+		t.Errorf("uv pip install reported an error: %q", line)
+	}
+	for _, label := range []string{"read ssh private key", "read ~/.config/gh", "read Eggify api key", "read ~/.aws", "read ~/.zsh_history"} {
+		if line := probeLine(report, label); strings.Contains(line, "readable") && !strings.Contains(line, "not readable") {
+			t.Errorf("%s: %q, want hidden", label, line)
+		}
+	}
+	if line := probeLine(report, "write in home"); strings.Contains(line, "ok") {
+		t.Errorf("write in home: %q, want a failure", line)
+	}
+
+	if withSSH {
+		ssh, err := os.ReadFile(filepath.Join(dir, "ssh_out.txt"))
+		if err != nil {
+			t.Fatalf("ssh check did not run: %v", err)
+		}
+		t.Logf("ssh check (key never printed):\n%s", ssh)
+		if !strings.Contains(string(ssh), "rc=0") || !strings.Contains(string(ssh), "refs/heads") && !strings.Contains(string(ssh), "HEAD") {
+			t.Errorf("git ls-remote over ssh did not succeed with the ssh grant")
+		}
+		if strings.Contains(string(ssh), "key_readable") {
+			t.Errorf("a private key was readable with the ssh grant")
+		}
+	}
+}

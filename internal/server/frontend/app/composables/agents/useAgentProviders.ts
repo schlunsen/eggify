@@ -18,6 +18,8 @@ export function useAgentProviders() {
     dangerously_skip_permissions: false,
     sandboxed: null as boolean | null, // null = global default (Settings → Sandbox)
     codexNetworkAccess: false,
+    sandboxGrants: [] as string[], // sandbox grants (Claude CLI only; SandboxGrants.vue)
+    sandboxGrantPaths: [] as { path: string; write: boolean }[],
     questionPolicy: 'default', // Agent questions: 'default' (global policy) or a policyKey()
     contextSummary: '', // Context from parent session (for handoffs)
     parentSessionId: null as string | null, // Parent session ID (for handoffs)

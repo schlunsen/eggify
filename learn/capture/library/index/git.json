@@ -1,0 +1,92 @@
+[
+  {
+    "area": "git",
+    "name": "git-page",
+    "boxes": [
+      "worktrees",
+      "mainWorktree",
+      "teamWorktree",
+      "workerWorktree",
+      "branches",
+      "branchFilters",
+      "changes",
+      "tabs",
+      "files"
+    ],
+    "how": "seeded (a real repository with two extra worktrees and six branches)",
+    "shows": "Project Git page of cheese-shop: three worktrees (main checkout, the team's, the build worker's) with branch, change counts, ahead/behind and open sessions; branches; latest commits; the selection's changes on the right"
+  },
+  {
+    "area": "git",
+    "name": "worktree-uncommitted",
+    "boxes": [
+      "selectedWorktree",
+      "tabs",
+      "uncommittedTab",
+      "files",
+      "firstDiff",
+      "toolbar"
+    ],
+    "how": "seeded (real uncommitted work in the worker's worktree)",
+    "shows": "The build worker's worktree selected, Uncommitted tab: a staged new file and a modified file, diffs expanded with numbered lines and the changed part of a line highlighted"
+  },
+  {
+    "area": "git",
+    "name": "worktree-vs-main",
+    "boxes": [
+      "tabs",
+      "vsMainTab",
+      "files",
+      "firstDiff",
+      "commits"
+    ],
+    "how": "seeded (real commits on worker/… and team/… branches)",
+    "shows": "The same worktree, \"vs main\" tab: everything the branch adds to main (its commits and files), diffs expanded"
+  },
+  {
+    "area": "git",
+    "name": "diff-file",
+    "boxes": [
+      "diff",
+      "head",
+      "viewed"
+    ],
+    "how": "seeded",
+    "shows": "One file of the branch diff close up: file header with +/− counts and the Viewed checkbox, numbered old and new lines"
+  },
+  {
+    "area": "git",
+    "name": "branches-all",
+    "boxes": [
+      "branches",
+      "filters",
+      "selectedBranch",
+      "search",
+      "changes"
+    ],
+    "how": "seeded",
+    "shows": "Branches with the All filter: current, default, worktree and merged tags; fix/stilton-rounding selected with its change against main on the right"
+  },
+  {
+    "area": "git",
+    "name": "session-git-card",
+    "boxes": [
+      "card",
+      "worktree",
+      "branch",
+      "viewChanges"
+    ],
+    "how": "seeded (the build worker's session; the server reads the real worktree)",
+    "shows": "A session's Git card in the right sidebar: it works in a worktree (branch worker/…), staged and modified files, branch changes vs its base, View Changes"
+  },
+  {
+    "area": "git",
+    "name": "session-git-changes",
+    "boxes": [
+      "stats",
+      "firstFile"
+    ],
+    "how": "seeded (real changes in the worker's worktree)",
+    "shows": "The session's Git Changes page: totals, the list of changed files and each file's diff"
+  }
+]

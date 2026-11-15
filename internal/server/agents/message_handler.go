@@ -57,9 +57,6 @@ func markPromptStart(session *AgentSession) {
 // sendPromptInternal is the internal implementation of SendPrompt
 // authenticatedUser is the username from the request context (required for message attribution)
 func (sm *SessionManager) sendPromptInternal(sessionID uuid.UUID, prompt string, saveToDb bool, authenticatedUser *string) error {
-	if err := checkLicense(); err != nil {
-		return err
-	}
 	logging.Debug("sendPromptInternal: Getting session %s (saveToDb=%v)", sessionID, saveToDb)
 	session, err := sm.GetSession(sessionID)
 	if err != nil {
@@ -138,7 +135,9 @@ func (sm *SessionManager) sendPromptInternal(sessionID uuid.UUID, prompt string,
 	if session.Options.PermissionMode != nil {
 		switch *session.Options.PermissionMode {
 		case "allow-all":
-			permMode = types.PermissionModeBypassPermissions
+			if !autopilotSession(&session.Options) {
+				permMode = types.PermissionModeBypassPermissions
+			}
 		case "read-only":
 			permMode = types.PermissionModeDefault
 		default:
@@ -280,7 +279,9 @@ func (sm *SessionManager) sendPromptInternal(sessionID uuid.UUID, prompt string,
 	logging.Debug("  DangerouslySkipPermissions: %v", session.Options.DangerouslySkipPermissions)
 	logging.Debug("  AllowDangerouslySkipPermissions: %v", session.Options.AllowDangerouslySkipPermissions)
 
-	if session.Options.DangerouslySkipPermissions != nil && *session.Options.DangerouslySkipPermissions {
+	if autopilotSession(&session.Options) {
+		logging.Info("Autopilot: sandboxed with prompts off - no skip flags, the callback decides")
+	} else if session.Options.DangerouslySkipPermissions != nil && *session.Options.DangerouslySkipPermissions {
 		logging.Info("🚨 YOLO Mode enabled - bypassing all permissions")
 		opts = opts.WithAllowDangerouslySkipPermissions(true).
 			WithDangerouslySkipPermissions(true)
@@ -328,7 +329,7 @@ func (sm *SessionManager) sendPromptInternal(sessionID uuid.UUID, prompt string,
 	opts = applyRTKHook(opts, session.Options.EnableRTK)
 
 	// Deny rules for Eggify's secrets, plus the Bash sandbox for sandboxed sessions.
-	opts, settingsErr := sm.applyClaudeSessionSettings(opts, &session.Options)
+	opts, settingsErr := sm.applyClaudeSessionSettingsFor(session.ID, func(t string) { sm.emitSessionNotice(session, t) }, opts, &session.Options)
 	if settingsErr != nil {
 		return sm.failPrompt(session, settingsErr)
 	}
@@ -422,9 +423,6 @@ func (sm *SessionManager) sendPromptInternal(sessionID uuid.UUID, prompt string,
 // SendPromptWithContent sends structured content and attributes the message to the authenticated user
 // SECURITY: authenticatedUser MUST be set from the Fiber context, never from client input
 func (sm *SessionManager) SendPromptWithContent(sessionID uuid.UUID, content []ContentBlock, authenticatedUser *string) error {
-	if err := checkLicense(); err != nil {
-		return err
-	}
 	logging.Debug("SendPromptWithContent: Getting session %s", sessionID)
 	session, err := sm.GetSession(sessionID)
 	if err != nil {
@@ -507,7 +505,9 @@ func (sm *SessionManager) SendPromptWithContent(sessionID uuid.UUID, content []C
 		if session.Options.PermissionMode != nil {
 			switch *session.Options.PermissionMode {
 			case "allow-all":
-				permMode = types.PermissionModeBypassPermissions
+				if !autopilotSession(&session.Options) {
+					permMode = types.PermissionModeBypassPermissions
+				}
 			case "read-only":
 				permMode = types.PermissionModeDefault
 			default:
@@ -542,7 +542,9 @@ func (sm *SessionManager) SendPromptWithContent(sessionID uuid.UUID, content []C
 		opts = opts.WithSystemPrompt(claudeSystemPrompt(sm.withN0Hint(sessionID, customSystemPrompt(&session.Options))))
 
 		// Add YOLO Mode flags if enabled (takes precedence over permission mode)
-		if session.Options.DangerouslySkipPermissions != nil && *session.Options.DangerouslySkipPermissions {
+		if autopilotSession(&session.Options) {
+			logging.Info("Autopilot: sandboxed with prompts off - no skip flags, the callback decides")
+		} else if session.Options.DangerouslySkipPermissions != nil && *session.Options.DangerouslySkipPermissions {
 			logging.Info("🚨 YOLO Mode enabled - bypassing all permissions")
 			opts = opts.WithAllowDangerouslySkipPermissions(true).
 				WithDangerouslySkipPermissions(true)
@@ -577,7 +579,7 @@ func (sm *SessionManager) SendPromptWithContent(sessionID uuid.UUID, content []C
 		opts = applyRTKHook(opts, session.Options.EnableRTK)
 
 		// Deny rules for Eggify's secrets, plus the Bash sandbox for sandboxed sessions.
-		opts, settingsErr := sm.applyClaudeSessionSettings(opts, &session.Options)
+		opts, settingsErr := sm.applyClaudeSessionSettingsFor(session.ID, func(t string) { sm.emitSessionNotice(session, t) }, opts, &session.Options)
 		if settingsErr != nil {
 			return sm.failPrompt(session, settingsErr)
 		}

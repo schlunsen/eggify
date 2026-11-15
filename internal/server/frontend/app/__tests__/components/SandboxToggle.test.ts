@@ -105,3 +105,17 @@ it('clears network consent when disabling the sandbox or switching providers', a
   expect(wrapper.text()).toContain('allowlist in Settings')
   wrapper.unmount()
 })
+
+it('shows an implicit default as off for Codex, on for Claude', async () => {
+  load.mockResolvedValue({ default_enabled: true, default_implicit: true, allowed_domains: [], default_allowed_domains: [] })
+  const codex = mountToggle({ modelValue: null, provider: 'codex' })
+  await flushPromises()
+  expect((codex.get('[data-testid="sandbox-toggle"]').element as HTMLInputElement).checked).toBe(false)
+  const claude = mountToggle({ modelValue: null, provider: 'claude' })
+  await flushPromises()
+  expect((claude.get('[data-testid="sandbox-toggle"]').element as HTMLInputElement).checked).toBe(true)
+  load.mockResolvedValue({ default_enabled: true, default_implicit: false, allowed_domains: [], default_allowed_domains: [] })
+  const saved = mountToggle({ modelValue: null, provider: 'codex' })
+  await flushPromises()
+  expect((saved.get('[data-testid="sandbox-toggle"]').element as HTMLInputElement).checked).toBe(true)
+})

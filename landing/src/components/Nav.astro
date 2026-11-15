@@ -1,13 +1,20 @@
 ---
 import logo from '../assets/logo.svg';
+
+interface Props {
+  /** The page the nav is on, when it is not the home page. */
+  current?: 'learn';
+}
+const { current } = Astro.props;
 ---
 <nav class="nav" aria-label="Main">
-  <a class="brand" href="#top"><img src={logo.src} alt="" width="40" height="40" />Eggify</a>
+  <a class="brand" href="/#top"><img src={logo.src} alt="" width="40" height="40" />Eggify</a>
   <div class="links">
-    <a href="#sketches">The sketches</a>
-    <a href="#curtain">Behind the curtain</a>
-    <a href="#install">Install</a>
-    <a class="ticket" href="#interest">Get Eggify</a>
+    <a href="/#sketches">The sketches</a>
+    <a href="/#curtain">Behind the curtain</a>
+    <a href="/#install">Install</a>
+    <a class="keep" href="/learn/" aria-current={current === 'learn' ? 'page' : undefined}>Learn</a>
+    <a class="ticket" href="/#download">Get Eggify</a>
   </div>
 </nav>
 
@@ -23,7 +30,7 @@ import logo from '../assets/logo.svg';
   }
   .links { display: flex; gap: 24px; align-items: center; font-size: 18px; }
   .links a { color: var(--ink); text-decoration: none; border-bottom: 2px solid transparent; }
-  .links a:hover { border-bottom-color: var(--pink); }
+  .links a:hover, .links a[aria-current='page'] { border-bottom-color: var(--pink); }
   .ticket {
     font-family: var(--mono);
     font-weight: 700;
@@ -38,5 +45,8 @@ import logo from '../assets/logo.svg';
     transition: transform 0.15s ease;
   }
   .ticket:hover { transform: rotate(0deg); }
-  @media (max-width: 760px) { .links a:not(.ticket) { display: none; } }
+  @media (max-width: 760px) {
+    .links { gap: 16px; }
+    .links a:not(.ticket):not(.keep) { display: none; }
+  }
 </style>

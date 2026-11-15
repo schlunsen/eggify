@@ -6,7 +6,7 @@
 #   FRESH_FRONTEND=1 scripts/...              # always rebuild the frontend (releases)
 #   SIGN_IDENTITY="Developer ID Application: ..." scripts/...   # sign with hardened runtime
 #   APPLE_TEAM_ID=ABCDE12345                  # team the self-updater requires (releases)
-#   EGGIFY_BUILD_RELAY_ADDR, EGGIFY_BUILD_LICENSE_URL, EGGIFY_BUILD_UPDATE_MANIFEST_URL,
+#   EGGIFY_BUILD_RELAY_ADDR, EGGIFY_BUILD_UPDATE_MANIFEST_URL,
 #   EGGIFY_BUILD_DOWNLOAD_URL                 # compiled-in service endpoints (see release-env.sh)
 #
 # Unsigned builds are ad-hoc signed (codesign -s -) so macOS will launch them
@@ -29,17 +29,13 @@ fi
 
 # Without APPLE_TEAM_ID the updater refuses to install (it has no team to verify against).
 APPLE_TEAM_ID="${APPLE_TEAM_ID:-}"
-# Release builds require a license (internal/license.Required); LICENSE_REQUIRED=false
-# builds an unlicensed app for local testing.
-LICENSE_REQUIRED="${LICENSE_REQUIRED:-true}"
 # Service endpoints are not in the source: a build without them has the feature
-# off (no relay address, license server or update manifest).
+# off (no relay address or update manifest).
 MOD=github.com/schlunsen/eggify
 # The testing environment knobs (update manifest override, fake version, diag script) are off in release builds.
 RELEASE_BUILD="${RELEASE_BUILD:-true}"
-LDFLAGS="-s -w -X main.releaseBuild=$RELEASE_BUILD -X main.expectedTeamID=$APPLE_TEAM_ID -X $MOD/internal/license.Required=$LICENSE_REQUIRED"
+LDFLAGS="-s -w -X main.releaseBuild=$RELEASE_BUILD -X main.expectedTeamID=$APPLE_TEAM_ID"
 [[ -n "${EGGIFY_BUILD_RELAY_ADDR:-}" ]] && LDFLAGS+=" -X $MOD/internal/remoteaccess.DefaultRelayAddr=$EGGIFY_BUILD_RELAY_ADDR"
-[[ -n "${EGGIFY_BUILD_LICENSE_URL:-}" ]] && LDFLAGS+=" -X $MOD/internal/license.DefaultBaseURL=$EGGIFY_BUILD_LICENSE_URL"
 [[ -n "${EGGIFY_BUILD_UPDATE_MANIFEST_URL:-}" ]] && LDFLAGS+=" -X main.defaultManifestURL=$EGGIFY_BUILD_UPDATE_MANIFEST_URL"
 [[ -n "${EGGIFY_BUILD_DOWNLOAD_URL:-}" ]] && LDFLAGS+=" -X main.defaultDownloadURL=$EGGIFY_BUILD_DOWNLOAD_URL"
 

@@ -1,4 +1,5 @@
 import { mount } from '@vue/test-utils'
+import { setHomeDir } from '../../utils/homeDir'
 import UserQuestionModal from '../../components/agents/UserQuestionModal.vue'
 import { applyLoopProposal, loopProposalOf, snapshotLoopFields } from '../../utils/agents/loopProposal'
 
@@ -22,6 +23,8 @@ const card = {
   multiSelect: false, timestamp: new Date(), status: 'pending',
   requires_user: true, kind: 'loop_session', proposal,
 } as any
+
+beforeEach(() => setHomeDir('/Users/alex'))
 
 it('shows a loop-session proposal as a dedicated card with its settings', () => {
   const wrapper = mount(UserQuestionModal, { props: { show: true, question: card } })

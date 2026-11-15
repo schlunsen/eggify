@@ -1,0 +1,129 @@
+[
+  {
+    "area": "teams",
+    "name": "create-session-team",
+    "boxes": [
+      "dialog",
+      "team",
+      "toggle",
+      "builder",
+      "reviewer",
+      "rounds",
+      "note",
+      "create"
+    ],
+    "how": "seeded; runtimes stubbed as ready (not submitted)",
+    "shows": "Create Session with Team switched on: this session plans, a builder model and a reviewer model do the work, review rounds"
+  },
+  {
+    "area": "teams",
+    "name": "create-session-team-worktree",
+    "boxes": [
+      "dialog",
+      "worktreeLocked",
+      "worktreeNote",
+      "sandbox"
+    ],
+    "how": "seeded; runtimes stubbed as ready (not submitted)",
+    "shows": "Session settings while Team is on: the Isolated Worktree switch is locked on (a team never works in the checkout it was started in), sandbox, permissions"
+  },
+  {
+    "area": "teams",
+    "name": "create-session-loop",
+    "boxes": [
+      "dialog",
+      "modes",
+      "loopConfig"
+    ],
+    "how": "seeded; runtimes stubbed as ready (not submitted)",
+    "shows": "Create Session in Loop mode: a goal, the check command that decides when it is done, and the iteration limit"
+  },
+  {
+    "area": "teams",
+    "name": "team-chat",
+    "boxes": [
+      "strip",
+      "stage",
+      "steps",
+      "reviewStep",
+      "workers",
+      "builderChip",
+      "reviewerChip",
+      "now",
+      "workerRows",
+      "sessionRow"
+    ],
+    "how": "seeded sessions (team + two workers); the reviewer's live action line is a stubbed /workers answer and injected worker_activity event",
+    "shows": "A team session's chat: the TeamStrip (Plan → Build → Review (round 2 of 3) → Merge) with a chip per worker and the working worker's latest action; the orchestrator's messages with worker reports; worker rows under the session in the sidebar"
+  },
+  {
+    "area": "teams",
+    "name": "team-chat-plan",
+    "boxes": [
+      "strip",
+      "chat"
+    ],
+    "how": "seeded",
+    "shows": "The start of the team session: the user's request and the orchestrator's plan (what it does itself, what goes to the builder, what the reviewer checks)"
+  },
+  {
+    "area": "teams",
+    "name": "worker-chat-builder",
+    "boxes": [
+      "note",
+      "parentLink",
+      "chat",
+      "git"
+    ],
+    "how": "seeded",
+    "shows": "The build worker's chat: the WorkerNote at the top (\"Build worker of … · branch worker/…\"), its task as the first prompt, its work in its own worktree"
+  },
+  {
+    "area": "teams",
+    "name": "worker-chat-reviewer",
+    "boxes": [
+      "note",
+      "chat",
+      "status"
+    ],
+    "how": "seeded as working",
+    "shows": "The review worker's chat (read-only, working): WorkerNote, the review prompt asking for a verdict, git diff and test commands"
+  },
+  {
+    "area": "teams",
+    "name": "worker-proposal-card",
+    "boxes": [
+      "card",
+      "badges",
+      "start",
+      "deny"
+    ],
+    "how": "seeded session; the card is an injected user_question event (kind worker_session), never answered",
+    "shows": "An agent proposes a worker session: task, mode (build), model, sandbox and worktree badges, Start / Deny / Later. Nothing exists before Start"
+  },
+  {
+    "area": "teams",
+    "name": "loop-proposal-card",
+    "boxes": [
+      "card",
+      "start",
+      "edit",
+      "deny"
+    ],
+    "how": "seeded session; the card is an injected user_question event (kind loop_session), never answered",
+    "shows": "An agent proposes a loop session: goal, check command, limits, the warning that it runs with permission prompts off; Start loop / Edit first / Deny"
+  },
+  {
+    "area": "teams",
+    "name": "loop-session",
+    "boxes": [
+      "banner",
+      "title",
+      "timeline",
+      "stop",
+      "chat"
+    ],
+    "how": "seeded session and messages; the banner state comes from injected loop_started / loop_iteration events",
+    "shows": "A loop session mid-run: the loop banner (iteration 3 / 20, a dot per check: two failed), Stop loop, loop notes in the chat with the check's output"
+  }
+]

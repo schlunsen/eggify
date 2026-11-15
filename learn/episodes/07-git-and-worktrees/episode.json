@@ -1,0 +1,515 @@
+{
+  "number": 7,
+  "slug": "git-and-worktrees",
+  "title": "Git page and worktrees",
+  "summary": "Open a project's Git page to see every checkout, its uncommitted work, what a branch adds to main, and all branches, then start an agent in a worktree and follow a session's own changes.",
+  "next": "From the sofa",
+  "scenes": [
+    {
+      "id": "title",
+      "kind": "title",
+      "lines": [
+        {
+          "id": "t1",
+          "text": "Git page and worktrees. See every checkout of a repository, and what each one is doing."
+        }
+      ]
+    },
+    {
+      "id": "open",
+      "kind": "shot",
+      "heading": "The Git page",
+      "shot": "project",
+      "lines": [
+        {
+          "id": "o1",
+          "text": "Open a project and press Git in its header."
+        },
+        {
+          "id": "o2",
+          "text": "One page shows the whole repository."
+        }
+      ],
+      "beats": [
+        {
+          "line": "o1",
+          "at": 0.2,
+          "zoom": {
+            "x": 1260,
+            "y": 40,
+            "w": 640,
+            "h": 360
+          },
+          "highlight": "gitButton"
+        },
+        {
+          "line": "o1",
+          "at": 1.6,
+          "cursor": "gitButton",
+          "click": true
+        },
+        {
+          "line": "o2",
+          "at": 0,
+          "shot": "page",
+          "zoom": null,
+          "highlight": null,
+          "cursor": null
+        },
+        {
+          "line": "o2",
+          "at": 0.3,
+          "zoom": {
+            "x": 260,
+            "y": 60,
+            "w": 800,
+            "h": 450
+          }
+        }
+      ]
+    },
+    {
+      "id": "worktrees",
+      "kind": "shot",
+      "heading": "Worktrees",
+      "shot": "page",
+      "lines": [
+        {
+          "id": "w1",
+          "text": "Worktrees lists every checkout: the main folder and any extra ones."
+        },
+        {
+          "id": "w2",
+          "text": "Each card shows its branch, and how many files are staged, modified or new."
+        },
+        {
+          "id": "w3",
+          "text": "Arrows show how far it is ahead of main. The sessions working there are listed below."
+        }
+      ],
+      "beats": [
+        {
+          "line": "w1",
+          "at": 0.2,
+          "zoom": {
+            "x": 270,
+            "y": 150,
+            "w": 700,
+            "h": 394
+          },
+          "highlight": "mainWt"
+        },
+        {
+          "line": "w1",
+          "at": 3.0,
+          "zoom": {
+            "x": 270,
+            "y": 380,
+            "w": 700,
+            "h": 394
+          },
+          "highlight": "teamWt"
+        },
+        {
+          "line": "w2",
+          "at": 0.2,
+          "zoom": {
+            "x": 270,
+            "y": 560,
+            "w": 560,
+            "h": 315
+          },
+          "highlight": "workerCounts"
+        },
+        {
+          "line": "w3",
+          "at": 0.3,
+          "highlight": "workerAhead"
+        },
+        {
+          "line": "w3",
+          "at": 2.8,
+          "highlight": "workerSessions"
+        }
+      ]
+    },
+    {
+      "id": "uncommitted",
+      "kind": "shot",
+      "heading": "Uncommitted",
+      "shot": "page",
+      "lines": [
+        {
+          "id": "u1",
+          "text": "Click a worktree to see its changes."
+        },
+        {
+          "id": "u2",
+          "text": "Uncommitted is the work in progress, as diffs, with the edited part of each line marked."
+        }
+      ],
+      "beats": [
+        {
+          "line": "u1",
+          "at": 0,
+          "zoom": {
+            "x": 270,
+            "y": 560,
+            "w": 560,
+            "h": 315
+          },
+          "highlight": "workerWt"
+        },
+        {
+          "line": "u1",
+          "at": 1.2,
+          "cursor": "workerWt",
+          "click": true
+        },
+        {
+          "line": "u2",
+          "at": 0,
+          "shot": "uncommitted",
+          "zoom": {
+            "x": 1260,
+            "y": 100,
+            "w": 640,
+            "h": 360
+          },
+          "highlight": "uncommittedTab",
+          "cursor": null
+        },
+        {
+          "line": "u2",
+          "at": 2.5,
+          "zoom": {
+            "x": 920,
+            "y": 270,
+            "w": 980,
+            "h": 551
+          },
+          "highlight": {
+            "x": 1015,
+            "y": 408,
+            "w": 600,
+            "h": 42
+          }
+        }
+      ]
+    },
+    {
+      "id": "vsmain",
+      "kind": "shot",
+      "heading": "Against main",
+      "shot": "uncommitted",
+      "lines": [
+        {
+          "id": "v1",
+          "text": "Switch to vs main to see what the branch adds."
+        },
+        {
+          "id": "v2",
+          "text": "Its commits are on top, its files below."
+        },
+        {
+          "id": "v3",
+          "text": "Tick Viewed as you read, and the page keeps count."
+        }
+      ],
+      "beats": [
+        {
+          "line": "v1",
+          "at": 0,
+          "zoom": {
+            "x": 1260,
+            "y": 100,
+            "w": 640,
+            "h": 360
+          },
+          "highlight": "vsMainTab"
+        },
+        {
+          "line": "v1",
+          "at": 1.4,
+          "cursor": "vsMainTab",
+          "click": true
+        },
+        {
+          "line": "v2",
+          "at": 0,
+          "shot": "vsmain",
+          "zoom": {
+            "x": 660,
+            "y": 215,
+            "w": 880,
+            "h": 495
+          },
+          "highlight": "commits",
+          "cursor": null
+        },
+        {
+          "line": "v2",
+          "at": 2.0,
+          "highlight": "files",
+          "zoom": {
+            "x": 660,
+            "y": 370,
+            "w": 880,
+            "h": 495
+          }
+        },
+        {
+          "line": "v3",
+          "at": 0,
+          "zoom": {
+            "x": 1260,
+            "y": 360,
+            "w": 640,
+            "h": 360
+          },
+          "highlight": "viewed"
+        },
+        {
+          "line": "v3",
+          "at": 0.6,
+          "cursor": "viewed",
+          "click": true
+        },
+        {
+          "line": "v3",
+          "at": 1.2,
+          "shot": "viewed",
+          "zoom": {
+            "x": 660,
+            "y": 340,
+            "w": 880,
+            "h": 495
+          },
+          "highlight": "viewedCount",
+          "cursor": null
+        }
+      ]
+    },
+    {
+      "id": "branches",
+      "kind": "shot",
+      "heading": "Branches",
+      "shot": "branches-active",
+      "lines": [
+        {
+          "id": "b1",
+          "text": "Branches lists every branch, newest first."
+        },
+        {
+          "id": "b2",
+          "text": "Active hides what is merged. Pick All to see everything, with tags for current, merged and worktree."
+        }
+      ],
+      "beats": [
+        {
+          "line": "b1",
+          "at": 0.2,
+          "zoom": {
+            "x": 270,
+            "y": 540,
+            "w": 640,
+            "h": 360
+          },
+          "highlight": "branches"
+        },
+        {
+          "line": "b2",
+          "at": 0,
+          "highlight": "filterActive"
+        },
+        {
+          "line": "b2",
+          "at": 1.4,
+          "cursor": {
+            "x": 411,
+            "y": 619,
+            "w": 36,
+            "h": 29
+          },
+          "click": true
+        },
+        {
+          "line": "b2",
+          "at": 2.2,
+          "shot": "branches-all",
+          "zoom": {
+            "x": 270,
+            "y": 480,
+            "w": 640,
+            "h": 360
+          },
+          "highlight": "filterAll",
+          "cursor": null
+        },
+        {
+          "line": "b2",
+          "at": 4.4,
+          "highlight": "currentTag"
+        },
+        {
+          "line": "b2",
+          "at": 5.4,
+          "highlight": "mergedTag"
+        }
+      ]
+    },
+    {
+      "id": "newsession",
+      "kind": "shot",
+      "heading": "New session here",
+      "shot": "new-here",
+      "lines": [
+        {
+          "id": "n1",
+          "text": "New session here starts an agent in that worktree."
+        },
+        {
+          "id": "n2",
+          "text": "So two agents never share a checkout, and the only thing left to argue about is tabs."
+        }
+      ],
+      "beats": [
+        {
+          "line": "n1",
+          "at": 0,
+          "zoom": {
+            "x": 270,
+            "y": 560,
+            "w": 560,
+            "h": 315
+          },
+          "highlight": "newHere"
+        },
+        {
+          "line": "n1",
+          "at": 1.6,
+          "cursor": "newHere",
+          "click": true
+        },
+        {
+          "line": "n1",
+          "at": 2.6,
+          "shot": "create",
+          "zoom": {
+            "x": 600,
+            "y": 100,
+            "w": 720,
+            "h": 405
+          },
+          "highlight": "cwd",
+          "cursor": null
+        },
+        {
+          "line": "n2",
+          "at": 0.5,
+          "zoom": {
+            "x": 680,
+            "y": 150,
+            "w": 560,
+            "h": 315
+          }
+        }
+      ]
+    },
+    {
+      "id": "session",
+      "kind": "shot",
+      "heading": "In a session",
+      "shot": "session-card",
+      "lines": [
+        {
+          "id": "s1",
+          "text": "In a session, the Git card shows its worktree, branch and changed files."
+        },
+        {
+          "id": "s2",
+          "text": "View Changes opens them as diffs."
+        },
+        {
+          "id": "s3",
+          "text": "The Git Changes page lists each file with its diff."
+        }
+      ],
+      "beats": [
+        {
+          "line": "s1",
+          "at": 0.2,
+          "zoom": {
+            "x": 1400,
+            "y": 420,
+            "w": 520,
+            "h": 293
+          },
+          "highlight": "worktree"
+        },
+        {
+          "line": "s1",
+          "at": 3.0,
+          "zoom": {
+            "x": 1400,
+            "y": 640,
+            "w": 520,
+            "h": 293
+          },
+          "highlight": "branchChanges"
+        },
+        {
+          "line": "s2",
+          "at": 0,
+          "zoom": {
+            "x": 1400,
+            "y": 700,
+            "w": 520,
+            "h": 293
+          },
+          "highlight": "viewChanges"
+        },
+        {
+          "line": "s2",
+          "at": 0.4,
+          "cursor": "viewChanges",
+          "click": true
+        },
+        {
+          "line": "s3",
+          "at": 0,
+          "shot": "session-changes",
+          "zoom": {
+            "x": 280,
+            "y": 130,
+            "w": 900,
+            "h": 506
+          },
+          "highlight": "stats",
+          "cursor": null
+        },
+        {
+          "line": "s3",
+          "at": 2.0,
+          "highlight": "firstFile",
+          "zoom": {
+            "x": 280,
+            "y": 330,
+            "w": 900,
+            "h": 506
+          }
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "kind": "outro",
+      "lines": [
+        {
+          "id": "x1",
+          "text": "That is the Git page: every checkout, its work and its branches, in one place."
+        }
+      ]
+    }
+  ]
+}

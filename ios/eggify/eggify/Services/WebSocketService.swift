@@ -540,12 +540,7 @@ final class WebSocketService: ObservableObject {
             let message: String
             if let wsError = error as? WSError { message = wsError.message }
             else if case .notAnUpgrade(let status, _)? = error as? HTTPUpgradeError {
-                if LicenseGate.isLicenseRequired(upgradeStatus: status) {
-                    LicenseGate.announce()
-                    message = LicenseGate.message
-                } else {
-                    message = "Server refused the live connection (HTTP \(status))"
-                }
+                message = "Server refused the live connection (HTTP \(status))"
             }
             else if let error { message = error.localizedDescription }
             else { message = "Connection error" }
@@ -621,10 +616,6 @@ final class WebSocketService: ObservableObject {
 
         case "pong":
             lastPong = Date()
-
-        case "error" where LicenseGate.isLicenseRequired(wsPayload: payload):
-            LicenseGate.announce()
-            eventHandler?.handleServerEvent(type: type, payload: payload)
 
         default:
             eventHandler?.handleServerEvent(type: type, payload: payload)

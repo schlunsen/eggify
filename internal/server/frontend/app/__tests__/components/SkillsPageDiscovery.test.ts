@@ -1,4 +1,5 @@
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
+import { setHomeDir } from '../../utils/homeDir'
 import { discoverySummary, normaliseDiscovery } from '../../utils/skillDiscovery'
 
 function json(status: number, body: any): Response {
@@ -51,6 +52,7 @@ async function mountPage() {
 }
 
 beforeEach(() => {
+  setHomeDir('/Users/me')
   fetchWithAuth.mockReset()
   pendingAfterDiscover = false
   discoverCalls = 0

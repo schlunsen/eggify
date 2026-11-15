@@ -1,0 +1,14 @@
+{
+  "name": "eggify-learn-capture",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "description": "Demo server + Playwright helpers for the learning videos' screen captures",
+  "scripts": {
+    "setup": "playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.56.0",
+    "sharp": "^0.34.4"
+  }
+}

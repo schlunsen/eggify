@@ -5659,7 +5659,7 @@ dependencies = [
 
 [[package]]
 name = "eggify-desktop"
-version = "2.23.0"
+version = "2.25.0"
 dependencies = [
  "portpicker",
  "reqwest 0.12.28",

@@ -72,8 +72,8 @@ func TestSandboxSettings_GetDefaults(t *testing.T) {
 	if code != 200 {
 		t.Fatalf("GET: %d %v", code, body)
 	}
-	if body["default_enabled"] != false {
-		t.Errorf("default_enabled = %v", body["default_enabled"])
+	if body["default_enabled"] != true {
+		t.Errorf("default_enabled = %v (on until the user saves a choice)", body["default_enabled"])
 	}
 	if body["can_authorize_codex_network"] != false {
 		t.Error("API-key caller cannot authorize network access")
@@ -189,5 +189,77 @@ func TestSettings_ReservedSandboxKeys(t *testing.T) {
 	}
 	if prefs := agents.LoadSandboxPreferences(repo); strings.Contains(strings.Join(prefs.AllowedDomains, ","), "evil.test") {
 		t.Fatal("generic settings endpoint must not change the allowlist")
+	}
+}
+
+func TestSandboxSettings_GetListsGrantsWithoutSecrets(t *testing.T) {
+	app, _ := newSandboxTestApp(t, true)
+	code, body := doSandboxJSON(t, app, "GET", "/agent/sandbox", "", "")
+	if code != 200 {
+		t.Fatalf("GET: %d %v", code, body)
+	}
+	grants, ok := body["grants"].([]any)
+	if !ok || len(grants) != 5 {
+		t.Fatalf("grants = %v", body["grants"])
+	}
+	seen := map[string]bool{}
+	for _, g := range grants {
+		m := g.(map[string]any)
+		id, _ := m["id"].(string)
+		seen[id] = true
+		for _, key := range []string{"title", "description", "risk"} {
+			if s, _ := m[key].(string); s == "" {
+				t.Errorf("grant %s has no %s", id, key)
+			}
+		}
+		if avail, _ := m["available"].(bool); !avail {
+			if reason, _ := m["reason"].(string); reason == "" {
+				t.Errorf("grant %s is unavailable without a reason", id)
+			}
+		}
+	}
+	for _, id := range []string{"ssh", "github", "cloud", "npm", "localhost"} {
+		if !seen[id] {
+			t.Errorf("grant %s missing", id)
+		}
+	}
+	// Read-only: the update route still only takes the settings it knew.
+	code, _ = doSandboxJSON(t, app, "PUT", "/agent/sandbox", "", `{"default_enabled": true}`)
+	if code != 403 {
+		t.Errorf("an API key must still not change sandbox settings: %d", code)
+	}
+}
+
+func TestSandboxSettings_DefaultDomainsIncludeCrates(t *testing.T) {
+	app, _ := newSandboxTestApp(t, true)
+	_, body := doSandboxJSON(t, app, "GET", "/agent/sandbox", "", "")
+	domains, _ := body["default_allowed_domains"].([]any)
+	have := map[string]bool{}
+	for _, d := range domains {
+		have[d.(string)] = true
+	}
+	for _, d := range []string{"raw.githubusercontent.com", "crates.io", "static.crates.io", "index.crates.io"} {
+		if !have[d] {
+			t.Errorf("default allowlist lacks %s", d)
+		}
+	}
+}
+
+func TestSandboxSettings_DomainsOnlyKeepsTheDefaultImplicit(t *testing.T) {
+	app, repo := newSandboxTestApp(t, true)
+	_, body := doSandboxJSON(t, app, "GET", "/agent/sandbox", "", "")
+	if body["default_implicit"] != true {
+		t.Fatalf("fresh install: default_implicit = %v", body["default_implicit"])
+	}
+	code, body := doSandboxJSON(t, app, "PUT", "/agent/sandbox", "user", `{"allowed_domains":["example.com"]}`)
+	if code != 200 || body["default_implicit"] != true {
+		t.Fatalf("domains only: %d %v", code, body)
+	}
+	if prefs := agents.LoadSandboxPreferences(repo); !prefs.DefaultIsImplicit || !prefs.DefaultEnabled {
+		t.Errorf("domains only made the default explicit: %+v", prefs)
+	}
+	_, body = doSandboxJSON(t, app, "PUT", "/agent/sandbox", "user", `{"default_enabled":true}`)
+	if body["default_implicit"] != false {
+		t.Errorf("an explicit choice: default_implicit = %v", body["default_implicit"])
 	}
 }

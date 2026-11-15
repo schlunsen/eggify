@@ -1,4 +1,5 @@
 import { mount } from '@vue/test-utils'
+import { setHomeDir } from '../../utils/homeDir'
 import ReviewQueue from '../../components/review/ReviewQueue.vue'
 import {
   describeCreator, groupFileItemsByFolder, queueOrigins, shortenHome, skillSourceFolder, skillToQueueItem
@@ -30,10 +31,12 @@ const ship = fileSkill('ship', '/Users/me/.claude/skills/ship/SKILL.md')
 const morning = fileSkill('morning', '/Users/me/.claude/skills/synced/uuid-1/morning/SKILL.md')
 const project = fileSkill('helper', '/home/dev/repo/.claude/skills/helper/SKILL.md')
 
+beforeEach(() => setHomeDir('/Users/me'))
+
 describe('file skill labels', () => {
   it('shortens the home folder', () => {
     expect(shortenHome('/Users/me/.claude/skills/x/SKILL.md')).toBe('~/.claude/skills/x/SKILL.md')
-    expect(shortenHome('/home/dev/repo')).toBe('~/repo')
+    expect(shortenHome('/home/dev/repo')).toBe('/home/dev/repo')
     expect(shortenHome('/Users/me')).toBe('~')
     expect(shortenHome('/opt/skills/x')).toBe('/opt/skills/x')
     expect(shortenHome('/srv/me/x', '/srv/me')).toBe('~/x')

@@ -1,0 +1,129 @@
+[
+  {
+    "area": "steering",
+    "name": "chat-tool-cards",
+    "boxes": [
+      "chat",
+      "editDiff",
+      "readCard",
+      "bashCard"
+    ],
+    "how": "seeded messages; the inline Edit diff is rebuilt from the stored tool call (live-only data)",
+    "shows": "A session chat mid-conversation: Read and Grep cards, the agent's note, an Edit with its inline diff, Write cards and a Bash command"
+  },
+  {
+    "area": "steering",
+    "name": "chat-reply",
+    "boxes": [
+      "code",
+      "composer",
+      "rightSidebar"
+    ],
+    "how": "seeded",
+    "shows": "The agent's final reply in markdown: summary line, a table of changed files, a code block, a numbered list of open decisions"
+  },
+  {
+    "area": "steering",
+    "name": "right-sidebar",
+    "boxes": [
+      "sidebar",
+      "modelRow",
+      "usage",
+      "context",
+      "questions",
+      "skills",
+      "git",
+      "permissions",
+      "headerModel",
+      "viewMode"
+    ],
+    "how": "seeded; usage limit and context numbers are stubbed API answers",
+    "shows": "The session's right sidebar: status and tags, usage pill, duration / messages / context, model row with Switch, Questions policy, Skills, Git card, Permissions, Activity, Subagents"
+  },
+  {
+    "area": "steering",
+    "name": "model-switcher",
+    "boxes": [
+      "dialog",
+      "search",
+      "firstResult"
+    ],
+    "how": "seeded (the providers list is the server's own)",
+    "shows": "Switch model dialog: every provider's models, the current one marked, search field"
+  },
+  {
+    "area": "steering",
+    "name": "model-switcher-search",
+    "boxes": [
+      "dialog",
+      "search",
+      "firstResult"
+    ],
+    "how": "seeded",
+    "shows": "Switch model dialog with \"deep\" typed: DeepSeek models of another provider"
+  },
+  {
+    "area": "steering",
+    "name": "context-usage",
+    "boxes": [
+      "usageBar",
+      "ring"
+    ],
+    "how": "stubbed API (context-usage needs a running CLI)",
+    "shows": "Context usage opened from the context ring: how full the model's context window is, by category"
+  },
+  {
+    "area": "steering",
+    "name": "permission-card",
+    "boxes": [
+      "card",
+      "deny",
+      "approveOnce",
+      "allowSimilar",
+      "alwaysExact",
+      "pattern",
+      "sidebarRow"
+    ],
+    "how": "seeded session; the card is an injected permission_request event (never answered)",
+    "shows": "A permission request above the composer: the agent wants to run git push; Deny, Approve Once, Allow Similar (Bash(git push:*)) and Always Exact"
+  },
+  {
+    "area": "steering",
+    "name": "question-card",
+    "boxes": [
+      "card",
+      "options",
+      "recommended",
+      "countdown",
+      "keepWaiting",
+      "actions"
+    ],
+    "how": "seeded session; the card is an injected user_question event (never answered)",
+    "shows": "An agent's question (AskUserQuestion): three options, the recommended one marked, countdown to the auto-pick with Keep waiting, Later / Dismiss / Submit"
+  },
+  {
+    "area": "steering",
+    "name": "question-card-selected",
+    "boxes": [
+      "card",
+      "selected",
+      "submit"
+    ],
+    "how": "seeded session; injected user_question event",
+    "shows": "The same question with the second option chosen, ready to submit"
+  },
+  {
+    "area": "steering",
+    "name": "working-composer",
+    "boxes": [
+      "composer",
+      "stopHint",
+      "stop",
+      "processing",
+      "workingEdge",
+      "status"
+    ],
+    "how": "seeded as working; session_updated (processing) event injected for the open chat",
+    "shows": "A session mid-turn: status Processing, the \"Processing your message…\" row, the composer's working edge and ⌘. to stop"
+  }
+]

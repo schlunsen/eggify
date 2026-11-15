@@ -24,7 +24,7 @@ echo "Release settings (env or ~/.config/eggify/release.env)"
 for v in APPLE_TEAM_ID DEPLOY_HOST DEPLOY_DIR PUBLIC_BASE_URL; do
   check "$v set" "[[ -n '${!v:-}' ]]" "add it to ~/.config/eggify/release.env"
 done
-for v in EGGIFY_BUILD_RELAY_ADDR EGGIFY_BUILD_LICENSE_URL EGGIFY_BUILD_UPDATE_MANIFEST_URL EGGIFY_BUILD_DOWNLOAD_URL EGGIFY_BUILD_RELAY_ATS_DOMAIN; do
+for v in EGGIFY_BUILD_RELAY_ADDR EGGIFY_BUILD_UPDATE_MANIFEST_URL EGGIFY_BUILD_DOWNLOAD_URL EGGIFY_BUILD_RELAY_ATS_DOMAIN; do
   if [[ -z "${!v:-}" ]]; then printf '  \033[33m!\033[0m %s not set: that feature is off in the build\n' "$v"; else ok "$v set"; fi
 done
 

@@ -1,0 +1,598 @@
+---
+import Bunting from '../components/Bunting.astro';
+// /learn: the learning videos. Episodes come from src/data/learn.ts; a video and
+// its poster are remote files under /media/learn/, so publishing one is a data change.
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import egg from '../assets/egg.webp';
+import { episodes, videoUrl, posterUrl, formatDuration, formatTimestamp, isoDuration } from '../data/learn';
+
+const published = episodes.filter((e) => e.published);
+const upcoming = episodes.filter((e) => !e.published);
+const lessons = [...episodes].sort((a, b) => a.number - b.number);
+
+const description =
+  'Short narrated videos that teach Eggify step by step: from installing it and starting your first agent to teams, sandboxes, git worktrees and the iPhone app.';
+
+
+const jsonLd = published.map((e) => ({
+  '@context': 'https://schema.org',
+  '@type': 'VideoObject',
+  name: `Eggify: ${e.title}`,
+  description: e.summary,
+  thumbnailUrl: posterUrl(e),
+  contentUrl: videoUrl(e),
+  url: new URL(`/learn/#${e.slug}`, Astro.site).href,
+  ...(e.publishedOn ? { uploadDate: e.publishedOn } : {}),
+  ...(e.duration ? { duration: isoDuration(e.duration) } : {}),
+}));
+---
+<Base title="Learn Eggify: short video lessons" description={description} ogTitle="Learn Eggify: short video lessons">
+  {jsonLd.length > 0 && (
+    <script slot="head" type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />
+  )}
+
+  <header class="masthead" id="top">
+    <div class="bar">
+      <div class="wrap"><Nav current="learn" /></div>
+      <Bunting />
+    </div>
+    <div class="wrap intro">
+      <div class="copy">
+        <span class="eyebrow">The lessons</span>
+        <h1>Learn Eggify</h1>
+        <p class="lede">
+          Short narrated videos, a minute or two each, that show one thing at a time on
+          real screens. Start with the first and stop whenever you know enough.
+        </p>
+      </div>
+      <div class="egg" aria-hidden="true">
+        <Image src={egg} alt="" widths={[180, 360]} sizes="180px" loading="eager" />
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="gallery" aria-label="Lessons">
+      <div class="wrap">
+        <p class="count">
+          {published.length} of {lessons.length} lessons showing{upcoming.length > 0 ? ', the rest in rehearsal' : ''}
+        </p>
+        <ol class="grid">
+          {lessons.map((e) => (
+            <li id={e.slug} class:list={['lesson', { soon: !e.published }]}>
+              {e.published ? (
+                // Without scripts the card opens the video file itself.
+                <a class="open" href={videoUrl(e)} data-lesson={e.slug} aria-label={`Lesson ${e.number}: ${e.title}${e.duration ? `, ${formatDuration(e.duration)}` : ''}. Play`}>
+                  <span class="frame">
+                    <img src={posterUrl(e)} alt="" width="1920" height="1080" loading={e.number <= 3 ? 'eager' : 'lazy'} decoding="async" />
+                    <span class="play" aria-hidden="true"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M8 5.5v13l11-6.5z" fill="currentColor" /></svg></span>
+                    {e.duration && <span class="time">{formatTimestamp(e.duration)}</span>}
+                  </span>
+                  <span class="tape">No. {e.number}</span>
+                  <span class="title">{e.title}</span>
+                  <span class="blurb">{e.summary}</span>
+                </a>
+              ) : (
+                <div class="open" aria-label={`Lesson ${e.number}: ${e.title}. Coming soon`}>
+                  <span class="frame">
+                    <span class="curtain" aria-hidden="true">
+                      <span class="kicker">In rehearsal</span>
+                    </span>
+                  </span>
+                  <span class="tape">No. {e.number}</span>
+                  <span class="title">{e.title}</span>
+                  <span class="blurb">{e.summary}</span>
+                </div>
+              )}
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    {/* One theatre per published lesson, opened from its card (or /learn#<slug>). */}
+    {published.map((e) => (
+      <dialog class="theatre" id={`lesson-${e.slug}`} data-slug={e.slug} data-next={published.find((n) => n.number > e.number)?.slug} aria-label={`Lesson ${e.number}: ${e.title}`}>
+        <form method="dialog" class="shut"><button aria-label="Close">Close <span aria-hidden="true">×</span></button></form>
+        <article class="episode">
+          <div class="screen">
+            <video controls preload="none" playsinline poster={posterUrl(e)} width="1920" height="1080" aria-label={`Lesson ${e.number}: ${e.title}`}>
+              <source src={videoUrl(e)} type="video/mp4" />
+              <a href={videoUrl(e)}>Watch “{e.title}”</a>
+            </video>
+            {/* Arrows to the neighbouring lessons, on the player's left and right edges. */}
+            {[...published].reverse().find((n) => n.number < e.number) && (
+              <a class="arrow back" href={`#${[...published].reverse().find((n) => n.number < e.number)!.slug}`} data-lesson={[...published].reverse().find((n) => n.number < e.number)!.slug}
+                aria-label={`Previous lesson: ${[...published].reverse().find((n) => n.number < e.number)!.title}`} title={`Previous: ${[...published].reverse().find((n) => n.number < e.number)!.title}`}>
+                <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M15 4.5 7.5 12l7.5 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              </a>
+            )}
+            {published.find((n) => n.number > e.number) && (
+              <a class="arrow forth" href={`#${published.find((n) => n.number > e.number)!.slug}`} data-lesson={published.find((n) => n.number > e.number)!.slug}
+                aria-label={`Next lesson: ${published.find((n) => n.number > e.number)!.title}`} title={`Next: ${published.find((n) => n.number > e.number)!.title}`}>
+                <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M9 4.5 16.5 12 9 19.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              </a>
+            )}
+            {published.find((n) => n.number > e.number) && (
+              <p class="upnext" hidden aria-live="polite">
+                <span>Up next: <strong>{published.find((n) => n.number > e.number)!.title}</strong></span>
+                <button type="button" data-stay>Stay here</button>
+              </p>
+            )}
+          </div>
+          <div class="notes">
+            <div class="tape">Lesson No. {e.number}</div>
+            <h2>{e.title}</h2>
+            <p class="summary">{e.summary}</p>
+            {e.duration && <p class="length">{formatDuration(e.duration)}</p>}
+            {e.chapters && e.chapters.length > 0 && (
+              <ol class="chapters" aria-label={`Chapters of ${e.title}`}>
+                {e.chapters.map((c) => (
+                  <li>
+                    {/* Without scripts the link opens the video file at that time. */}
+                    <a href={`${videoUrl(e)}#t=${c.at}`} data-seek={c.at}>
+                      <span class="at">{formatTimestamp(c.at)}</span>
+                      <span class="what">{c.title}</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            )}
+            <p class="turn">
+              {[...published].reverse().find((n) => n.number < e.number) && (
+                <a href={`#${[...published].reverse().find((n) => n.number < e.number)!.slug}`} data-lesson={[...published].reverse().find((n) => n.number < e.number)!.slug}>← Previous lesson</a>
+              )}
+              {published.find((n) => n.number > e.number) && (
+                <a class="fwd" href={`#${published.find((n) => n.number > e.number)!.slug}`} data-lesson={published.find((n) => n.number > e.number)!.slug}>Next lesson →</a>
+              )}
+            </p>
+          </div>
+        </article>
+      </dialog>
+    ))}
+
+    <section class="next">
+      <div class="wrap">
+        <p>Rather try it than watch it?</p>
+        <a class="btn primary" href="/#download">Get Eggify</a>
+      </div>
+    </section>
+  </main>
+  <Footer />
+
+  <script is:inline>
+    // A card opens its lesson in a theatre (a <dialog>); /learn#<slug> opens it on arrival.
+    const theatre = (slug) => document.getElementById('lesson-' + slug);
+    const show = (slug, play) => {
+      const next = theatre(slug);
+      if (!next || typeof next.showModal !== 'function') return false;
+      document.querySelectorAll('dialog.theatre[open]').forEach((d) => { if (d !== next) { d.dataset.swap = '1'; d.close(); } });
+      if (!next.open) next.showModal();
+      history.replaceState(null, '', '#' + slug);
+      if (play) { const v = next.querySelector('video'); if (v.ended) v.currentTime = 0; const p = v.play(); if (p) p.catch(() => {}); }
+      return true;
+    };
+    document.querySelectorAll('[data-lesson]').forEach((link) => {
+      link.addEventListener('click', (event) => {
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        if (show(link.dataset.lesson, true)) event.preventDefault();
+      });
+    });
+    document.querySelectorAll('dialog.theatre').forEach((dialog) => {
+      dialog.addEventListener('close', () => {
+        dialog.querySelector('video').pause();
+        if (dialog.dataset.swap) { delete dialog.dataset.swap; return; }
+        history.replaceState(null, '', location.pathname + location.search);
+      });
+      // When a lesson ends, the next one starts after a short pause (unless "Stay here").
+      const video = dialog.querySelector('video');
+      const notice = dialog.querySelector('.upnext');
+      let turn = 0;
+      const stay = () => { clearTimeout(turn); if (notice) notice.hidden = true; };
+      video.addEventListener('ended', () => {
+        if (!dialog.dataset.next || !dialog.open) return;
+        notice.hidden = false;
+        turn = setTimeout(() => { stay(); show(dialog.dataset.next, true); }, 4000);
+      });
+      video.addEventListener('play', stay);
+      dialog.addEventListener('close', stay);
+      if (notice) notice.querySelector('[data-stay]').addEventListener('click', stay);
+      // A click on the backdrop (the dialog itself, outside its content) closes it.
+      dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+    });
+    // ← / → step to the previous / next lesson, unless the player itself has the keys.
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+      const open = document.querySelector('dialog.theatre[open]');
+      if (!open || (document.activeElement && document.activeElement.tagName === 'VIDEO')) return;
+      const link = open.querySelector(event.key === 'ArrowLeft' ? '.arrow.back' : '.arrow.forth');
+      if (!link) return;
+      event.preventDefault();
+      show(link.dataset.lesson, true);
+    });
+    if (location.hash.length > 1) show(decodeURIComponent(location.hash.slice(1)), false);
+
+    // Chapter links seek the lesson's player instead of opening the file.
+    document.querySelectorAll('.episode').forEach((episode) => {
+      const video = episode.querySelector('video');
+      const links = Array.from(episode.querySelectorAll('[data-seek]'));
+      if (!video || links.length === 0) return;
+      links.forEach((link) => {
+        link.addEventListener('click', (event) => {
+          const at = Number(link.dataset.seek);
+          if (!Number.isFinite(at)) return;
+          event.preventDefault();
+          const seek = () => { video.currentTime = at; };
+          // preload="none": nothing is loaded before the first play.
+          if (video.readyState >= 1) seek();
+          else video.addEventListener('loadedmetadata', seek, { once: true });
+          const playing = video.play();
+          if (playing) playing.catch(() => {});
+        });
+      });
+      video.addEventListener('timeupdate', () => {
+        let current = null;
+        links.forEach((link) => { if (video.currentTime >= Number(link.dataset.seek)) current = link; });
+        links.forEach((link) => {
+          if (link === current) link.setAttribute('aria-current', 'true');
+          else link.removeAttribute('aria-current');
+        });
+      });
+    });
+  </script>
+</Base>
+
+<style>
+  /* Masthead: the home page's sky and nav bar, without the theatre. */
+  .masthead {
+    position: relative;
+    background: linear-gradient(180deg, #8fcabd 0%, #a9d9cd 40%, #cfe8dc 78%, var(--paper) 100%);
+  }
+  .bar {
+    position: relative;
+    z-index: 20;
+    background: var(--card);
+    border-bottom: 3px solid var(--ink);
+    box-shadow: 0 3px 0 #9e2f4c;
+  }
+  .intro {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 40px;
+    padding: 96px 0 44px;
+  }
+  .copy { max-width: 720px; }
+  .eyebrow {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--card);
+    border: 1.5px solid var(--ink);
+    padding: 5px 12px;
+    box-shadow: var(--shadow);
+    rotate: -1.5deg;
+  }
+  h1 {
+    margin: 20px 0 0;
+    font-family: var(--display);
+    font-weight: 900;
+    font-variation-settings: 'opsz' 144, 'SOFT' 100, 'WONK' 1;
+    font-size: clamp(54px, 9vw, 104px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+  }
+  .lede { margin-top: 20px; font-size: 23px; color: var(--ink-soft); max-width: 620px; }
+  .egg { flex: 0 0 180px; margin-bottom: -44px; filter: drop-shadow(5px 6px 0 rgba(43, 29, 16, 0.18)); }
+
+  section { padding: 64px 0 20px; }
+
+  /* The framed screen from the film section. */
+  .screen {
+    padding: 10px;
+    background: #e7b73c;
+    border: 3px solid var(--ink);
+    box-shadow: 0 0 0 8px #9e2f4c, 0 0 0 11px var(--ink), 12px 14px 0 11px rgba(43, 29, 16, 0.2);
+    rotate: -0.6deg;
+  }
+  video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: var(--umber); border: 2px solid var(--ink); }
+
+  /* The gallery: every lesson as a poster card. */
+  .gallery { padding-top: 56px; }
+  .count {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 26px;
+  }
+  .grid { list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 44px 34px; }
+  .lesson { scroll-margin-top: 40px; }
+  .open { position: relative; display: block; color: var(--ink); text-decoration: none; }
+  .frame {
+    position: relative;
+    display: block;
+    padding: 6px;
+    background: #e7b73c;
+    border: 2.5px solid var(--ink);
+    box-shadow: 0 0 0 5px #9e2f4c, 0 0 0 7.5px var(--ink), 8px 10px 0 7.5px rgba(43, 29, 16, 0.18);
+    margin: 8px 8px 0;
+    transition: translate 0.18s ease, box-shadow 0.18s ease;
+  }
+  .lesson:nth-child(3n + 1) .frame { rotate: -0.7deg; }
+  .lesson:nth-child(3n + 2) .frame { rotate: 0.5deg; }
+  .lesson:nth-child(3n) .frame { rotate: -0.3deg; }
+  .frame img, .curtain { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border: 2px solid var(--ink); background: var(--umber); object-fit: cover; }
+  a.open:hover .frame, a.open:focus-visible .frame {
+    translate: 0 -4px;
+    box-shadow: 0 0 0 5px #9e2f4c, 0 0 0 7.5px var(--ink), 10px 15px 0 7.5px rgba(43, 29, 16, 0.2);
+  }
+  a.open:focus-visible { outline: 3px solid var(--pink); outline-offset: 8px; }
+  .play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+    width: 62px;
+    height: 62px;
+    display: grid;
+    place-items: center;
+    padding-left: 4px;
+    border-radius: 50%;
+    background: var(--card);
+    color: var(--ink);
+    border: 2.5px solid var(--ink);
+    box-shadow: 3px 4px 0 rgba(43, 29, 16, 0.35);
+    transition: scale 0.18s ease, background 0.18s ease;
+  }
+  a.open:hover .play, a.open:focus-visible .play { scale: 1.08; background: var(--pink); color: #fff; }
+  .time {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    background: var(--ink);
+    color: var(--paper-light);
+    padding: 2px 8px;
+  }
+  .curtain {
+    display: grid;
+    place-items: center;
+    background:
+      repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.16) 0 14px, transparent 14px 34px),
+      linear-gradient(180deg, #8f2a44, #6f1f34);
+  }
+  .curtain .kicker {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--paper-light);
+    border: 1.5px solid var(--ink);
+    padding: 5px 12px;
+    rotate: -2deg;
+    box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.3);
+  }
+  .lesson .tape { top: -4px; left: 2px; }
+  .title {
+    display: block;
+    margin-top: 22px;
+    font-family: var(--display);
+    font-weight: 800;
+    font-variation-settings: 'SOFT' 100, 'WONK' 1;
+    font-size: 26px;
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+  }
+  a.open:hover .title { text-decoration: underline; text-decoration-color: var(--pink); text-decoration-thickness: 2px; }
+  .blurb { display: block; margin-top: 6px; font-size: 17px; line-height: 1.4; color: var(--ink-soft); }
+  .soon .title, .soon .blurb { opacity: 0.72; }
+
+  /* The theatre: one lesson with its player, notes and chapters. */
+  .theatre {
+    width: calc(100vw - 28px);
+    max-width: none;
+    height: calc(100dvh - 28px);
+    max-height: none;
+    margin: auto;
+    padding: 50px 26px 28px;
+    background: var(--paper);
+    color: var(--ink);
+    border: 3px solid var(--ink);
+    box-shadow: 0 0 0 6px var(--card), 0 0 0 9px var(--ink);
+    overflow: auto;
+  }
+  .theatre::backdrop { background: rgba(28, 22, 16, 0.78); }
+  .shut { position: absolute; top: 10px; right: 12px; }
+  .shut button {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--card);
+    border: 1.5px solid var(--ink);
+    padding: 5px 12px;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+  .shut button:hover { background: var(--pink); color: #fff; }
+  /* The player is as large as the window allows; the notes sit under it. */
+  .episode { display: grid; gap: 34px; justify-items: center; padding: 0 11px; }
+  .theatre .screen {
+    position: relative;
+    width: min(100%, calc((100dvh - 210px) * 16 / 9));
+    rotate: none;
+  }
+  .theatre .notes {
+    width: min(100%, 1180px);
+    rotate: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    gap: 6px 40px;
+    align-items: start;
+  }
+  .theatre .notes h2, .theatre .summary, .theatre .length { grid-column: 1; }
+  .theatre .chapters { grid-column: 2; grid-row: 1 / span 4; margin-top: 0; columns: 2; column-gap: 28px; border-top: 0; }
+  .theatre .chapters li { break-inside: avoid; }
+  .theatre .turn { grid-column: 1 / -1; }
+  .arrow {
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    z-index: 2;
+    width: 54px;
+    height: 54px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--card);
+    color: var(--ink);
+    border: 2.5px solid var(--ink);
+    box-shadow: 3px 4px 0 rgba(43, 29, 16, 0.35);
+    transition: scale 0.15s ease, background 0.15s ease;
+  }
+  .arrow.back { left: -34px; }
+  .arrow.forth { right: -34px; }
+  .arrow:hover, .arrow:focus-visible { background: var(--pink); color: #fff; scale: 1.08; }
+  .arrow:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .upnext {
+    position: absolute;
+    left: 50%;
+    bottom: 64px;
+    translate: -50% 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 14px 10px 18px;
+    background: var(--card);
+    border: 2px solid var(--ink);
+    box-shadow: 4px 5px 0 rgba(0, 0, 0, 0.35);
+    font-size: 18px;
+    white-space: nowrap;
+  }
+  .upnext[hidden] { display: none; }
+  .upnext button {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  .turn { display: flex; justify-content: space-between; gap: 16px; margin-top: 18px; font-family: var(--mono); font-size: 14px; font-weight: 700; }
+  .turn a { color: var(--pink-ink); text-decoration: none; }
+  .turn a:hover { text-decoration: underline; }
+  .turn .fwd { margin-left: auto; }
+  .notes {
+    position: relative;
+    background: var(--card);
+    border: 1.5px solid var(--edge);
+    box-shadow: var(--shadow);
+    padding: 34px 28px 26px;
+    rotate: 0.5deg;
+  }
+  .tape {
+    position: absolute;
+    top: -14px;
+    left: 24px;
+    rotate: -3deg;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: rgba(212, 160, 23, 0.9);
+    padding: 4px 14px;
+    white-space: nowrap;
+  }
+  .notes h2 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-variation-settings: 'SOFT' 100, 'WONK' 1;
+    font-size: clamp(30px, 3.4vw, 40px);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+  }
+  .summary { margin-top: 10px; font-size: 19px; color: var(--ink-soft); }
+  .length {
+    margin-top: 12px;
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--pink-ink);
+  }
+  .chapters { list-style: none; margin-top: 16px; border-top: 1.5px dashed var(--edge); }
+  .chapters li { border-bottom: 1.5px dashed var(--edge); }
+  .chapters a {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    padding: 9px 6px;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 18px;
+  }
+  .chapters a:hover, .chapters a[aria-current] { background: var(--paper-light); }
+  .chapters a:hover .what { text-decoration: underline; text-decoration-color: var(--pink); }
+  .chapters a[aria-current] .at { color: var(--pink-ink); }
+  .at { flex: 0 0 auto; font-family: var(--mono); font-size: 15px; font-weight: 700; color: var(--ink-soft); min-width: 3.2ch; }
+
+  .next { padding-top: 80px; }
+  .next .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 18px 26px; }
+  .next p { font-family: var(--display); font-weight: 700; font-variation-settings: 'SOFT' 100; font-size: 28px; }
+
+  @media (max-width: 1000px) {
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .theatre .notes { grid-template-columns: 1fr; }
+    .theatre .chapters { grid-column: 1; grid-row: auto; margin-top: 12px; }
+  }
+  @media (max-width: 760px) {
+    .intro { padding: 76px 0 30px; }
+    .egg { display: none; }
+    .lede { font-size: 20px; }
+    section { padding-top: 48px; }
+    .screen { padding: 6px; box-shadow: 0 0 0 5px #9e2f4c, 0 0 0 8px var(--ink), 6px 8px 0 8px rgba(43, 29, 16, 0.2); rotate: none; }
+    .theatre { padding: 46px 10px 20px; width: calc(100vw - 12px); height: calc(100dvh - 12px); }
+    .theatre .screen { width: 100%; }
+    .arrow { width: 44px; height: 44px; }
+    .arrow.back { left: -6px; }
+    .arrow.forth { right: -6px; }
+    .theatre .chapters { columns: 1; }
+    .upnext { white-space: normal; bottom: 56px; width: calc(100% - 32px); justify-content: space-between; }
+    .episode { padding: 0 8px; }
+    .notes { padding: 30px 20px 20px; }
+  }
+  @media (max-width: 620px) {
+    .grid { grid-template-columns: 1fr; gap: 38px; }
+    .lesson .frame { rotate: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .frame, .play, .arrow { transition: none; }
+    a.open:hover .frame, a.open:focus-visible .frame { translate: none; }
+  }
+</style>
+
+<style is:global>
+  /* The page behind an open lesson does not scroll. */
+  html:has(dialog.theatre[open]) { overflow: hidden; }
+</style>

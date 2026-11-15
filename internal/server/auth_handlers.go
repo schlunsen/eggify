@@ -132,13 +132,6 @@ func (sam *SessionAuthMiddleware) Handler() fiber.Handler {
 			}
 		}
 
-		// Licensing: before the first account exists, the activation page
-		// (shown before /setup) reads the status and activates without a
-		// session. See license.go.
-		if clean && licensePreAuthPath(p, c.Method()) && !sam.userStore.HasUsers() {
-			return c.Next()
-		}
-
 		// Sign-out is a cookie-authenticated state change as well.
 		if p == "/api/auth/logout" && !sam.cookieOriginOK(c, p, clean, sam.authViaCookie(c)) {
 			return originRefused(c)

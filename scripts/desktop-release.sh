@@ -88,7 +88,7 @@ size_of() { stat -f%z "$1"; }
 
 # ── app ──────────────────────────────────────────────────────────────────────
 # release_endpoints: the compiled-in service endpoints. Releases must not ship
-# without them (no updater, no license server, no default relay). The manifest
+# without them (no updater, no default relay). The manifest
 # host must equal the host of the ZIP URLs written into latest.json, so both
 # default to PUBLIC_BASE_URL. ALLOW_ADHOC=1 (local build) skips the checks.
 release_endpoints() {
@@ -96,7 +96,6 @@ release_endpoints() {
   need PUBLIC_BASE_URL
   export EGGIFY_BUILD_UPDATE_MANIFEST_URL="${EGGIFY_BUILD_UPDATE_MANIFEST_URL:-$PUBLIC_BASE_URL/latest.json}"
   export EGGIFY_BUILD_DOWNLOAD_URL="${EGGIFY_BUILD_DOWNLOAD_URL:-$PUBLIC_BASE_URL/Eggify.dmg}"
-  if [[ "${LICENSE_REQUIRED:-true}" != "false" ]]; then need EGGIFY_BUILD_LICENSE_URL; fi
   if [[ "${ALLOW_NO_RELAY:-}" != "1" ]]; then
     need EGGIFY_BUILD_RELAY_ADDR   # ALLOW_NO_RELAY=1 to build without a default relay
   fi

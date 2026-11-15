@@ -657,33 +657,6 @@ func (m *Manager) isRunning() bool {
 	return m.cancel != nil
 }
 
-// RetryAfterLicenseChange reconnects a relay tunnel the relay refused for its
-// license (no license yet, expired, subscription ended): call it when the
-// license changes, so a renewal or a new relay_until takes effect at once
-// instead of after the next backoff or manual restart. Anything else is left
-// alone.
-func (m *Manager) RetryAfterLicenseChange() {
-	m.opMu.Lock()
-	defer m.opMu.Unlock()
-	m.mu.Lock()
-	st := m.status
-	relayMode := m.settings.Mode == ModeRelay
-	m.mu.Unlock()
-	if !relayMode {
-		return
-	}
-	refused := (st.Status == StateError && st.ErrorCode == "relay_refused") ||
-		(st.Status == StateConnecting && st.Error != "" && st.PublicURL == "")
-	if !refused {
-		return
-	}
-	m.cfg.Logf("remote access: license changed; retrying the relay")
-	m.stopLocked()
-	if err := m.startLocked(); err != nil {
-		m.cfg.Logf("remote access: retry failed: %v", err)
-	}
-}
-
 func (m *Manager) stopLocked() {
 	m.mu.Lock()
 	cancel, done, ln := m.cancel, m.done, m.ln

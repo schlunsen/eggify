@@ -417,6 +417,7 @@ import {
   type N0Connection,
 } from '~/composables/useN0Connections'
 import { formatRelativeTime } from '~/utils/agents/messageFormatters'
+import { connectorIconName } from '~/utils/connectorIcon'
 
 interface ConnectorConnection {
   id: number
@@ -623,32 +624,7 @@ const handleN0QueryParams = () => {
   router.replace({ query: rest })
 }
 
-// Icon mapping - map connector icon names to Nuxt Icon names
-const getIconName = (icon?: string) => {
-  const iconMap: Record<string, string> = {
-    'brain': 'lucide:brain',
-    'sparkles': 'lucide:sparkles',
-    'sparkle': 'lucide:sparkle',
-    'crystal-ball': 'lucide:gem',
-    'wind': 'lucide:wind',
-    'route': 'lucide:route',
-    'github': 'lucide:github',
-    'book-open': 'lucide:book-open',
-    'layers': 'lucide:layers',
-    'hash': 'lucide:hash',
-    'message-circle': 'lucide:message-circle',
-    'mail': 'lucide:mail',
-    'webhook': 'lucide:webhook',
-    'triangle': 'lucide:triangle',
-    'database': 'lucide:database',
-    'credit-card': 'lucide:credit-card',
-    'git-branch': 'lucide:git-branch',
-    'shield': 'lucide:shield',
-    'alert-triangle': 'lucide:alert-triangle',
-    'smile': 'lucide:smile',
-  }
-  return iconMap[icon || ''] || 'lucide:plug'
-}
+const getIconName = connectorIconName
 
 // Computed
 // n0 has its own section — keep it out of the generic API-key grids.

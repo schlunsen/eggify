@@ -11,16 +11,13 @@
 package main
 
 import (
-	"crypto/ed25519"
 	"crypto/tls"
-	"encoding/base64"
 	"errors"
 	"flag"
 	"log"
 	"net"
 	"os"
 	"os/signal"
-	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -36,8 +33,7 @@ func main() {
 	keyFile := flag.String("key", "", "private key (PEM) for the control name")
 	publicPort := flag.Int("public-port", 0, "port in install URLs (default: the listen port)")
 	maxInstalls := flag.Int("max-installs", 10000, "maximum connected installs")
-	allow := flag.String("allow", "", "file of install ids always admitted (one per line, # comments; re-read when it changes)")
-	licenseKey := flag.String("license-key", "", "Eggify license server public key (raw Ed25519, standard base64; several separated by commas, for key rotation); with it, installs need a license covering the relay")
+	allow := flag.String("allow", "", "file of install ids that may connect (one per line, # comments; re-read when it changes); without it every install is admitted")
 	// Per-source-address limits (IPv6 by /64); 0 = default, negative = off.
 	pendingPerIP := flag.Int("max-pending-per-ip", 0, "connections per source address waiting for their ClientHello (default 32, -1 = no limit)")
 	connsPerMin := flag.Int("max-conns-per-minute-per-ip", 0, "new connections per minute per source address (default 600, -1 = no limit)")
@@ -63,25 +59,14 @@ func main() {
 			port, _ = net.LookupPort("tcp", p)
 		}
 	}
-	// Who may connect: allowlisted installs and licensed ones. Without
-	// either flag the relay is open to every install.
+	// Who may connect: allowlisted installs only. Without -allow the relay
+	// is open to every install.
 	var allowlist *relay.Allowlist
 	if *allow != "" {
 		allowlist = &relay.Allowlist{Path: *allow}
 	}
-	var licensePubs []ed25519.PublicKey
-	for _, part := range strings.Split(*licenseKey, ",") {
-		if part = strings.TrimSpace(part); part == "" {
-			continue
-		}
-		raw, err := base64.StdEncoding.DecodeString(part)
-		if err != nil || len(raw) != ed25519.PublicKeySize {
-			log.Fatal("-license-key must be raw Ed25519 public keys in standard base64")
-		}
-		licensePubs = append(licensePubs, raw)
-	}
-	if allowlist == nil && len(licensePubs) == 0 {
-		log.Print("warning: no -allow or -license-key; every install may use this relay")
+	if allowlist == nil {
+		log.Print("warning: no -allow; every install may use this relay")
 	}
 	srv, err := relay.NewServer(relay.ServerConfig{
 		ControlName: *control,
@@ -90,7 +75,6 @@ func main() {
 		PublicPort:  port,
 		MaxInstalls: *maxInstalls,
 		Allowlist:   allowlist,
-		LicenseKeys: licensePubs,
 		IPLimits: relay.IPLimits{
 			PendingPerIP: *pendingPerIP, ConnsPerMinutePerIP: *connsPerMin, StreamsPerIP: *streamsPerIP,
 			ControlPerIP: *controlPerIP, ControlPendingPerIP: *controlPendingPerIP, ControlPerMinutePerIP: *controlPerMin,

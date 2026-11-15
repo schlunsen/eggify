@@ -172,12 +172,13 @@ func TestHasSubcommand(t *testing.T) {
 		args []string
 		want bool
 	}{
-		"none":       {nil, false},
-		"mcp-server": {[]string{"mcp-server"}, true},
-		"gpu status": {[]string{"gpu", "status"}, true},
-		"root flag":  {[]string{"--verbose"}, false},
-		"unknown":    {[]string{"definitely-not-a-command"}, false},
-		"psn finder": {[]string{"-psn_0_12345"}, false},
+		"none":            {nil, false},
+		"mcp-server":      {[]string{"mcp-server"}, true},
+		"sandbox-connect": {[]string{"sandbox-connect", "github.com", "22"}, true},
+		"gpu status":      {[]string{"gpu", "status"}, true},
+		"root flag":       {[]string{"--verbose"}, false},
+		"unknown":         {[]string{"definitely-not-a-command"}, false},
+		"psn finder":      {[]string{"-psn_0_12345"}, false},
 	}
 	for name, tc := range cases {
 		if got := HasSubcommand(tc.args); got != tc.want {

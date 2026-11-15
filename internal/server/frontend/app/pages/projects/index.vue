@@ -187,6 +187,7 @@ import NewProjectDialog from '~/components/projects/NewProjectDialog.vue'
 import ProjectEditDialog from '~/components/projects/ProjectEditDialog.vue'
 import { useSessionStore } from '~/stores/session/sessionStore'
 import { canRevealFolder, desktopRevealFolder } from '~/utils/desktop'
+import { setHomeDir } from '~/utils/homeDir'
 import {
   filterProjects, projectInitials, relativeTime, shortenPath, sortProjects,
   type ProjectListItem, type ProjectSetupMode, type ProjectSort,
@@ -253,6 +254,7 @@ async function load() {
     const gitById = new Map(projects.value.map(p => [p.id, p.git]))
     projects.value = (body.projects || []).map((p: Row) => ({ ...p, git: p.git ?? gitById.get(p.id) ?? null }))
     home.value = body.home || ''
+    setHomeDir(home.value)
   } catch (err) {
     if (seq === loadSeq) loadError.value = err instanceof Error ? err.message : 'Could not load projects'
     return

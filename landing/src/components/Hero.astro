@@ -1,4 +1,5 @@
 ---
+import Bunting from './Bunting.astro';
 import { Image } from 'astro:assets';
 import Nav from './Nav.astro';
 import Cloud from './Cloud.astro';
@@ -7,14 +8,6 @@ import egg from '../assets/egg.webp';
 import cherub from '../assets/cherub.webp';
 import foot from '../assets/foot.webp';
 
-// Bunting: one swag of flags along a gentle curve, drawn once (not tiled).
-const flagColors = ['#e8458b', '#d4a017', '#2a9d8f', '#fbf5e6'];
-const flags = Array.from({ length: 34 }, (_, i) => {
-  const x = 12 + i * 47;
-  const t = i / 33;
-  const y = 6 + Math.sin(t * Math.PI * 2) ** 2 * 16;
-  return { x, y, c: flagColors[i % 4] };
-});
 ---
 <header class="hero" id="top">
   <div class="sky" aria-hidden="true">
@@ -57,12 +50,7 @@ const flags = Array.from({ length: 34 }, (_, i) => {
 
   <div class="bar">
     <div class="wrap"><Nav /></div>
-    <svg class="bunting" viewBox="0 0 1600 50" preserveAspectRatio="none" aria-hidden="true">
-      <path d={`M0 6 ${flags.map((f) => `L${f.x + 20} ${f.y + 1}`).join(' ')} L1600 6`} fill="none" stroke="#2b1d10" stroke-width="1.5" vector-effect="non-scaling-stroke" />
-      {flags.map((f) => (
-        <path d={`M${f.x} ${f.y} L${f.x + 40} ${f.y + 1} L${f.x + 20} ${f.y + 26} Z`} fill={f.c} stroke="#2b1d10" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
-      ))}
-    </svg>
+    <Bunting />
   </div>
 
   <div class="wrap grid">
@@ -77,11 +65,11 @@ const flags = Array.from({ length: 34 }, (_, i) => {
         iPhone, too.
       </p>
       <div class="cta">
-        <a class="btn primary" href="#interest" aria-describedby="dl-note">Get a license</a>
+        <a class="btn primary" href="#download" aria-describedby="dl-note">Get Eggify</a>
         <a class="btn film-link" href="#film">Watch the film</a>
         <a class="btn" href="#sketches">See the sketches</a>
       </div>
-      <p class="dl-note" id="dl-note">€20 once · relay €20 a year · Apple Silicon · macOS 13.4+</p>
+      <p class="dl-note" id="dl-note">Free and open source (MIT) · Apple Silicon · macOS 13.4+</p>
       <div class="gag">
         <button class="danger" id="stomp" type="button" aria-describedby="press-note">Do not press this button</button>
         <span class="press-note" id="press-note">(It releases the foot.)</span>
@@ -263,14 +251,6 @@ const flags = Array.from({ length: 34 }, (_, i) => {
     background: var(--card);
     border-bottom: 3px solid var(--ink);
     box-shadow: 0 3px 0 var(--crimson, #9e2f4c);
-  }
-  .bunting {
-    position: absolute;
-    left: 0;
-    top: calc(100% + 3px);
-    width: 100%;
-    height: 40px;
-    filter: drop-shadow(1px 2px 0 rgba(43, 29, 16, 0.18));
   }
 
   .grid {

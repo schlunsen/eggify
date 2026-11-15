@@ -63,7 +63,6 @@ func privilegedRouteApp(t *testing.T) *fiber.App {
 	RegisterTunnel(api, nil)
 	RegisterProject(api, nil)
 	RegisterGit(api, nil)
-	RegisterLicense(api, nil)
 	RegisterRefero(api, nil)
 	RegisterPacks(api, nil)
 	RegisterAnalytics(api, nil)
@@ -157,9 +156,6 @@ var privilegedRoutes = []routeCase{
 	// Feature files are written into (and deleted from) the user's project.
 	{"PUT", "/api/projects/p/features/x", `{"content":"x"}`},
 	{"DELETE", "/api/projects/p/features/x", ""},
-	// Licensing: an agent must not swap the serial or give the seat away.
-	{"POST", "/api/license/activate", `{"serial":"EGG-7H3K9-Q2M4X-8R6T1-V5N0T"}`},
-	{"POST", "/api/license/deactivate", ""},
 	// The other Macs this Mac's desktop app is paired with (ADR 014): a pair
 	// code signs its holder in to the other Mac.
 	{"GET", "/api/machines/paired", ""},
@@ -240,8 +236,6 @@ var unprivilegedRoutes = []routeCase{
 	{"GET", "/api/projects/p/areas/a1", ""},
 	{"GET", "/api/projects/p/features", ""}, // slash-command list; never leaves the project
 	{"GET", "/api/projects/p/features/x", ""},
-	{"GET", "/api/license", ""},
-	{"POST", "/api/license/check", ""}, // a renewal: harmless
 }
 
 func doRoute(t *testing.T, app *fiber.App, rc routeCase, who string) (int, map[string]any) {

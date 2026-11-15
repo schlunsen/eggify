@@ -121,6 +121,7 @@
           :model-switch-disabled-reason="metricsSidebarRef?.switchDisabledReason || ''"
           @change-model="openSessionModelSwitcher"
           :has-active-session="!!activeSessionId"
+          :show-first-project-nudge="firstProjectNudge.show.value"
           :session-id="activeSessionId"
           :project-id="selectedProject?.id || currentProjectId"
           :messages="activeMessages"
@@ -195,6 +196,11 @@
               :show="shouldShowTodoBox"
               :todos="activeSessionTodos"
             />
+          </template>
+
+          <!-- First run: no projects yet -->
+          <template #first-project-nudge>
+            <FirstProjectNudge @choose="firstProjectNudge.choose" @dismiss="firstProjectNudge.dismiss" />
           </template>
 
           <!-- Messages Slot -->
@@ -431,6 +437,8 @@ import ToolExecutionBar from '~/components/agents/ToolExecutionBar.vue'
 const CreateSessionModal = defineAsyncComponent(() => import('~/components/agents/CreateSessionModal.vue'))
 import SessionsSidebar from '~/components/agents/SessionsSidebar.vue'
 import ChatArea from '~/components/agents/ChatArea.vue'
+import FirstProjectNudge from '~/components/agents/FirstProjectNudge.vue'
+import { useFirstProjectNudge } from '~/composables/useFirstProjectNudge'
 import MetricsSidebar from '~/components/agents/MetricsSidebar.vue'
 import ChatMessageList from '~/components/agents/ChatMessageList.vue'
 import TodoWriteBox from '~/components/agents/TodoWriteBox.vue'
@@ -514,6 +522,11 @@ const settingsStore = useSettings()
 const { eventBus } = useEventBus()
 const migrationHelpers = useMigrationHelpers()
 const { fetchWithAuth } = useAuthenticatedFetch()
+const sessionsListLoaded = ref(false)
+const firstProjectNudge = useFirstProjectNudge({
+  loaded: sessionsListLoaded,
+  count: computed(() => sessionStore.sessions.length),
+})
 // The chat shows the active session's messages: ![alt](path) in a reply shows
 // that session's file (utils/agents/messageFormatters.ts).
 const formatMessage = (content: any) => formatMessageFor(content, { sessionId: sessionStore.activeSessionId })
@@ -1289,6 +1302,7 @@ function applySessionsList(data: any, fromSocket: boolean) {
   }
 
   // Emit event
+  sessionsListLoaded.value = true
   eventBus.emit('sessions:loaded', { count: deduplicatedSessions.length })
 }
 

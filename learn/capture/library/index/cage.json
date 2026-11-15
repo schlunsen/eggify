@@ -1,0 +1,107 @@
+[
+  {
+    "area": "cage",
+    "name": "create-session-sandbox",
+    "boxes": [
+      "dialog",
+      "sandbox",
+      "permissionMode"
+    ],
+    "how": "seeded; runtimes stubbed as ready (not submitted)",
+    "shows": "Create Session → Session settings: the Filesystem sandbox switch (on by default) with what it does, and the permission mode above it"
+  },
+  {
+    "area": "cage",
+    "name": "settings-sandbox",
+    "boxes": [
+      "section",
+      "defaultSwitch",
+      "domains",
+      "save"
+    ],
+    "how": "seeded (the server's own defaults)",
+    "shows": "Settings → Sandbox: \"Sandbox new sessions\" default and the list of domains sandboxed commands may reach"
+  },
+  {
+    "area": "cage",
+    "name": "workspace-trust-banner",
+    "boxes": [
+      "banner",
+      "review",
+      "trust"
+    ],
+    "how": "seeded (real .claude/settings.json, hook script and .mcp.json in the demo repository; the server's own answer)",
+    "shows": "The workspace-trust notice in a chat: the folder has its own Claude config (hook, allowed tools, MCP server, env) which is not loaded until you trust it"
+  },
+  {
+    "area": "cage",
+    "name": "workspace-trust-review",
+    "boxes": [
+      "banner",
+      "details",
+      "trust"
+    ],
+    "how": "seeded (the server's own inventory of the demo repository)",
+    "shows": "The notice expanded with Review: every hook command, allowed tool, MCP server, env value and script the folder would load, and Trust folder"
+  },
+  {
+    "area": "cage",
+    "name": "review-queue-skills",
+    "boxes": [
+      "queue",
+      "count",
+      "item"
+    ],
+    "how": "seeded (real SKILL.md folders in the demo home, found by the server's discovery)",
+    "shows": "Skills page, review queue: skills found on disk wait for approval; each shows where it came from, its files and its settings"
+  },
+  {
+    "area": "cage",
+    "name": "review-queue-skill-detail",
+    "boxes": [
+      "item",
+      "settings",
+      "hook",
+      "files",
+      "exec",
+      "actions"
+    ],
+    "how": "seeded (real SKILL.md folder with a hook, allowed-tools and an executable script)",
+    "shows": "A pending skill that asks for a lot: its hook command and allowed tools flagged as risky settings, the folder's files with the executable script marked, Approve / Edit + Approve / Reject"
+  },
+  {
+    "area": "cage",
+    "name": "review-queue-memories",
+    "boxes": [
+      "queue",
+      "item",
+      "session",
+      "approve"
+    ],
+    "how": "seeded (memory rows written with status pending / approved)",
+    "shows": "A project's memories page: two memories an agent stored wait for review (with the session that wrote them), above the approved ones"
+  },
+  {
+    "area": "cage",
+    "name": "yolo-toggle",
+    "boxes": [
+      "permissions",
+      "yolo",
+      "sandbox",
+      "header"
+    ],
+    "how": "seeded",
+    "shows": "The right sidebar's Permissions row opened: the YOLO Mode switch (off), always-allow rules, the session's sandbox state"
+  },
+  {
+    "area": "cage",
+    "name": "sidebar-sandboxed",
+    "boxes": [
+      "permissions",
+      "yolo",
+      "sandbox"
+    ],
+    "how": "seeded; the session's full options re-sent as a session_updated event (the list leaves \"sandboxed\" out)",
+    "shows": "The Permissions row of a sandboxed session (the team orchestrator): YOLO off, \"Sandboxed\" state"
+  }
+]

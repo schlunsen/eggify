@@ -1,0 +1,385 @@
+{
+  "number": 1,
+  "slug": "quick-start",
+  "title": "Quick start",
+  "summary": "From download to your first agent: create your account, connect Claude Code, Codex or another provider, open a project and start a session.",
+  "next": "Projects, sessions and tags",
+  "scenes": [
+    {
+      "id": "title",
+      "kind": "title",
+      "lines": [
+        {
+          "id": "t1",
+          "text": "Quick start. From download to your first working agent, in about ninety seconds."
+        }
+      ]
+    },
+    {
+      "id": "install",
+      "kind": "shot",
+      "heading": "Install",
+      "shot": "install",
+      "lines": [
+        {
+          "id": "i1",
+          "text": "Download Eggify from eggify.xyz and drag it into Applications.",
+          "say": "Download Eggify from eggify dot x y z, and drag it into Applications."
+        },
+        {
+          "id": "i2",
+          "text": "Then open it and enter your serial number to activate it."
+        }
+      ],
+      "beats": [
+        {
+          "line": "i1",
+          "at": 0.0,
+          "zoom": {
+            "x": 340,
+            "y": 170,
+            "w": 1240,
+            "h": 698
+          }
+        },
+        {
+          "line": "i1",
+          "at": 0.9,
+          "highlight": "downloadButton",
+          "cursor": "downloadButton",
+          "click": true
+        },
+        {
+          "line": "i2",
+          "at": 0.2,
+          "highlight": "stepOpen",
+          "cursor": null
+        }
+      ]
+    },
+    {
+      "id": "account",
+      "kind": "shot",
+      "heading": "Create your account",
+      "shot": "setup",
+      "lines": [
+        {
+          "id": "a1",
+          "text": "The first time it opens, you create an admin account."
+        },
+        {
+          "id": "a2",
+          "text": "This login guards your agents, so choose a proper password."
+        }
+      ],
+      "beats": [
+        {
+          "line": "a1",
+          "at": 0.3,
+          "zoom": {
+            "x": 560,
+            "y": 380,
+            "w": 800,
+            "h": 450
+          }
+        },
+        {
+          "line": "a2",
+          "at": 0.2,
+          "highlight": "password"
+        },
+        {
+          "line": "a2",
+          "at": 2.3,
+          "highlight": "createButton",
+          "cursor": "createButton",
+          "click": true
+        }
+      ]
+    },
+    {
+      "id": "agents",
+      "kind": "shot",
+      "heading": "Connect your agents",
+      "shot": "runtimes",
+      "lines": [
+        {
+          "id": "g1",
+          "text": "Next, Eggify checks which agents you have. Claude Code and Codex each get a card that shows whether they are installed and signed in."
+        },
+        {
+          "id": "g2",
+          "text": "If one is not signed in, press its Log in button. Eggify runs the tool's own login, and your credentials stay with the tool."
+        }
+      ],
+      "beats": [
+        {
+          "line": "g1",
+          "at": 0.4,
+          "zoom": "section"
+        },
+        {
+          "line": "g1",
+          "at": 3.0,
+          "highlight": "claudeCard",
+          "label": "Installed and signed in"
+        },
+        {
+          "line": "g1",
+          "at": 5.6,
+          "highlight": "codexBadge",
+          "label": null
+        },
+        {
+          "line": "g2",
+          "at": 0.6,
+          "highlight": "loginButton",
+          "cursor": "loginButton",
+          "click": true
+        },
+        {
+          "line": "g2",
+          "at": 3.0,
+          "shot": "runtimes-login",
+          "zoom": "section",
+          "highlight": "waiting",
+          "cursor": null
+        }
+      ]
+    },
+    {
+      "id": "providers",
+      "kind": "shot",
+      "heading": "Other providers",
+      "shot": "providers-list",
+      "lines": [
+        {
+          "id": "p1",
+          "text": "Prefer another model? Open Providers and add an API key for DeepSeek, GLM, Kimi, or a custom endpoint.",
+          "say": "Prefer another model? Open Providers, and add an A P I key for DeepSeek, G L M, Kimi, or a custom endpoint."
+        }
+      ],
+      "beats": [
+        {
+          "line": "p1",
+          "at": 1.2,
+          "highlight": "deepseekRow",
+          "cursor": "setupButton",
+          "click": true
+        },
+        {
+          "line": "p1",
+          "at": 2.8,
+          "shot": "providers",
+          "zoom": "dialog",
+          "highlight": "apiKey",
+          "cursor": null
+        },
+        {
+          "line": "p1",
+          "at": 5.6,
+          "highlight": "saveButton",
+          "cursor": "saveButton",
+          "click": true
+        }
+      ]
+    },
+    {
+      "id": "project",
+      "kind": "shot",
+      "heading": "Open a project",
+      "shot": "first-project",
+      "lines": [
+        {
+          "id": "n2",
+          "text": "Open a folder you already have, clone a repository, or start an empty one."
+        },
+        {
+          "id": "n3",
+          "text": "Here we choose an existing folder and add it."
+        }
+      ],
+      "beats": [
+        {
+          "line": "n2",
+          "at": 0.0,
+          "zoom": {
+            "x": 822,
+            "y": 330,
+            "w": 840,
+            "h": 472
+          }
+        },
+        {
+          "line": "n2",
+          "at": 0.3,
+          "highlight": "existing"
+        },
+        {
+          "line": "n2",
+          "at": 1.9,
+          "highlight": "clone"
+        },
+        {
+          "line": "n2",
+          "at": 3.2,
+          "highlight": "empty"
+        },
+        {
+          "line": "n3",
+          "at": 0.0,
+          "highlight": "existing",
+          "cursor": "existing",
+          "click": true
+        },
+        {
+          "line": "n3",
+          "at": 0.8,
+          "shot": "new-project-folder",
+          "zoom": {
+            "x": 560,
+            "y": 80,
+            "w": 800,
+            "h": 450
+          },
+          "highlight": "folder",
+          "cursor": null
+        },
+        {
+          "line": "n3",
+          "at": 1.8,
+          "highlight": "submit",
+          "cursor": "submit",
+          "click": true
+        }
+      ]
+    },
+    {
+      "id": "session",
+      "kind": "shot",
+      "heading": "Start a session",
+      "shot": "new-project-done",
+      "lines": [
+        {
+          "id": "s1",
+          "text": "The project is ready. Press Start a session here."
+        },
+        {
+          "id": "s2",
+          "text": "Pick a model, with its provider shown underneath, and press Create Session."
+        }
+      ],
+      "beats": [
+        {
+          "line": "s1",
+          "at": 0.0,
+          "zoom": {
+            "x": 560,
+            "y": 80,
+            "w": 800,
+            "h": 450
+          }
+        },
+        {
+          "line": "s1",
+          "at": 1.3,
+          "highlight": "startSession",
+          "cursor": "startSession",
+          "click": true
+        },
+        {
+          "line": "s2",
+          "at": 0.0,
+          "shot": "create-session",
+          "zoom": {
+            "x": 600,
+            "y": 90,
+            "w": 720,
+            "h": 405
+          },
+          "highlight": "modelRow",
+          "cursor": null
+        },
+        {
+          "line": "s2",
+          "at": 3.0,
+          "zoom": {
+            "x": 600,
+            "y": 590,
+            "w": 720,
+            "h": 405
+          },
+          "highlight": "createButton",
+          "cursor": "createButton",
+          "click": true
+        }
+      ]
+    },
+    {
+      "id": "working",
+      "kind": "shot",
+      "heading": "Watch it work",
+      "shot": "session-typing",
+      "lines": [
+        {
+          "id": "w1",
+          "text": "Type what you want done, and the agent gets to work."
+        },
+        {
+          "id": "w2",
+          "text": "You see every file it reads, every edit and every command, as it happens."
+        }
+      ],
+      "beats": [
+        {
+          "line": "w1",
+          "at": 0.2,
+          "zoom": {
+            "x": 560,
+            "y": 480,
+            "w": 1040,
+            "h": 585
+          },
+          "highlight": "composer"
+        },
+        {
+          "line": "w2",
+          "at": 0.0,
+          "shot": "session",
+          "zoom": {
+            "x": 576,
+            "y": 160,
+            "w": 1010,
+            "h": 660
+          },
+          "highlight": "toolRead"
+        },
+        {
+          "line": "w2",
+          "at": 1.5,
+          "highlight": "toolEdit"
+        },
+        {
+          "line": "w2",
+          "at": 2.7,
+          "highlight": "toolBash"
+        },
+        {
+          "line": "w2",
+          "at": 4.0,
+          "highlight": "reply"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "kind": "outro",
+      "lines": [
+        {
+          "id": "o1",
+          "text": "That is the quick start. Next: projects, sessions and tags. Do try to keep up."
+        }
+      ]
+    }
+  ]
+}

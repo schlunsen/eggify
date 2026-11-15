@@ -24,7 +24,6 @@ type AuthHandler struct {
 	tlsEnabled        bool
 	onSessionRevoked  func(tokenHash string) // closes the session's agent and terminal WebSockets (optional)
 	loginThrottle     *loginThrottle         // per-username lockout + global cap
-	licenseRequired   func() bool            // licensing enforced and not licensed (optional)
 }
 
 // NewAuthHandler creates a new auth handler
@@ -230,7 +229,7 @@ func (h *AuthHandler) HandleAuthStatus(c *fiber.Ctx) error {
 
 	// If setup is needed, enable auth temporarily for the setup flow
 	if needsSetup {
-		return h.authStatusJSON(c, fiber.Map{
+		return c.JSON(fiber.Map{
 			"enabled":       true,  // Auth is enabled during setup
 			"authenticated": false, // Can't be authenticated during setup
 			"requireLogin":  false, // Don't require login during setup
@@ -240,7 +239,7 @@ func (h *AuthHandler) HandleAuthStatus(c *fiber.Ctx) error {
 
 	// Check if user auth is enabled
 	if !h.config.Auth.UserAuthEnabled {
-		return h.authStatusJSON(c, fiber.Map{
+		return c.JSON(fiber.Map{
 			"enabled":       false,
 			"authenticated": false,
 			"requireLogin":  false,
@@ -307,11 +306,11 @@ func (h *AuthHandler) HandleAuthStatus(c *fiber.Ctx) error {
 				}
 			}
 
-			return h.authStatusJSON(c, response)
+			return c.JSON(response)
 		}
 	}
 
-	return h.authStatusJSON(c, fiber.Map{
+	return c.JSON(fiber.Map{
 		"enabled":        true,
 		"authenticated":  false,
 		"requireLogin":   h.config.Auth.RequireLogin,
@@ -319,16 +318,6 @@ func (h *AuthHandler) HandleAuthStatus(c *fiber.Ctx) error {
 		"oauthProviders": oauthProviders,
 		"needs_setup":    false, // Users exist if we reach here
 	})
-}
-
-// authStatusJSON answers GET /api/auth/status with license_required added:
-// the SPA's route guard reads it to open the activation page (before
-// /setup on a fresh install; see license.go).
-func (h *AuthHandler) authStatusJSON(c *fiber.Ctx, m fiber.Map) error {
-	if h.licenseRequired != nil && h.licenseRequired() {
-		m["license_required"] = true
-	}
-	return c.JSON(m)
 }
 
 // HandleChangePassword handles password change

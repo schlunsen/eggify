@@ -305,10 +305,6 @@ class EggifyAPIClient: NSObject {
             throw EggifyAPIError.unauthorized
         case 403 where body.string("code") == "user_required":
             throw EggifyAPIError.userRequired(message ?? "Sign in again to do this.")
-        case 402 where LicenseGate.isLicenseRequired(statusCode: http.statusCode, body: body):
-            // Eggify on the computer isn't activated: one full-screen state.
-            LicenseGate.announce()
-            throw EggifyAPIError.licenseRequired
         case 404:
             throw EggifyAPIError.notFound
         default:
@@ -805,7 +801,6 @@ class EggifyAPIClient: NSObject {
         case invalidResponse
         case unauthorized
         case userRequired(String)
-        case licenseRequired
         case notFound
         case decodingError(Error)
         case serverError(Int)
@@ -825,8 +820,6 @@ class EggifyAPIClient: NSObject {
                 return "Your session has expired. Sign in again."
             case .userRequired(let message):
                 return message
-            case .licenseRequired:
-                return LicenseGate.message
             case .notFound:
                 return "Not found on the server"
             case .decodingError:

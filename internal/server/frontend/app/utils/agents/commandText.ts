@@ -3,17 +3,16 @@
  * leading `cd <dir> &&` (kept apart as the folder) and shortens home and agent
  * temp paths.
  */
+import { shortenHomeIn } from '../homeDir'
 
-// /Users/<name> or /home/<name> at the start of a path → ~
-const HOME_RE = /(^|[\s'"=:(,])\/(?:Users|home)\/[^/\s'"]+(?=[/\s'"),;]|$)/g
 // Claude Code's per-session temp folders: /private/tmp/claude-501/<project>/<session uuid>
 const AGENT_TMP_RE = /\/(?:private\/)?tmp\/claude-\d+\/[^/\s'"]+\/[0-9a-f]{8}-[0-9a-f-]{27}/g
 // A leading `cd <dir> &&` / `cd <dir>;`
 const CD_RE = /^cd\s+("[^"]+"|'[^']+'|[^\s;&|]+)\s*(?:&&|;)\s*/
 
-/** Shortens home and agent temp paths: /Users/me/projects/x → ~/projects/x. */
+/** Shortens the home folder (once the server's is known) and agent temp paths: /Users/me/projects/x → ~/projects/x. */
 export function tidyPaths(text: string): string {
-  return text.replace(AGENT_TMP_RE, '/tmp/…').replace(HOME_RE, '$1~')
+  return shortenHomeIn(text.replace(AGENT_TMP_RE, '/tmp/…'))
 }
 
 export interface CleanCommand {

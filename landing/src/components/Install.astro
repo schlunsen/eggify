@@ -4,65 +4,13 @@ import icon from '../assets/icon.png';
 import { DMG_URL, DESKTOP_VERSION } from '../data/release';
 
 const perks = ['Signed & notarized', 'Updates itself', 'Menu bar tray', 'Checks your Claude Code & Codex logins'];
-const includes = ['Up to 3 Macs', 'The iPhone app', 'Remote access with your own ngrok account'];
 ---
 <section id="install">
   <div class="wrap">
     <div class="section-head">
       <div class="kicker">Getting started</div>
       <h2>Hatching instructions</h2>
-      <p>Eggify is a paid app. Get a license, download, drag, open.</p>
-    </div>
-
-    <div class="license" id="license">
-      <div class="kicker">Prices</div>
-      <h3>Eggify costs money</h3>
-      <p class="license-lede">
-        Eggify only runs with a license. Enter your serial number when it first opens; it then
-        renews quietly and keeps working offline for 30 days.
-      </p>
-      <div class="plans">
-        <div class="plan">
-          <div class="plan-name">Eggify</div>
-          <div class="plan-price">€20 <span>once</span></div>
-          <ul class="includes">{includes.map((i) => <li>{i}</li>)}</ul>
-        </div>
-        <div class="plan">
-          <div class="plan-name">Eggify relay</div>
-          <div class="plan-price">€20 <span>a year</span></div>
-          <p>Reach your Mac from the iPhone app anywhere, end-to-end encrypted, with nothing to set up. Optional: ngrok works too, with your own account.</p>
-        </div>
-      </div>
-      <p class="license-note"><span class="badge">Early access</span> Licenses are not on sale yet. To get one, leave your email below and we will write to you when you can buy.</p>
-
-      <div class="interest" id="interest">
-        <h4>Want a license? Leave your email.</h4>
-        <p class="interest-lede">We will email you about Eggify and how to get a license. This is not a purchase.</p>
-
-        <form class="interest-form" id="interest-form" method="post">
-          <div class="field">
-            <label for="interest-email">Email</label>
-            <input id="interest-email" name="email" type="email" required autocomplete="email" placeholder="you@example.com" aria-describedby="interest-error" />
-            <p class="interest-error" id="interest-error" role="alert"></p>
-          </div>
-          <div class="field">
-            <label for="interest-name">Name (optional)</label>
-            <input id="interest-name" name="name" type="text" autocomplete="name" />
-          </div>
-          <div class="field field-wide">
-            <label for="interest-note">Note (optional)</label>
-            <textarea id="interest-note" name="note" rows="3" maxlength="1000" placeholder="What would you use Eggify for?"></textarea>
-          </div>
-          <div class="hp" aria-hidden="true">
-            <label for="interest-contact-url">Leave this empty</label>
-            <input id="interest-contact-url" name="contact_url" type="text" tabindex="-1" autocomplete="off" />
-          </div>
-          <div class="interest-actions field-wide">
-            <button class="btn primary" id="interest-submit" type="submit">I'm interested</button>
-          </div>
-        </form>
-        <p class="interest-live" id="interest-live" role="status"></p>
-      </div>
+      <p>Eggify is free and open source. Download, drag, open.</p>
     </div>
 
     <div class="download" id="download">
@@ -71,13 +19,13 @@ const includes = ['Up to 3 Macs', 'The iPhone app', 'Remote access with your own
       </div>
       <div class="dl-body">
         <h3>Eggify for Mac</h3>
-        <p>The whole workstation in one app, server included. Drag it to Applications, open it, enter your serial number, and it keeps itself up to date.</p>
+        <p>The whole workstation in one app, server included. Drag it to Applications, open it, and it keeps itself up to date. It is free, open source (MIT), and the code is on <a href="https://github.com/schlunsen/eggify">GitHub</a>.</p>
         <ul class="perks">{perks.map((p) => <li>{p}</li>)}</ul>
       </div>
       <div class="download-cta">
         <a class="btn primary" href={DMG_URL}>Download for macOS</a>
         <span>Version <span data-desktop-version>{DESKTOP_VERSION}</span> · Apple Silicon · macOS 13.4+</span>
-        <span>Needs a license to run</span>
+        <span>Free · MIT License</span>
       </div>
     </div>
 
@@ -85,7 +33,7 @@ const includes = ['Up to 3 Macs', 'The iPhone app', 'Remote access with your own
       <ol>
         <li>
           <h3>Open the app</h3>
-          <p>Drag Eggify to Applications and open it. Enter your serial number, then choose an admin username and password.</p>
+          <p>Drag Eggify to Applications and open it, then choose an admin username and password.</p>
         </li>
         <li>
           <h3>Wake the agents</h3>
@@ -102,41 +50,6 @@ const includes = ['Up to 3 Macs', 'The iPhone app', 'Remote access with your own
 </section>
 
 <style>
-  .license {
-    background: var(--paper-light);
-    border: 2px solid var(--ink);
-    box-shadow: 8px 9px 0 rgba(43, 29, 16, 0.2);
-    padding: 26px 30px;
-    margin-bottom: 28px;
-    transform: rotate(0.3deg);
-  }
-  .license h3 { margin-top: 4px; font-size: 32px; }
-  .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin: 18px 0 14px; }
-  .plan { background: var(--card); border: 2px solid var(--ink); padding: 18px 20px; }
-  .plan-name { font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.08em; font-size: 14px; color: var(--ink-soft); }
-  .plan-price { font-size: 38px; font-weight: 700; margin: 4px 0 8px; }
-  .plan-price span { font-size: 18px; font-weight: 400; color: var(--ink-soft); }
-  .plan p { font-size: 16px; }
-  .license-note { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 16px; }
-  .license p { color: var(--ink-soft); font-size: 18px; }
-  .includes { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-  .includes li {
-    font-family: var(--mono);
-    font-size: 13px;
-    background: var(--card);
-    border: 1.5px solid var(--ink);
-    padding: 3px 9px;
-  }
-  .includes li::before { content: '✓ '; color: var(--teal); font-weight: 700; }
-  .badge {
-    font-family: var(--mono);
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border: 2px solid var(--ink);
-    padding: 3px 10px;
-    background: var(--card);
-  }
   .download {
     display: flex;
     flex-wrap: wrap;
@@ -191,199 +104,4 @@ const includes = ['Up to 3 Macs', 'The iPhone app', 'Remote access with your own
   h3 { font-family: var(--display); font-weight: 700; font-variation-settings: 'SOFT' 100; font-size: 26px; margin-top: 8px; }
   ol li p { color: var(--ink-soft); font-size: 18px; }
 
-  .interest { position: relative; margin-top: 30px; padding-top: 24px; border-top: 2px dashed var(--ink); }
-  .interest h4 {
-    font-family: var(--display);
-    font-weight: 700;
-    font-variation-settings: 'SOFT' 100;
-    font-size: 26px;
-    line-height: 1.15;
-    margin: 4px 0 6px;
-  }
-  .interest .interest-lede { font-size: 18px; color: var(--ink-soft); }
-  .interest-form[hidden] { display: none; }
-  .interest-form {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 14px 18px;
-    margin-top: 16px;
-  }
-  .interest .field { display: grid; gap: 4px; align-content: start; }
-  .interest .field label {
-    font-family: var(--mono);
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--ink-soft);
-  }
-  .interest input,
-  .interest textarea {
-    width: 100%;
-    font: inherit;
-    font-size: 18px;
-    color: var(--ink);
-    background: var(--card);
-    border: 2px solid var(--ink);
-    border-radius: 0;
-    padding: 9px 12px;
-  }
-  .interest textarea { resize: vertical; min-height: 88px; }
-  .interest input:focus-visible,
-  .interest textarea:focus-visible { outline: 3px solid var(--mustard); outline-offset: 2px; }
-  .interest input[aria-invalid='true'] { border-color: var(--pink-ink); }
-  .interest .field-wide { grid-column: 1 / -1; }
-  .interest .interest-error {
-    font-family: var(--mono);
-    font-size: 16px;
-    color: var(--pink-ink);
-  }
-  .interest-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-  .interest .btn:disabled,
-  .interest .btn:disabled:hover { opacity: 0.6; cursor: progress; transform: none; box-shadow: var(--shadow); }
-  .interest .interest-live { margin-top: 16px; font-size: 20px; color: var(--ink); }
-  .interest .interest-live:empty { margin: 0; }
-  .interest .interest-live:not(:empty) { background: var(--card); border: 2px solid var(--ink); padding: 14px 18px; }
-  .interest .hp {
-    position: absolute;
-    left: -10000px;
-    top: auto;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-  }
-
 </style>
-
-<script>
-  // "I'm interested" form. Posts to the license server with a plain fetch.
-  // Server text is always written with textContent, never innerHTML.
-  // PUBLIC_LICENSE_URL (build-time env, e.g. https://license.example.com) names the license
-  // server; without it the form reports that the server cannot be reached.
-  const LICENSE_URL = ((import.meta.env.PUBLIC_LICENSE_URL as string | undefined) ?? '').replace(/\/$/, '');
-  const ENDPOINT = LICENSE_URL ? `${LICENSE_URL}/v1/interest` : '';
-  const THANKS = 'Thanks, we will be in touch.';
-  const INVALID_EMAIL = "That email address doesn't look right.";
-  const UNREACHABLE = 'We could not reach the server. Check your connection and try again.';
-  const GENERIC = 'Something went wrong. Please try again.';
-  const IDLE = "I'm interested";
-
-  const form = document.getElementById('interest-form');
-  const email = document.getElementById('interest-email');
-  const error = document.getElementById('interest-error');
-  const live = document.getElementById('interest-live');
-  const submit = document.getElementById('interest-submit');
-
-  if (
-    form instanceof HTMLFormElement &&
-    email instanceof HTMLInputElement &&
-    error instanceof HTMLElement &&
-    live instanceof HTMLElement &&
-    submit instanceof HTMLButtonElement
-  ) {
-    let sending = false;
-
-    // "Get a license" / "Get Eggify" links land here: scroll to the form and
-    // put the cursor in the email field.
-    const focusInterest = () => {
-      document.getElementById('interest')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      if (!form.hidden) email.focus({ preventScroll: true });
-    };
-    document.querySelectorAll('a[href="#interest"]').forEach((a) =>
-      a.addEventListener('click', (e) => {
-        e.preventDefault();
-        history.replaceState(null, '', '#interest');
-        focusInterest();
-      }),
-    );
-    if (location.hash === '#interest') focusInterest();
-
-    const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
-
-    // Retry-After is in seconds; say it in plain words.
-    const retryNote = (header: string | null): string => {
-      const seconds = header === null ? Number.NaN : Number.parseInt(header, 10);
-      if (!Number.isFinite(seconds) || seconds <= 0) return '';
-      if (seconds < 60) return ` Try again in ${plural(seconds, 'second')}.`;
-      if (seconds < 3600) return ` Try again in about ${plural(Math.ceil(seconds / 60), 'minute')}.`;
-      return ` Try again in about ${plural(Math.ceil(seconds / 3600), 'hour')}.`;
-    };
-
-    const messageOf = (payload: unknown): string | null => {
-      if (typeof payload !== 'object' || payload === null) return null;
-      const message = (payload as { message?: unknown }).message;
-      return typeof message === 'string' && message.trim() !== '' ? message : null;
-    };
-
-    const showError = (text: string, invalid = false) => {
-      error.textContent = text;
-      if (invalid) {
-        email.setAttribute('aria-invalid', 'true');
-      } else {
-        email.removeAttribute('aria-invalid');
-      }
-    };
-
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      if (sending) return;
-
-      showError('');
-      const data = new FormData(form);
-      const field = (key: string) => String(data.get(key) ?? '').trim();
-      const body: Record<string, string> = {
-        email: field('email'),
-        // the server's honeypot key is `website`; the field is named differently so
-        // browser autofill doesn't fill it
-        website: String(data.get('contact_url') ?? ''),
-      };
-      const name = field('name');
-      const note = field('note');
-      if (name) body.name = name;
-      if (note) body.note = note;
-
-      sending = true;
-      submit.disabled = true;
-      submit.textContent = 'Sending…';
-      let done = false;
-
-      try {
-        if (!ENDPOINT) throw new Error('no license server configured');
-        const res = await fetch(ENDPOINT, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(body),
-          credentials: 'omit',
-        });
-        const payload: unknown = await res.json().catch(() => null);
-        const message = messageOf(payload);
-
-        if (res.ok) {
-          done = true;
-          form.hidden = true;
-          live.tabIndex = -1;
-          live.textContent = message ?? THANKS;
-          live.focus();
-          return;
-        }
-
-        if (res.status === 400) {
-          showError(message ?? INVALID_EMAIL, true);
-          email.focus();
-        } else if (res.status === 429 || res.status === 503) {
-          showError((message ?? GENERIC) + retryNote(res.headers.get('Retry-After')));
-        } else {
-          showError(message ?? GENERIC);
-        }
-      } catch {
-        showError(UNREACHABLE);
-      } finally {
-        sending = false;
-        if (!done) {
-          submit.disabled = false;
-          submit.textContent = IDLE;
-        }
-      }
-    });
-  }
-</script>
-

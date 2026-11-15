@@ -3,6 +3,7 @@ import { useSettings } from '~/composables/useStores'
 import { useSessionStore } from '~/stores/session/sessionStore'
 import { connectorsPayload, saveLastConnectorSelection } from '~/utils/agents/connectorSelection'
 import { policyFromKey, questionPolicyApplies } from '~/utils/agents/questionPolicy'
+import { grantsPayload } from '~/utils/agents/sandboxGrants'
 import { saveTeamSetup, teamOptions } from '~/utils/agents/team'
 
 interface SessionActionParams {
@@ -332,6 +333,17 @@ export function useSessionActions(params: SessionActionParams) {
       if ((form as any).codexNetworkAccess === true && (form as any).sandboxed !== false && form.modelProvider === 'codex') {
         options.sandboxed = true
         options.codex_network_access = true
+      }
+
+      // Sandbox grants (Claude CLI sessions): the dialog only holds a choice
+      // while the sandbox is on, and the session is then explicitly sandboxed.
+      const grants = grantsPayload({
+        grants: (form as any).sandboxGrants || [],
+        paths: (form as any).sandboxGrantPaths || [],
+      })
+      if (grants.sandbox_grants || grants.sandbox_grant_paths) {
+        Object.assign(options, grants)
+        options.sandboxed = true
       }
 
       // Agent questions: only sent when chosen; otherwise the session follows

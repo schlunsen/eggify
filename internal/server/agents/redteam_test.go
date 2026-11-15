@@ -103,6 +103,8 @@ func TestRedTeam_WS_APIKeyCannotDoPrivilegedActions(t *testing.T) {
 		"create session bypass mode":             {"type": "create_session", "session_id": uuid.NewString(), "options": map[string]any{"permission_mode": "bypassPermissions"}},
 		"accept handover":                        {"type": "accept_handover", "handover_token": created.HandoverToken, "auto_start": true, "initial_prompt": "go"},
 		"create unsandboxed session":             {"type": "create_session", "session_id": uuid.NewString(), "options": map[string]any{"sandboxed": false}},
+		"create session with sandbox grants":     {"type": "create_session", "session_id": uuid.NewString(), "options": map[string]any{"sandboxed": true, "sandbox_grants": []string{"localhost"}}},
+		"create session with a granted folder":   {"type": "create_session", "session_id": uuid.NewString(), "options": map[string]any{"sandboxed": true, "sandbox_grant_paths": []map[string]any{{"path": "~/", "write": true}}}},
 		"create a team (workers without a card)": {"type": "create_session", "session_id": uuid.NewString(), "options": map[string]any{"team": map[string]any{"builder": map[string]any{"provider": "claude", "model": "haiku"}, "reviewer": map[string]any{"provider": "claude", "model": "opus"}}}},
 	} {
 		require.NoError(t, agent.WriteJSON(msg), name)
@@ -125,6 +127,30 @@ func TestRedTeam_WS_APIKeyCannotDoPrivilegedActions(t *testing.T) {
 	rec, err := database.NewRepository(database.GetInstance()).GetHandoverByToken(created.HandoverToken)
 	require.NoError(t, err)
 	require.Nil(t, rec.ConsumedAt, "the handover must still be unconsumed")
+}
+
+// An injected agent starts a sandboxed session with grants (ssh agent, GitHub
+// token, a writable folder) to reach what its own sandbox hides.
+func TestRedTeam_WS_AgentCannotGrantItselfSandboxAccess(t *testing.T) {
+	{
+		withEnforced(t, true)
+		w := newWSHarness(t)
+		agent := w.dial(t, "")
+		for name, opts := range map[string]map[string]any{
+			"ssh":          {"sandboxed": true, "sandbox_grants": []string{"ssh"}},
+			"github":       {"sandboxed": true, "sandbox_grants": []string{"github"}},
+			"cloud":        {"sandboxed": true, "sandbox_grants": []string{"cloud", "npm", "localhost"}},
+			"a folder":     {"sandboxed": true, "sandbox_grant_paths": []map[string]any{{"path": "~/projects", "write": true}}},
+			"unsandboxed":  {"sandboxed": false, "sandbox_grants": []string{"localhost"}},
+			"default only": {"sandbox_grants": []string{"localhost"}},
+		} {
+			id := uuid.NewString()
+			require.NoError(t, agent.WriteJSON(map[string]any{"type": "create_session", "session_id": id, "options": opts}), name)
+			got := w.expect(t, agent, func(m map[string]any) bool { return m["type"] == "error" })
+			require.True(t, isUserRequired(got), "%s: want user_required, got %v", name, got)
+		}
+		require.Len(t, w.sm.ListSessions(), 1, "no session may be created")
+	}
 }
 
 // An injected agent answers (or dismisses) its own "approve deploy_app?" card

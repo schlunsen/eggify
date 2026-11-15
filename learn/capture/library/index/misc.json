@@ -1,0 +1,78 @@
+[
+  {
+    "area": "misc",
+    "name": "settings-home",
+    "boxes": [
+      "nav",
+      "account"
+    ],
+    "how": "seeded (the signed-in devices card shows this demo server's own sessions)",
+    "shows": "Settings: the section list on the left (Account & security … What's new) and Account & security open"
+  },
+  {
+    "area": "misc",
+    "name": "settings-appearance",
+    "boxes": [
+      "section"
+    ],
+    "how": "seeded (the server's own settings)",
+    "shows": "Settings → Appearance: theme and display options"
+  },
+  {
+    "area": "misc",
+    "name": "settings-agents",
+    "boxes": [
+      "section"
+    ],
+    "how": "seeded (the server's own settings)",
+    "shows": "Settings → Agents: what happens when nobody answers an agent's question (question policy), continuing after an update or a usage limit"
+  },
+  {
+    "area": "misc",
+    "name": "settings-shortcuts",
+    "boxes": [
+      "section"
+    ],
+    "how": "seeded (the server's own settings)",
+    "shows": "Settings → Keyboard shortcuts: every shortcut with its key; click a key to record your own"
+  },
+  {
+    "area": "misc",
+    "name": "settings-agent-logins",
+    "boxes": [
+      "section"
+    ],
+    "how": "stubbed API (/api/agent/runtimes: both CLIs installed and signed in, masked demo account)",
+    "shows": "Settings → Agents & logins: Claude Code and Codex installed and signed in"
+  },
+  {
+    "area": "misc",
+    "name": "settings-performance",
+    "boxes": [
+      "section",
+      "tiles",
+      "firstTile"
+    ],
+    "how": "stubbed API (/api/perf with 40 minutes of made-up, calm samples)",
+    "shows": "Settings → Performance: memory, CPU, child processes, goroutines, database and page readings as tiles with sparklines over the last 40 minutes"
+  },
+  {
+    "area": "misc",
+    "name": "shortcuts-sheet",
+    "boxes": [
+      "sheet"
+    ],
+    "how": "seeded",
+    "shows": "The keyboard shortcuts sheet (⌘/): every shortcut by group, with the keys that apply in this browser"
+  },
+  {
+    "area": "misc",
+    "name": "whats-new",
+    "boxes": [
+      "modal",
+      "badge"
+    ],
+    "how": "seeded (the repository's own CHANGELOG.md, built into the server)",
+    "shows": "What's new: the in-app changelog opened from the header's version badge, newest release first"
+  }
+]

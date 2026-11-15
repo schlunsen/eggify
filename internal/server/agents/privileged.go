@@ -152,6 +152,8 @@ func PrivilegedSessionOptions(opts *SessionOptions) string {
 	switch {
 	case opts.CodexNetworkAccess:
 		return CodexNetworkAction
+	case hasSandboxGrants(opts):
+		return SandboxGrantAction
 	case opts.DangerouslySkipPermissions != nil && *opts.DangerouslySkipPermissions,
 		opts.AllowDangerouslySkipPermissions != nil && *opts.AllowDangerouslySkipPermissions:
 		return "Enabling YOLO mode"

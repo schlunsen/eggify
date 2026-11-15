@@ -181,6 +181,8 @@ func stripHandoverPermissions(opts *SessionOptions, options HandoverOptions) {
 	// Network permission is never transferable, even with KeepPermissions.
 	opts.CodexNetworkAccess = false
 	opts.codexNetworkAuthorized = false
+	// Nor are sandbox grants: they belong to the session an admin gave them to.
+	opts.SandboxGrants, opts.SandboxGrantPaths = nil, nil
 	if !options.PreserveYOLOMode {
 		// Back to the user's global policy; only a policy that answers
 		// sooner than that one is dropped.
@@ -305,6 +307,7 @@ func (sm *SessionManager) applyHandover(token string, newSessionConfig *SessionO
 		// A network grant belongs to one session, not a transferable handover.
 		options.CodexNetworkAccess = false
 		options.codexNetworkAuthorized = false
+		options.SandboxGrants, options.SandboxGrantPaths = nil, nil
 		// The loop link and inbox belong to the source session.
 		options.SpawnedBySessionID = nil
 		options.Inbox = nil

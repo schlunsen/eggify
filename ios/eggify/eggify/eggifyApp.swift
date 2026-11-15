@@ -45,7 +45,6 @@ enum AppearanceMode: String, CaseIterable, Identifiable {
 struct eggifyApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var authViewModel = AuthenticationViewModel()
-    @ObservedObject private var licenseMonitor = LicenseMonitor.shared
     @AppStorage("appearanceMode") private var appearanceMode: String = AppearanceMode.system.rawValue
     private let avatarManager = AvatarManager.shared
 
@@ -81,16 +80,6 @@ struct eggifyApp: App {
                     // Load avatars when authenticated
                     await avatarManager.loadAvatars()
                 }
-                // Eggify on the computer isn't activated: one clear state
-                // instead of failing lists (see LicenseGate).
-                .overlay {
-                    if licenseMonitor.isRequired {
-                        LicenseRequiredView(monitor: licenseMonitor, hostName: authViewModel.currentHost?.name)
-                            .tint(EggifyColors.accent)
-                            .transition(.opacity)
-                    }
-                }
-                .animation(.easeInOut(duration: 0.2), value: licenseMonitor.isRequired)
         } else {
             LoginView()
                 .tint(EggifyColors.accent)

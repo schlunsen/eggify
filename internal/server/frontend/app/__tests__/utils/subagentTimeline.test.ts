@@ -1,10 +1,13 @@
-import { describe, it, expect } from 'vitest'
+import { beforeEach, describe, it, expect } from 'vitest'
+import { setHomeDir } from '~/utils/homeDir'
 import { cleanCommand, latestTool, plainLine, splitPath, subagentTimeline, tidyPaths } from '~/utils/agents/subagentTimeline'
+
+beforeEach(() => setHomeDir('/Users/me'))
 
 describe('cleanCommand', () => {
   it('drops a leading cd and keeps the folder apart', () => {
     expect(cleanCommand('cd /Users/me/projects/app && go test ./...')).toEqual({ command: 'go test ./...', cwd: '~/projects/app' })
-    expect(cleanCommand('cd "/home/me/my app"; ls')).toEqual({ command: 'ls', cwd: '~/my app' })
+    expect(cleanCommand('cd "/Users/me/my app"; ls')).toEqual({ command: 'ls', cwd: '~/my app' })
     expect(cleanCommand('cd a && cd b && make')).toEqual({ command: 'make', cwd: 'b' })
   })
   it('leaves other commands alone apart from paths', () => {
@@ -18,7 +21,7 @@ describe('tidyPaths', () => {
     expect(tidyPaths('S=/private/tmp/claude-501/-Users-me-projects-x/d565512d-bfc2-4e7d-9584-e713dcfdab03/tasks/a.out'))
       .toBe('S=/tmp/…/tasks/a.out')
     expect(tidyPaths('/Users/me')).toBe('~')
-    expect(tidyPaths('/Users/me2x/file /Usersfoo')).toBe('~/file /Usersfoo')
+    expect(tidyPaths('/Users/me2x/file /Usersfoo')).toBe('/Users/me2x/file /Usersfoo')
   })
 })
 

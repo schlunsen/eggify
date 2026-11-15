@@ -1,9 +1,12 @@
 import { mount, flushPromises } from '@vue/test-utils'
+import { setHomeDir } from '../../utils/homeDir'
 import SubagentsView from '../../components/agents/SubagentsView.vue'
 import { useBackgroundAgents } from '../../composables/agents/useBackgroundAgents'
 
 const auth = vi.hoisted(() => ({ fetchWithAuth: vi.fn() }))
 vi.mock('../../composables/useAuthenticatedFetch', () => ({ useAuthenticatedFetch: () => auth }))
+
+beforeEach(() => setHomeDir('/Users/me'))
 
 const session = 'session-1'
 const earlier = new Date(Date.now() - 60000).toISOString()

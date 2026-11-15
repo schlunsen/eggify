@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-1.26%2B-00ADD8?style=flat&logo=go" alt="Go Version" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Commercial-blue.svg" alt="License: Commercial" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
   <a href="https://github.com/schlunsen/eggify/actions/workflows/ci.yml"><img src="https://github.com/schlunsen/eggify/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
 </p>
 
@@ -55,14 +55,9 @@ Create your admin user at the setup page, and you're in.
 
 ## Install
 
-Eggify is paid software: €20 once for a license (a serial number that works on up to
-three of your computers), plus an optional €20 a year for relay remote access.
-Download the Mac app from [eggify.xyz](https://eggify.xyz), open it and enter your
-serial number on the activation page. Without an activated license the app does not
-run. The app checks for updates itself.
-
-Building from source (Quick Start above) is for licensed users and contributors.
-Release builds need an activated license; each release includes notices for the
+Eggify is free and open source (MIT). Download the Mac app from
+[eggify.xyz](https://eggify.xyz) and open it; the app checks for updates itself.
+Or build from source (Quick Start above). Each release includes notices for the
 open-source components it contains.
 
 ## Key Features
@@ -145,5 +140,4 @@ for example `EGGIFY_PORT` or `EGGIFY_AUTH_USER_AUTH_ENABLED`.
 
 ## License
 
-Eggify is commercial software, see [LICENSE](LICENSE). Versions before 2.18.0 were
-released under the MIT License and stay under it. Buy a license at [eggify.xyz](https://eggify.xyz).
+Eggify is released under the [MIT License](LICENSE).

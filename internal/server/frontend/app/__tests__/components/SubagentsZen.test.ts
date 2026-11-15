@@ -130,3 +130,12 @@ describe('Circus subagent eggs', () => {
     }
   })
 })
+
+it.each(['synthwave', 'circus'])('draws markdown replies as plain words in the bubbles (%s stage)', (stage) => {
+  const said = 'Three subagents are working: the **schema**, the **store** and `api`'
+  const lead = { name: 'Ricky', status: 'processing', lines: [said], avatarImage: null, color: '#EC609A' }
+  const wrapper = mount(SubagentsZen, { props: { agents: [{ id: 'a', name: 'A', status: 'running', lines: [said] }], lead, stage } })
+  for (const bubble of wrapper.findAll('.bubble')) expect(bubble.text()).not.toMatch(/[*`]/)
+  expect(wrapper.get('.lead-bubble').text()).toContain('the schema, the store and api')
+  wrapper.unmount()
+})

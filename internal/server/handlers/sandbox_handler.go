@@ -30,8 +30,13 @@ func (h *SandboxHandler) response(c *fiber.Ctx, prefs agents.SandboxPreferences)
 	return fiber.Map{
 		"can_authorize_codex_network": principal.From(c).IsAdmin(),
 		"default_enabled":             prefs.DefaultEnabled,
-		"allowed_domains":             prefs.AllowedDomains,
-		"default_allowed_domains":     agents.DefaultSandboxAllowedDomains,
+		// true while the user never saved the default: the built-in one applies.
+		"default_implicit":        prefs.DefaultIsImplicit,
+		"allowed_domains":         prefs.AllowedDomains,
+		"default_allowed_domains": agents.DefaultSandboxAllowedDomains,
+		// What a signed-in admin can give a sandboxed session at creation, and
+		// whether this machine can give it now. No secret is ever in here.
+		"grants": agents.SandboxGrantAvailability(),
 	}
 }
 
@@ -56,6 +61,7 @@ func (h *SandboxHandler) HandleUpdate(c *fiber.Ctx) error {
 	prefs := agents.LoadSandboxPreferences(h.repo)
 	if body.DefaultEnabled != nil {
 		prefs.DefaultEnabled = *body.DefaultEnabled
+		prefs.DefaultIsImplicit = false
 	}
 	if body.AllowedDomains != nil {
 		prefs.AllowedDomains = *body.AllowedDomains

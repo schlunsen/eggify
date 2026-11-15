@@ -1,0 +1,176 @@
+[
+  {
+    "area": "projects",
+    "name": "projects-page",
+    "boxes": [
+      "newProject",
+      "search",
+      "sort",
+      "list",
+      "firstProject",
+      "branch",
+      "running",
+      "startSession",
+      "cheeseShop"
+    ],
+    "how": "seeded (real repositories and sessions; \"running\" = sessions seeded as working)",
+    "shows": "Projects page: six projects with branch, uncommitted dot, running sessions, session count and last activity"
+  },
+  {
+    "area": "projects",
+    "name": "project-menu",
+    "boxes": [
+      "menu",
+      "row"
+    ],
+    "how": "seeded",
+    "shows": "A project row's ⋯ menu (open, Git, edit, Remove from Eggify)"
+  },
+  {
+    "area": "projects",
+    "name": "new-project",
+    "boxes": [
+      "dialog",
+      "existing",
+      "clone",
+      "empty"
+    ],
+    "how": "seeded",
+    "shows": "New project dialog: the three starting points"
+  },
+  {
+    "area": "projects",
+    "name": "new-project-existing-typing",
+    "boxes": [
+      "dialog",
+      "folder",
+      "suggestions"
+    ],
+    "how": "seeded",
+    "shows": "New project → Open an existing folder: a path being typed, with folder suggestions"
+  },
+  {
+    "area": "projects",
+    "name": "new-project-existing",
+    "boxes": [
+      "dialog",
+      "folder",
+      "status",
+      "submit"
+    ],
+    "how": "seeded",
+    "shows": "New project → Open an existing folder: argument-clinic chosen, name and details filled in from the folder"
+  },
+  {
+    "area": "projects",
+    "name": "new-project-clone",
+    "boxes": [
+      "dialog",
+      "repository",
+      "destination",
+      "submit"
+    ],
+    "how": "seeded (nothing is cloned; the URL is fictional)",
+    "shows": "New project → Clone a repository: an HTTPS URL typed, destination folder proposed under ~/projects"
+  },
+  {
+    "area": "projects",
+    "name": "new-project-empty",
+    "boxes": [
+      "dialog",
+      "name",
+      "destination",
+      "gitInit",
+      "submit"
+    ],
+    "how": "seeded (not submitted)",
+    "shows": "New project → Create an empty folder: name typed, parent folder ~/projects, git init option"
+  },
+  {
+    "area": "projects",
+    "name": "sidebar-groups",
+    "boxes": [
+      "sidebar",
+      "newSession",
+      "needsYou",
+      "working",
+      "waitingRow",
+      "tags",
+      "workerRows"
+    ],
+    "how": "seeded sessions and tags; \"Needs you\" rows from an injected permission_request and user_question event; subagent count and loop chip patched into the session list",
+    "shows": "Agents page with every project's sessions: sidebar groups Needs you / Working / Today / Earlier, tag chips, worker rows under the team session"
+  },
+  {
+    "area": "projects",
+    "name": "sidebar-earlier",
+    "boxes": [
+      "sidebar",
+      "today",
+      "earlier"
+    ],
+    "how": "seeded",
+    "shows": "The sidebar scrolled down: Today and Earlier as one-line rows with tag chips, ended sessions dimmed"
+  },
+  {
+    "area": "projects",
+    "name": "command-palette",
+    "boxes": [
+      "palette",
+      "input",
+      "results",
+      "footer"
+    ],
+    "how": "seeded",
+    "shows": "Command palette (⌘K): sessions, projects and actions"
+  },
+  {
+    "area": "projects",
+    "name": "command-palette-search",
+    "boxes": [
+      "palette",
+      "input",
+      "firstResult"
+    ],
+    "how": "seeded",
+    "shows": "Command palette with \"parrot\" typed: matching sessions and the parrot-web project"
+  },
+  {
+    "area": "projects",
+    "name": "project-picker",
+    "boxes": [
+      "picker",
+      "search",
+      "list",
+      "firstProject",
+      "footer"
+    ],
+    "how": "seeded",
+    "shows": "Switch project picker (⇧⌘P): projects with description, branch, running sessions and last activity"
+  },
+  {
+    "area": "projects",
+    "name": "agent-overview",
+    "boxes": [
+      "overview",
+      "filters",
+      "board",
+      "firstColumn",
+      "firstCard"
+    ],
+    "how": "seeded sessions and digests; live states patched into the list",
+    "shows": "Agent overview (⌘O), Working tab: one column per project, cards with summaries and tags"
+  },
+  {
+    "area": "projects",
+    "name": "agent-overview-all",
+    "boxes": [
+      "overview",
+      "filters",
+      "board",
+      "firstCard"
+    ],
+    "how": "seeded sessions and digests; live states patched into the list",
+    "shows": "Agent overview, All tab: every session of the last day by project"
+  }
+]

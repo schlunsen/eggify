@@ -1,0 +1,99 @@
+[
+  {
+    "area": "remote",
+    "name": "relay-off",
+    "boxes": [
+      "section",
+      "card",
+      "mode",
+      "relayMode",
+      "ngrokMode",
+      "toggle",
+      "status"
+    ],
+    "how": "stubbed API (/api/tunnel/status with a fictional address); nothing is connected",
+    "shows": "Settings → Remote access, Eggify relay mode, switched off: the mode choice, the big on/off switch, status \"Not connected\""
+  },
+  {
+    "area": "remote",
+    "name": "relay-on",
+    "boxes": [
+      "card",
+      "toggle",
+      "status",
+      "live",
+      "url",
+      "copy",
+      "qr",
+      "pin"
+    ],
+    "how": "stubbed API (/api/tunnel/status with a fictional address); nothing is connected; the address and pin are made up",
+    "shows": "Eggify relay mode connected: the install's own address with Copy and a QR code, the key pin, connected since"
+  },
+  {
+    "area": "remote",
+    "name": "pair-device",
+    "boxes": [
+      "pair",
+      "ticket",
+      "qr",
+      "countdown",
+      "showLink"
+    ],
+    "how": "stubbed API (POST /api/auth/pairing answers a made-up code; no real code exists)",
+    "shows": "Pair a device: the one-time pairing QR code for the iPhone app, its countdown (5 minutes), Show link"
+  },
+  {
+    "area": "remote",
+    "name": "ngrok-no-token",
+    "boxes": [
+      "card",
+      "mode",
+      "tokenInput",
+      "openNgrok",
+      "toggle"
+    ],
+    "how": "stubbed API (/api/tunnel/status with a fictional address); nothing is connected",
+    "shows": "ngrok mode before setup: paste your authtoken (with the button to ngrok's dashboard), optional reserved domain"
+  },
+  {
+    "area": "remote",
+    "name": "ngrok-off",
+    "boxes": [
+      "card",
+      "toggle",
+      "status",
+      "tokenSet",
+      "domain",
+      "autostart"
+    ],
+    "how": "stubbed API (/api/tunnel/status with a fictional address); nothing is connected",
+    "shows": "ngrok mode with a token saved (only its last characters shown), reserved domain, switched off"
+  },
+  {
+    "area": "remote",
+    "name": "ngrok-on",
+    "boxes": [
+      "card",
+      "toggle",
+      "status",
+      "live",
+      "url",
+      "qr"
+    ],
+    "how": "stubbed API (/api/tunnel/status with a fictional address); nothing is connected; the domain is made up",
+    "shows": "ngrok mode connected: the public URL with Copy and an address QR code, region, connected since"
+  },
+  {
+    "area": "remote",
+    "name": "signed-in-devices",
+    "boxes": [
+      "devices",
+      "current",
+      "phone",
+      "signOut"
+    ],
+    "how": "stubbed API (GET /api/auth/sessions with fictional devices)",
+    "shows": "Settings → Account & security → Signed-in devices: this browser, a paired iPhone, another Mac; how each signed in, last used, Sign out"
+  }
+]

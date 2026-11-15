@@ -220,10 +220,10 @@ app-specific password from the keychain profile.
 
 **Endpoints compiled into the app.** The source holds no service addresses. `scripts/build-desktop-wails.sh`
 passes them as `-ldflags -X` from `EGGIFY_BUILD_RELAY_ADDR` (`internal/remoteaccess.DefaultRelayAddr`),
-`EGGIFY_BUILD_LICENSE_URL` (`internal/license.DefaultBaseURL`), `EGGIFY_BUILD_UPDATE_MANIFEST_URL`
+`EGGIFY_BUILD_UPDATE_MANIFEST_URL`
 (`main.defaultManifestURL`) and `EGGIFY_BUILD_DOWNLOAD_URL` (`main.defaultDownloadURL`), plus
 `APPLE_TEAM_ID` (`main.expectedTeamID`). A build without them has no default relay (the user types one),
-no license server (activation says so; `EGGIFY_LICENSE_URL` works), no updater, and an updater that
+no updater, and an updater that
 refuses every update without a team id. `just release-doctor` warns about unset ones.
 
 **Where it is published.** `$PUBLIC_BASE_URL` (e.g. `https://example.com/download/`), i.e. `$DEPLOY_DIR`

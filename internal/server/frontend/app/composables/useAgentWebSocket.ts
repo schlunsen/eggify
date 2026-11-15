@@ -3,7 +3,6 @@ import { getProjectSubscriptionManager } from './agents/useProjectSubscriptionMa
 import { createHeartbeat } from '~/utils/wsHeartbeat'
 import { createReconnectBackoff } from '~/utils/wsReconnect'
 import { announceUserRequired, isUserRequiredBody } from '~/utils/userRequired'
-import { goToActivation, isLicenseRequiredBody, noteLicenseRefusal, probeLicenseAfterSocketClose } from '~/utils/license'
 import { announceAgentAttention } from '~/utils/agents/needsYou'
 import { refreshSessionSkills } from './agents/useSessionSkills'
 
@@ -492,12 +491,6 @@ export const useAgentWebSocket = () => {
               if (isUserRequiredBody(message)) {
                 announceUserRequired(message.message, message.code)
               }
-              // Eggify isn't activated (a licensed build): open /activate.
-              if (isLicenseRequiredBody(message)) {
-                noteLicenseRefusal()
-                goToActivation()
-                break // the activation page explains it; no error toast
-              }
               callbacks.onError?.(message)
               break
 
@@ -532,10 +525,6 @@ export const useAgentWebSocket = () => {
             message: 'WebSocket connection lost - pending permissions have been cleared'
           })
         }
-
-        // A licensed build refuses the upgrade (402) while it isn't
-        // activated; the browser can't read that, so ask once in a while.
-        void probeLicenseAfterSocketClose()
 
         // Reconnect with exponential backoff and jitter (1 s .. 30 s)
         scheduleReconnect()

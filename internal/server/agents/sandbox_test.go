@@ -48,7 +48,6 @@ func TestBuildClaudeSessionSettings_UnsandboxedHasOnlyDenyRules(t *testing.T) {
 		"Read(//home/u/.claude/eggify/.secret)",
 		"Read(//home/u/.claude/eggify/eggify.db)",
 		"Read(//home/u/.claude/eggify/mfa_encryption.key)",
-		"Read(//home/u/.claude/eggify/license.json)",
 		"Read(//home/u/.claude/eggify/desktop-machines.json)",
 		"Read(//home/u/.claude/connector_encryption.key)",
 		"Read(//home/u/.claude/eggify/certs/**)",
@@ -172,7 +171,7 @@ func TestEggifyProtectedPaths_WorkingInsideEggifyDir(t *testing.T) {
 
 	secretsDenied := func(p protectedPaths) {
 		t.Helper()
-		for _, f := range []string{".secret", "eggify.db", "eggify.db-wal", "mfa_encryption.key", "license.json", "desktop-machines.json"} {
+		for _, f := range []string{".secret", "eggify.db", "eggify.db-wal", "mfa_encryption.key", "desktop-machines.json"} {
 			if !hasString(p.files, filepath.Join(eggifyDir, f)) {
 				t.Errorf("%s must stay denied: %v", f, p.files)
 			}
@@ -400,12 +399,30 @@ func TestSandboxPreferencesAndDefaults(t *testing.T) {
 	sm.repo = repo
 
 	prefs := sm.SandboxPreferences()
-	if prefs.DefaultEnabled || len(prefs.AllowedDomains) != len(DefaultSandboxAllowedDomains) {
-		t.Fatalf("fresh install: %+v", prefs)
+	if !prefs.DefaultEnabled || !prefs.DefaultIsImplicit || len(prefs.AllowedDomains) != len(DefaultSandboxAllowedDomains) {
+		t.Fatalf("fresh install is sandboxed by default (Autopilot): %+v", prefs)
 	}
 
-	// Default off: new sessions are stored with an explicit false.
+	// Never chosen: Claude sessions are stored sandboxed, other runtimes keep their old behaviour.
 	var opts SessionOptions
+	sm.applyConfigDefaults(&opts)
+	if !isSandboxed(&opts) {
+		t.Fatalf("implicit default on → sandboxed, got %v", opts.Sandboxed)
+	}
+	codex := SessionOptions{Provider: strp("codex"), Model: strp("gpt-6-astra")}
+	sm.applyConfigDefaults(&codex)
+	if codex.Sandboxed == nil || *codex.Sandboxed {
+		t.Fatalf("implicit default leaves Codex unsandboxed, got %v", codex.Sandboxed)
+	}
+
+	// An explicit saved false is respected: new sessions are stored with an explicit false.
+	if _, err := SaveSandboxPreferences(repo, SandboxPreferences{DefaultEnabled: false, AllowedDomains: DefaultSandboxAllowedDomains}); err != nil {
+		t.Fatal(err)
+	}
+	if got := sm.SandboxPreferences(); got.DefaultEnabled || got.DefaultIsImplicit {
+		t.Fatalf("saved false: %+v", got)
+	}
+	opts = SessionOptions{}
 	sm.applyConfigDefaults(&opts)
 	if opts.Sandboxed == nil || *opts.Sandboxed {
 		t.Fatalf("default off → explicit false, got %v", opts.Sandboxed)
@@ -465,7 +482,14 @@ func TestSandboxOptOutAction(t *testing.T) {
 	repo := database.NewRepository(database.GetInstance())
 	sm.repo = repo
 
-	// Default off: opting out is ordinary.
+	// Never chosen: the default is on, so opting out needs a user.
+	if got := sm.SandboxOptOutAction(&SessionOptions{Sandboxed: boolp(false)}); got != SandboxOptOutAction {
+		t.Errorf("implicit default on: %q", got)
+	}
+	// Saved off: opting out is ordinary.
+	if _, err := SaveSandboxPreferences(repo, SandboxPreferences{DefaultEnabled: false, AllowedDomains: DefaultSandboxAllowedDomains}); err != nil {
+		t.Fatal(err)
+	}
 	if got := sm.SandboxOptOutAction(&SessionOptions{Sandboxed: boolp(false)}); got != "" {
 		t.Errorf("default off: %q", got)
 	}

@@ -1,6 +1,6 @@
 [package]
 name = "eggify-desktop"
-version = "2.23.0"
+version = "2.25.0"
 description = "Eggify Desktop - AI Agent Control Center"
 authors = ["schlunsen"]
 edition = "2021"

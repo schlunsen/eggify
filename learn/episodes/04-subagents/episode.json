@@ -1,0 +1,516 @@
+{
+  "number": 4,
+  "slug": "subagents",
+  "title": "Subagents and All agents",
+  "summary": "Watch the subagents your agents start: the card in the chat, the Subagents view, the Zen stage, and All agents for every session, subagent and loop on the machine.",
+  "next": "Teams, workers and loops",
+  "scenes": [
+    {
+      "id": "title",
+      "kind": "title",
+      "lines": [
+        {
+          "id": "t1",
+          "text": "Subagents and All agents. See who works for your agent, and what they have done."
+        }
+      ]
+    },
+    {
+      "id": "card",
+      "kind": "shot",
+      "heading": "Subagents",
+      "shot": "chat",
+      "lines": [
+        {
+          "id": "c1",
+          "text": "An agent can hand parts of a job to subagents, which work in the background."
+        },
+        {
+          "id": "c2",
+          "text": "While they run, a Subagents card floats in the corner of the chat."
+        },
+        {
+          "id": "c3",
+          "text": "Each row shows its model and the step it is on right now."
+        }
+      ],
+      "beats": [
+        {
+          "line": "c1",
+          "at": 0.3,
+          "zoom": {
+            "x": 580,
+            "y": 380,
+            "w": 700,
+            "h": 394
+          }
+        },
+        {
+          "line": "c2",
+          "at": 0.2,
+          "zoom": {
+            "x": 1000,
+            "y": 200,
+            "w": 720,
+            "h": 405
+          },
+          "highlight": "pip"
+        },
+        {
+          "line": "c3",
+          "at": 0.2,
+          "zoom": {
+            "x": 1100,
+            "y": 215,
+            "w": 640,
+            "h": 360
+          },
+          "highlight": "runningRow"
+        }
+      ]
+    },
+    {
+      "id": "zoom",
+      "kind": "shot",
+      "heading": "Zoom in",
+      "shot": "chat",
+      "lines": [
+        {
+          "id": "z1",
+          "text": "Click a row to zoom in."
+        },
+        {
+          "id": "z2",
+          "text": "The Now box shows the command it is running, then its task and key steps."
+        },
+        {
+          "id": "z3",
+          "text": "For the full list, press ⇧⌘A.",
+          "say": "For the full list, press Shift Command A."
+        }
+      ],
+      "beats": [
+        {
+          "line": "z1",
+          "at": 0,
+          "zoom": {
+            "x": 1100,
+            "y": 215,
+            "w": 640,
+            "h": 360
+          },
+          "highlight": "runningRow"
+        },
+        {
+          "line": "z1",
+          "at": 0.4,
+          "cursor": "runningRow",
+          "click": true
+        },
+        {
+          "line": "z2",
+          "at": 0,
+          "shot": "zoom",
+          "zoom": {
+            "x": 480,
+            "y": 270,
+            "w": 960,
+            "h": 540
+          },
+          "highlight": null,
+          "cursor": null
+        },
+        {
+          "line": "z2",
+          "at": 0.5,
+          "highlight": "now"
+        },
+        {
+          "line": "z2",
+          "at": 2.6,
+          "highlight": "steps"
+        },
+        {
+          "line": "z3",
+          "at": 0.1,
+          "highlight": "openView",
+          "cursor": "openView",
+          "click": true
+        }
+      ]
+    },
+    {
+      "id": "view",
+      "kind": "shot",
+      "heading": "Subagents view",
+      "shot": "view",
+      "lines": [
+        {
+          "id": "v1",
+          "text": "Every subagent of the session is listed here, running ones first."
+        },
+        {
+          "id": "v2",
+          "text": "Select one for what it is doing now, its task and its key steps."
+        },
+        {
+          "id": "v3",
+          "text": "A finished one shows its result and what it produced: a pull request, commits, a branch."
+        },
+        {
+          "id": "v4",
+          "text": "A failed one says why, in plain words."
+        }
+      ],
+      "beats": [
+        {
+          "line": "v1",
+          "at": 0.2,
+          "zoom": {
+            "x": 0,
+            "y": 0,
+            "w": 960,
+            "h": 540
+          },
+          "cursor": null
+        },
+        {
+          "line": "v1",
+          "at": 1,
+          "highlight": {
+            "x": 20,
+            "y": 62,
+            "w": 380,
+            "h": 125
+          }
+        },
+        {
+          "line": "v2",
+          "at": 0,
+          "zoom": {
+            "x": 380,
+            "y": 60,
+            "w": 1160,
+            "h": 653
+          },
+          "highlight": "now"
+        },
+        {
+          "line": "v2",
+          "at": 1.9,
+          "highlight": "steps"
+        },
+        {
+          "line": "v2",
+          "at": 2.6,
+          "zoom": {
+            "x": 0,
+            "y": 0,
+            "w": 1100,
+            "h": 619
+          },
+          "highlight": null
+        },
+        {
+          "line": "v2",
+          "at": 2.9,
+          "cursor": {
+            "x": 20,
+            "y": 317,
+            "w": 367,
+            "h": 73
+          },
+          "click": true
+        },
+        {
+          "line": "v3",
+          "at": 0,
+          "shot": "view-done",
+          "zoom": {
+            "x": 380,
+            "y": 240,
+            "w": 1160,
+            "h": 653
+          },
+          "highlight": "produced",
+          "cursor": null
+        },
+        {
+          "line": "v3",
+          "at": 3.6,
+          "zoom": {
+            "x": 300,
+            "y": 0,
+            "w": 1100,
+            "h": 619
+          },
+          "highlight": null,
+          "cursor": {
+            "x": 570,
+            "y": 17,
+            "w": 74,
+            "h": 28
+          },
+          "click": true
+        },
+        {
+          "line": "v4",
+          "at": 0,
+          "shot": "view-failed",
+          "zoom": {
+            "x": 300,
+            "y": 0,
+            "w": 1100,
+            "h": 619
+          },
+          "highlight": {
+            "x": 424,
+            "y": 153,
+            "w": 1100,
+            "h": 74
+          },
+          "cursor": null
+        }
+      ]
+    },
+    {
+      "id": "idle",
+      "kind": "shot",
+      "heading": "Idle, but busy",
+      "shot": "idle",
+      "lines": [
+        {
+          "id": "i1",
+          "text": "A session can go idle while its subagents carry on."
+        },
+        {
+          "id": "i2",
+          "text": "Its row then says how many are still working."
+        }
+      ],
+      "beats": [
+        {
+          "line": "i1",
+          "at": 0.2,
+          "zoom": {
+            "x": 264,
+            "y": 160,
+            "w": 640,
+            "h": 360
+          }
+        },
+        {
+          "line": "i2",
+          "at": 0.2,
+          "highlight": "sessionRow"
+        }
+      ]
+    },
+    {
+      "id": "all",
+      "kind": "shot",
+      "heading": "All agents",
+      "shot": "all-agents",
+      "lines": [
+        {
+          "id": "a1",
+          "text": "Press ⇧⌘S for All agents: every session, subagent and loop, in one tree.",
+          "say": "Press Shift Command S for All agents: every session, subagent and loop, in one tree."
+        },
+        {
+          "id": "a2",
+          "text": "Sessions that need you come first, then the working ones, with loops and subagents below."
+        },
+        {
+          "id": "a3",
+          "text": "Select a subagent for its live detail."
+        },
+        {
+          "id": "a4",
+          "text": "Filter to Failed to see only what went wrong."
+        }
+      ],
+      "beats": [
+        {
+          "line": "a1",
+          "at": 0.2,
+          "zoom": {
+            "x": 0,
+            "y": 0,
+            "w": 960,
+            "h": 540
+          },
+          "highlight": "counts"
+        },
+        {
+          "line": "a2",
+          "at": 0,
+          "zoom": {
+            "x": 0,
+            "y": 60,
+            "w": 640,
+            "h": 360
+          },
+          "highlight": "needsYou"
+        },
+        {
+          "line": "a2",
+          "at": 2,
+          "zoom": {
+            "x": 0,
+            "y": 540,
+            "w": 640,
+            "h": 360
+          },
+          "highlight": "loop"
+        },
+        {
+          "line": "a2",
+          "at": 3.4,
+          "highlight": "agent",
+          "cursor": "agent",
+          "click": true
+        },
+        {
+          "line": "a3",
+          "at": 0,
+          "shot": "all-agents-detail",
+          "zoom": {
+            "x": 0,
+            "y": 180,
+            "w": 1280,
+            "h": 720
+          },
+          "highlight": "selected",
+          "cursor": null
+        },
+        {
+          "line": "a3",
+          "at": 0.9,
+          "zoom": {
+            "x": 0,
+            "y": 0,
+            "w": 1280,
+            "h": 720
+          },
+          "highlight": {
+            "x": 976,
+            "y": 17,
+            "w": 61,
+            "h": 28
+          },
+          "cursor": {
+            "x": 976,
+            "y": 17,
+            "w": 61,
+            "h": 28
+          },
+          "click": true
+        },
+        {
+          "line": "a4",
+          "at": 0,
+          "shot": "all-agents-failed",
+          "zoom": {
+            "x": 0,
+            "y": 0,
+            "w": 1280,
+            "h": 720
+          },
+          "highlight": "firstRow",
+          "cursor": null
+        }
+      ]
+    },
+    {
+      "id": "zen",
+      "kind": "shot",
+      "heading": "Zen",
+      "shot": "view",
+      "lines": [
+        {
+          "id": "n1",
+          "text": "In the Subagents view, switch to Zen and the subagents become characters."
+        },
+        {
+          "id": "n2",
+          "text": "The finished ones rest on a bench. The sign says they are not dead, and we have no reason to doubt it."
+        },
+        {
+          "id": "n3",
+          "text": "Prefer neon? Choose Synthwave, and the main agent becomes a DJ.",
+          "say": "Prefer neon? Choose Synthwave, and the main agent becomes a D J."
+        }
+      ],
+      "beats": [
+        {
+          "line": "n1",
+          "at": 0,
+          "zoom": {
+            "x": 960,
+            "y": 0,
+            "w": 960,
+            "h": 540
+          },
+          "highlight": null,
+          "cursor": {
+            "x": 1696,
+            "y": 18,
+            "w": 44,
+            "h": 28
+          },
+          "click": true
+        },
+        {
+          "line": "n1",
+          "at": 2,
+          "shot": "zen-circus",
+          "zoom": null,
+          "highlight": null,
+          "cursor": null
+        },
+        {
+          "line": "n2",
+          "at": 0,
+          "zoom": {
+            "x": 60,
+            "y": 720,
+            "w": 640,
+            "h": 360
+          },
+          "highlight": "bench"
+        },
+        {
+          "line": "n3",
+          "at": 0,
+          "zoom": null,
+          "highlight": null,
+          "cursor": {
+            "x": 1655,
+            "y": 16,
+            "w": 85,
+            "h": 30
+          },
+          "click": true
+        },
+        {
+          "line": "n3",
+          "at": 1.4,
+          "shot": "zen-synthwave",
+          "zoom": null,
+          "cursor": null
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "kind": "outro",
+      "lines": [
+        {
+          "id": "o1",
+          "text": "That is subagents and All agents. Next: teams, workers and loops."
+        }
+      ]
+    }
+  ]
+}

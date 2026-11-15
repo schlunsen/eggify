@@ -24,9 +24,6 @@ type RelayProvider struct {
 	// the relay's name (tests).
 	RootCAs    *x509.CertPool
 	ServerName string
-	// License returns this install's license token and install key, which a
-	// subscribers-only relay asks for (nil: none presented).
-	License func() *relay.LicenseCredentials
 }
 
 // Name implements Provider.
@@ -39,7 +36,6 @@ func (p *RelayProvider) Open(ctx context.Context, cfg OpenConfig) (Listener, err
 	}
 	l, err := relay.Dial(ctx, relay.ClientConfig{
 		Addr: cfg.RelayAddr, ServerName: p.ServerName, Identity: cfg.RelayIdentity, RootCAs: p.RootCAs,
-		License: p.License,
 	})
 	if err != nil {
 		var refused *relay.RefusedError
