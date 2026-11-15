@@ -1,0 +1,90 @@
+---
+import ChoiceGroup from '../components/ChoiceGroup.astro';
+import { choices } from '../data/rental-choices';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import MachineArt from '../components/MachineArt.astro';
+import PageHero from '../components/PageHero.astro';
+---
+
+<SiteLayout title="Build your setup">
+  <PageHero
+    eyebrow="YOUR MACHINE / YOUR WAY"
+    description="Choose a machine and the tools you want in your workshop. Build a setup brief to keep or share."
+  >
+    <Fragment slot="title">
+      Make room for
+      <br />
+      your <span class="highlight">next thing.</span>
+    </Fragment>
+  </PageHero>
+  <section class="wrap configure-layout">
+    <form id="rental-config">
+      <ChoiceGroup {...choices.machine} />
+      <ChoiceGroup {...choices.tools} />
+      <ChoiceGroup {...choices.work} />
+      <p class="config-notice">
+        Motleyard is part of the proposed rental setup. Your model accounts,
+        subscriptions, and usage are separate. Exact hardware specifications,
+        rental rates, and contract terms will need confirmation before ordering.
+      </p>
+      <p class="note">
+        DEMO CONFIGURATOR · NO ORDER OR PAYMENT
+        <br />
+        Your choices stay in this browser session unless you download or share
+        them.
+      </p>
+    </form>
+    <aside>
+      <div class="summary-card">
+        <div class="eyebrow">YOUR WORKSHOP</div>
+        <MachineArt label="ILLUSTRATIVE FORM STUDY" />
+        <h2 id="summary-title">Mac M5 Pro</h2>
+        <dl aria-live="polite">
+          <div>
+            <dt>Workspace</dt>
+            <dd>Motleyard</dd>
+          </div>
+          <div>
+            <dt>Agent tools</dt>
+            <dd id="summary-tools">Claude Code + Codex</dd>
+          </div>
+          <div>
+            <dt>For building</dt>
+            <dd id="summary-work">Web &amp; apps</dd>
+          </div>
+          <div>
+            <dt>Rental rate</dt>
+            <dd>To be announced</dd>
+          </div>
+        </dl>
+        <button class="btn light-btn" id="review" type="button">
+          Review your setup <span>↗</span>
+        </button>
+        <div class="config-actions">
+          <button class="small-button" id="download" type="button">
+            Download setup brief ↓
+          </button>
+          <button class="small-button" id="share" type="button">
+            Copy setup link ↗
+          </button>
+        </div>
+        <p class="note" id="config-status" role="status">
+          A starting point. No commitment.
+        </p>
+      </div>
+      <section class="review-panel" hidden id="review-panel" tabindex="-1">
+        <h3>Your workshop, on paper.</h3>
+        <p id="review-description"></p>
+        <p>
+          This demo hasn’t placed an order. Download your brief to keep this
+          configuration. Hardware details, rates, and rental terms remain to be
+          confirmed.
+        </p>
+      </section>
+    </aside>
+  </section>
+</SiteLayout>
+<script>
+  import { initConfigurator } from '../scripts/configure';
+  initConfigurator();
+</script>

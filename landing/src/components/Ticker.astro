@@ -1,0 +1,38 @@
+---
+import { tickerLines } from '../data/sketches';
+// Rendered twice so the track can loop seamlessly at -50%.
+const lines = [...tickerLines, ...tickerLines];
+---
+<div class="ticker" aria-hidden="true">
+  <div class="track">
+    {lines.map((line) => <span>{line}</span>)}
+  </div>
+</div>
+
+<style>
+  .ticker {
+    position: relative;
+    z-index: 4;
+    background: var(--teal);
+    color: var(--paper-light);
+    border-block: 3px solid var(--ink);
+    overflow: hidden;
+    white-space: nowrap;
+    transform: rotate(-1.2deg);
+    margin: -20px -20px 0;
+    box-shadow: 0 6px 0 var(--mustard), 0 12px 0 var(--pink);
+  }
+  .track {
+    display: inline-flex;
+    gap: 48px;
+    padding: 14px 0;
+    font-family: var(--display);
+    font-weight: 700;
+    font-style: italic;
+    font-size: 24px;
+    letter-spacing: 0.03em;
+    animation: tick 38s linear infinite;
+  }
+  .track span::after { content: '✦'; margin-left: 48px; color: var(--mustard); }
+  @keyframes tick { to { transform: translateX(-50%); } }
+</style>

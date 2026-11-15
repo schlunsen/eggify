@@ -1,0 +1,321 @@
+---
+// The promo film as the hero's main visual, in a little puppet theatre:
+// crimson curtains, gold trim, a scalloped pelmet and honey floorboards.
+// Desktop only (>= 1000px). The video file is set from JS on desktop, so a
+// phone never downloads it; the poster image is the LCP candidate.
+import { getImage } from 'astro:assets';
+import poster from '../assets/film-poster.webp';
+import { FILM_SRC } from '../data/film';
+
+const p960 = await getImage({ src: poster, width: 960, format: 'webp' });
+const p1280 = await getImage({ src: poster, width: 1280, format: 'webp' });
+// Phones get a 1px transparent placeholder instead of the poster: the booth is hidden there.
+const blank = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+const pelmet = Array.from({ length: 9 }, (_, i) => i);
+---
+<div class="booth" id="theatre" data-src={FILM_SRC}>
+  <div class="sign"><span>Now showing</span> Sixty seconds, one egg</div>
+
+  <svg class="pelmet" viewBox="0 0 900 70" preserveAspectRatio="none" aria-hidden="true">
+    <path
+      d={`M0 0 H900 V40 ${pelmet.map((i) => `Q${900 - i * 100 - 50} 74 ${900 - (i + 1) * 100} 40`).join(' ')} Z`}
+      fill="#9e2f4c" stroke="#2b1d10" stroke-width="3" vector-effect="non-scaling-stroke" />
+    <path
+      d={`M0 30 ${pelmet.map((i) => `Q${i * 100 + 50} 62 ${(i + 1) * 100} 30`).join(' ')}`}
+      fill="none" stroke="#e7b73c" stroke-width="4" vector-effect="non-scaling-stroke" />
+    <path d="M0 10 H900" stroke="#e7b73c" stroke-width="3" vector-effect="non-scaling-stroke" />
+  </svg>
+
+  <svg class="curtain left" viewBox="0 0 120 600" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 0 H120 C112 110 86 230 34 330 C56 420 70 520 64 600 H0 Z" fill="#9e2f4c" stroke="#2b1d10" stroke-width="3" vector-effect="non-scaling-stroke" />
+    <path d="M24 0 C26 120 20 240 14 330 M52 0 C56 120 46 230 26 330 M84 0 C84 110 64 220 30 330 M18 340 C26 430 30 520 26 600 M40 340 C48 430 54 520 50 600" fill="none" stroke="#2b1d10" stroke-width="1.5" opacity="0.45" vector-effect="non-scaling-stroke" />
+    <path d="M0 316 C20 318 40 322 52 332 C40 344 20 348 0 348 Z" fill="#e7b73c" stroke="#2b1d10" stroke-width="2" vector-effect="non-scaling-stroke" />
+  </svg>
+  <svg class="curtain right" viewBox="0 0 120 600" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M120 0 H0 C8 110 34 230 86 330 C64 420 50 520 56 600 H120 Z" fill="#9e2f4c" stroke="#2b1d10" stroke-width="3" vector-effect="non-scaling-stroke" />
+    <path d="M96 0 C94 120 100 240 106 330 M68 0 C64 120 74 230 94 330 M36 0 C36 110 56 220 90 330 M102 340 C94 430 90 520 94 600 M80 340 C72 430 66 520 70 600" fill="none" stroke="#2b1d10" stroke-width="1.5" opacity="0.45" vector-effect="non-scaling-stroke" />
+    <path d="M120 316 C100 318 80 322 68 332 C80 344 100 348 120 348 Z" fill="#e7b73c" stroke="#2b1d10" stroke-width="2" vector-effect="non-scaling-stroke" />
+  </svg>
+
+  <div class="opening">
+    <div class="screen">
+      <picture>
+        <source media="(min-width: 1000px)" srcset={`${p960.src} 960w, ${p1280.src} 1280w`} sizes="(min-width: 1400px) 700px, 52vw" />
+        <img class="poster" src={blank} alt="" width="1280" height="720" fetchpriority="high" decoding="async" />
+      </picture>
+      <video muted loop playsinline preload="metadata" width="1920" height="1080" aria-label="Eggify: the sixty-second film"></video>
+      <button class="play" type="button" id="film-play" aria-label="Play the film with sound">
+        <span aria-hidden="true">▶</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="apron" aria-hidden="true">
+    <span class="lamp"></span><span class="lamp"></span><span class="lamp"></span><span class="lamp"></span><span class="lamp"></span><span class="lamp"></span><span class="lamp"></span>
+  </div>
+  <button class="sound" type="button" id="film-sound">
+    <span aria-hidden="true">▶</span> Watch with sound
+  </button>
+</div>
+
+<script>
+  const booth = document.getElementById('theatre');
+  const desktop = window.matchMedia('(min-width: 1000px)');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (booth) {
+    const video = booth.querySelector('video')!;
+    const sound = document.getElementById('film-sound') as HTMLButtonElement;
+    const play = document.getElementById('film-play') as HTMLButtonElement;
+    let loaded = false;
+    let inView = true;
+    // 'preview': muted loop. 'watching': with sound and controls. 'idle': poster only.
+    let mode: 'idle' | 'preview' | 'watching' = 'idle';
+    let userPaused = false;
+
+    const load = () => {
+      if (loaded) return;
+      loaded = true;
+      video.src = booth.dataset.src ?? '';
+    };
+    const tryPlay = () => video.play().catch(() => booth.classList.remove('playing'));
+
+    video.addEventListener('playing', () => booth.classList.add('playing'));
+    video.addEventListener('pause', () => {
+      if (mode === 'watching' && inView && !video.ended) userPaused = true;
+    });
+    video.addEventListener('play', () => (userPaused = false));
+    video.addEventListener('ended', () => {
+      // Back to the quiet loop (or the poster) once the film is over.
+      video.controls = false;
+      video.muted = true;
+      video.loop = true;
+      booth.classList.remove('watching');
+      mode = reduce ? 'idle' : 'preview';
+      if (mode === 'preview') tryPlay();
+      else booth.classList.remove('playing');
+    });
+
+    const startPreview = () => {
+      if (reduce || mode !== 'idle' || !desktop.matches) return;
+      load();
+      mode = 'preview';
+      // The first seconds are nearly blank paper; start the silent loop on something.
+      const seek = () => { if (video.currentTime < 3) video.currentTime = 3; };
+      if (video.readyState >= 1) seek(); else video.addEventListener('loadedmetadata', seek, { once: true });
+      if (inView) tryPlay();
+    };
+
+    const watch = () => {
+      load();
+      mode = 'watching';
+      userPaused = false;
+      booth.classList.add('watching');
+      video.loop = false;
+      video.muted = false;
+      video.controls = true;
+      video.currentTime = 0;
+      tryPlay();
+      video.focus();
+    };
+    sound.addEventListener('click', watch);
+    play.addEventListener('click', watch);
+    if (reduce) booth.classList.add('reduced');
+
+    // Pause off screen to save CPU and battery; resume when it comes back.
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver((entries) => {
+        inView = entries.some((e) => e.isIntersecting);
+        if (!inView) {
+          if (!video.paused) video.pause();
+        } else if (mode === 'preview' || (mode === 'watching' && !userPaused)) {
+          tryPlay();
+        }
+      }, { threshold: 0.2 }).observe(booth);
+    }
+
+    startPreview();
+    desktop.addEventListener('change', () => {
+      if (desktop.matches) startPreview();
+      else if (!video.paused) video.pause();
+    });
+  }
+</script>
+
+<style>
+  .booth {
+    --crimson: #9e2f4c;
+    --gold: #e7b73c;
+    position: relative;
+    padding: 58px 46px 0;
+    background:
+      repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.08) 0 2px, transparent 2px 22px),
+      linear-gradient(180deg, #7d2139, var(--crimson) 30%, #8a2843);
+    border: 3px solid var(--ink);
+    border-bottom: 0;
+    box-shadow: 12px 14px 0 rgba(43, 29, 16, 0.22);
+  }
+  /* gold rule inside the booth's edge */
+  .booth::before {
+    content: '';
+    position: absolute;
+    inset: 6px 6px 0;
+    border: 2px solid var(--gold);
+    border-bottom: 0;
+    pointer-events: none;
+  }
+
+  .sign {
+    position: absolute;
+    z-index: 4;
+    top: -26px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-1.2deg);
+    white-space: nowrap;
+    font-family: var(--display);
+    font-weight: 700;
+    font-variation-settings: 'SOFT' 100;
+    font-size: 20px;
+    background: var(--card);
+    border: 2.5px solid var(--ink);
+    box-shadow: 0 0 0 4px var(--gold), 0 0 0 6.5px var(--ink), var(--shadow);
+    padding: 4px 18px 5px;
+  }
+  .sign span {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--crimson);
+    margin-right: 8px;
+    vertical-align: 2px;
+  }
+
+  .pelmet {
+    position: absolute;
+    z-index: 3;
+    left: -14px;
+    right: -14px;
+    top: -4px;
+    width: calc(100% + 28px);
+    height: 70px;
+    filter: drop-shadow(0 4px 0 rgba(43, 29, 16, 0.25));
+  }
+
+  .curtain {
+    position: absolute;
+    z-index: 2;
+    top: 30px;
+    bottom: 0;
+    width: 88px;
+    height: calc(100% - 30px);
+    filter: drop-shadow(3px 4px 0 rgba(43, 29, 16, 0.3));
+    pointer-events: none;
+  }
+  .curtain.left { left: 4px; }
+  .curtain.right { right: 4px; filter: drop-shadow(-3px 4px 0 rgba(43, 29, 16, 0.3)); }
+
+  .opening {
+    position: relative;
+    z-index: 1;
+    padding: 8px;
+    background: var(--gold);
+    border: 3px solid var(--ink);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+  }
+  .screen {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: var(--umber);
+    border: 2px solid var(--ink);
+    overflow: hidden;
+  }
+  .poster, video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  video { opacity: 0; transition: opacity 0.5s ease; }
+  .booth.playing video, .booth.watching video { opacity: 1; }
+
+  .sound {
+    position: absolute;
+    z-index: 5;
+    left: 0;
+    right: 0;
+    width: max-content;
+    margin-inline: auto;
+    bottom: 6px;
+    white-space: nowrap;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--mustard);
+    border: 2px solid var(--ink);
+    box-shadow: var(--shadow);
+    padding: 8px 14px;
+    cursor: pointer;
+    transform: rotate(-1.5deg);
+    transition: transform 0.15s ease;
+  }
+  .sound:hover { transform: rotate(0) translateY(-2px); }
+  .sound:focus-visible, .play:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+  .play { display: none; }
+  .booth.watching .play { display: none; }
+  .booth.watching .sound { visibility: hidden; }
+
+  /* Reduced motion: no autoplay; the poster plus a big play button. */
+  .booth.reduced .play {
+    display: grid;
+    place-items: center;
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    margin: auto;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    font-size: 36px;
+    padding-left: 6px;
+    color: #fff;
+    background: var(--pink);
+    border: 3px solid var(--ink);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+  }
+  .booth.reduced .sound { display: none; }
+
+  @media (max-width: 999px) { .booth { display: none; } }
+
+  .apron {
+    position: relative;
+    margin: 0 -26px;
+    height: 46px;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    border: 3px solid var(--ink);
+    background:
+      repeating-linear-gradient(90deg, transparent 0 78px, rgba(43, 29, 16, 0.35) 78px 80px),
+      linear-gradient(180deg, #e2b56c, #c98f45);
+    box-shadow: 0 8px 0 rgba(43, 29, 16, 0.2);
+  }
+  .lamp {
+    width: 26px;
+    height: 13px;
+    margin-top: -3px;
+    border-radius: 0 0 13px 13px;
+    background: #fff3c4;
+    border: 2px solid var(--ink);
+    border-top: 0;
+    box-shadow: 0 -10px 18px 6px rgba(255, 220, 120, 0.55);
+  }
+</style>

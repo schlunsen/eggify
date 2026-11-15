@@ -1,0 +1,28 @@
+---
+import Brand from './Brand.astro';
+import { navigation } from '../data/navigation';
+---
+
+<footer>
+  <div class="footer-top">
+    <h2>What will you make of it?</h2>
+    <a class="btn" href="/configure.html">
+      Find your setup <span aria-hidden="true">↗</span>
+    </a>
+  </div>
+  <div class="footer-bottom">
+    <Brand />
+    <div class="footer-links">
+      {navigation.map(({ href, label }) => (
+        <a href={href}>{label}</a>
+      ))}
+    </div>
+  </div>
+  <div class="footer-meta">
+    © 2026 MOTLEYARD · INTERACTIVE BRAND &amp; RENTAL CONCEPT
+    <br />
+    Rental offerings are illustrative. Pricing, hardware configurations,
+    availability, and rental terms are not final. No orders or payments are
+    taken.
+  </div>
+</footer>

@@ -1,0 +1,158 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import MachineArt from '../components/MachineArt.astro';
+import PageHero from '../components/PageHero.astro';
+---
+
+<SiteLayout title="Your customer workspace">
+  <div class="demo-banner">
+    <span>DEMO CUSTOMER AREA · SAMPLE DATA · CHANGES ONLY AFFECT THIS TAB</span>
+    <a href="/login.html">Back to sign-in ↗</a>
+  </div>
+  <PageHero
+    eyebrow="YOUR YARD"
+    description="Welcome back, builder. Here’s your workspace, from the license to the machine."
+  >
+    <Fragment slot="title">
+      Room for
+      <br />
+      your <span class="highlight">good ideas.</span>
+    </Fragment>
+  </PageHero>
+  <div class="wrap account-overline">
+    <span class="eyebrow">BUILDER@EXAMPLE.TEST / DEMO ACCOUNT</span>
+    <button id="reset-account">Reset demo</button>
+  </div>
+  <section class="wrap account-grid">
+    <article class="account-card">
+      <div class="eyebrow">YOUR WORKSPACE LICENSE</div>
+      <h2 id="license-title">Give your serial a home.</h2>
+      <div id="unlinked-license">
+        <p>
+          Attach a license after signing in. The live service would verify the
+          serial and its ownership before granting access.
+        </p>
+        <form id="link-license">
+          <label for="serial">TRY THE SAMPLE SERIAL</label>
+          <input
+            aria-describedby="serial-hint"
+            autocomplete="off"
+            id="serial"
+            required
+            spellcheck="false"
+            value="MOTLEY-DEMO"
+          />
+          <p class="note" id="serial-hint">
+            Use MOTLEY-DEMO only. Real serial numbers are not accepted by this
+            prototype.
+          </p>
+          <button class="btn" type="submit">
+            Link demo license <span>↗</span>
+          </button>
+        </form>
+      </div>
+      <div hidden id="linked-license">
+        <span class="tag">ACTIVE / DEMO LICENSE</span>
+        <div class="serial">MOTLEY · DEMO</div>
+        <p>
+          Workspace access, licensed relay, and iPhone access through your
+          licensed Mac.
+        </p>
+        <details>
+          <summary>Offline license allowance</summary>
+          <p>
+            The license allows up to 30 days offline between checks. Cloud-model
+            tools still require their own connection.
+          </p>
+        </details>
+      </div>
+      <p class="inline-status" id="license-status" role="status"></p>
+    </article>
+    <article class="account-card dark">
+      <div class="eyebrow">YOUR NEXT WORKSHOP</div>
+      <h2>
+        A Mac. A plan.
+        <br />A place to start.
+      </h2>
+      <p>
+        Explore a rental with Motleyard and your chosen agent tools prepared.
+        Keep the whole setup in mind as you plan your next build.
+      </p>
+      <MachineArt label="RENTAL CONCEPT / NO ACTIVE ORDER" />
+      <a class="btn light-btn" href="/configure.html">
+        Configure a machine<span>↗</span>
+      </a>
+    </article>
+    <article class="account-card">
+      <div class="eyebrow">YOUR COMPUTERS</div>
+      <div class="account-stat">
+        <span id="seat-count">0</span>
+        <small> / 3 slots</small>
+      </div>
+      <p id="seat-description">
+        Link the demo license to explore computer management.
+      </p>
+      <div id="device-list"></div>
+      <button class="text-link" hidden id="add-demo-device">
+        + Activate a demo computer
+      </button>
+      <p class="inline-status" id="device-status" role="status"></p>
+    </article>
+    <article class="account-card">
+      <div class="eyebrow">RELEASES &amp; ACCESS</div>
+      <h2>
+        Your workspace,
+        <br />
+        up to date.
+      </h2>
+      <p>
+        The first licensed release is being prepared. Downloads and update
+        details will live here when available.
+      </p>
+      <div class="device-row">
+        <span class="device-icon">↓</span>
+        <div>
+          <strong>Desktop app</strong>
+          <small>LICENSED RELEASE IN PREPARATION</small>
+        </div>
+      </div>
+      <div class="device-row">
+        <span class="device-icon">↗</span>
+        <div>
+          <strong>iPhone access</strong>
+          <small>CONNECT THROUGH YOUR LICENSED MAC</small>
+        </div>
+      </div>
+      <div class="account-actions">
+        <a class="text-link" href="/licensing.html">
+          Read the license terms ↗
+        </a>
+        <a class="text-link" href="/workspace.html">
+          Explore the workspace ↗
+        </a>
+      </div>
+    </article>
+  </section>
+  <p class="wrap account-legal">
+    This is a customer-area prototype, not a secure account portal. License
+    linking and computer changes are simulated in session storage; nothing is
+    sent to a server.
+  </p>
+  <dialog class="account-dialog" id="remove-dialog">
+    <h2>Free up this slot?</h2>
+    <p id="remove-description"></p>
+    <p>
+      This affects sample data only. No actual computer will be deactivated.
+    </p>
+    <div class="dialog-actions">
+      <button id="cancel-remove">Keep computer</button>
+      <button class="confirm" id="confirm-remove">
+        Free demo slot
+      </button>
+    </div>
+  </dialog>
+</SiteLayout>
+<script>
+  import { initAccountDemo } from '../scripts/account';
+  initAccountDemo();
+</script>

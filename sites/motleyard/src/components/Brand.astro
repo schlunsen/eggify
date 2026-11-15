@@ -1,0 +1,15 @@
+---
+interface Props {
+  href?: string;
+  compact?: boolean;
+}
+const { href = '/', compact = false } = Astro.props;
+---
+
+<a
+  href={href}
+  class:list={['brand', { 'app-brand': compact }]}
+  aria-label="Motleyard home"
+>
+  <span class="mark" aria-hidden="true"></span>motleyard
+</a>

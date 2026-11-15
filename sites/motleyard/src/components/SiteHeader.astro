@@ -1,0 +1,29 @@
+---
+import Brand from './Brand.astro';
+import { navigation } from '../data/navigation';
+const pathname = Astro.url.pathname;
+---
+
+<header>
+  <Brand />
+  <button class="menu-toggle" aria-controls="main-nav" aria-expanded="false">
+    Menu +
+  </button>
+  <nav id="main-nav" aria-label="Main navigation">
+    {navigation.map(({ href, label }) => (
+      <a href={href} aria-current={pathname === href ? 'page' : undefined}>
+        {label}
+      </a>
+    ))}
+    <a class="nav-cta" href="/configure.html">
+      Build your setup{' '}
+      <span class="arrow" aria-hidden="true">
+        ↗
+      </span>
+    </a>
+  </nav>
+</header>
+<script>
+  import { initNavigation } from '../scripts/navigation';
+  initNavigation();
+</script>

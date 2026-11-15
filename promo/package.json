@@ -1,0 +1,24 @@
+{
+  "name": "eggify-promo",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render Promo out/eggify-promo.mp4",
+    "still": "remotion still Promo out/still.png --frame=300",
+    "typecheck": "tsc --noEmit",
+    "deploy": "./deploy.sh"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.532",
+    "@remotion/google-fonts": "^4.0.532",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "remotion": "^4.0.532"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "typescript": "^7.0.2"
+  }
+}

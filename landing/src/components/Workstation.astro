@@ -1,0 +1,239 @@
+---
+import logo from '../assets/logo.svg';
+
+// An illustrative agent session, drawn in HTML so it stays crisp and themable.
+const sessions = [
+  { name: 'fix-auth-tests', state: 'working' },
+  { name: 'refactor-billing', state: 'waiting' },
+  { name: 'silly-walks', state: 'working' },
+  { name: 'docs-pass', state: 'done' },
+];
+const points = [
+  ['Real repositories', 'Agents work in your own project folders and git branches, with Bash, Read, Write and Edit.'],
+  ['You stay in charge', 'Approve risky tool calls, keep sessions sandboxed, stop with ⌘. or switch model at any time.'],
+  ['Nothing hidden', 'Every prompt, diff, command, token and cent is on screen and saved.'],
+];
+---
+<section id="workstation">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">What it actually is</div>
+      <h2>A workshop for your coding agents</h2>
+      <p>Eggify runs on your Mac, in its own window or a browser tab. AI agents write, run and test code in your repositories while you watch, steer and approve.</p>
+    </div>
+
+    <div class="window" id="window">
+      <div class="chrome">
+        <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="url">Eggify · teapot-api</span>
+        <span class="kbd">⌘K</span>
+      </div>
+      <div class="body">
+        <aside class="sessions" aria-label="Sessions">
+          <div class="side-title">Sessions</div>
+          {sessions.map((s, i) => (
+            <div class:list={['session', s.state, { current: i === 0 }]}>
+              <span class="dot" aria-hidden="true"></span>
+              <span>{s.name}</span>
+              <small>{s.state}</small>
+            </div>
+          ))}
+          <div class="new">+ New session</div>
+        </aside>
+
+        <div class="chat">
+          <div class="msg user step">
+            <b>You</b>
+            The login test fails since the token refactor. Fix it and make sure the auth suite passes.
+          </div>
+          <div class="msg agent step">
+            <b>Agent</b>
+            Looking at the session code first.
+          </div>
+          <div class="tool step"><span class="tool-name">Read</span> internal/auth/session.go</div>
+          <div class="tool step">
+            <span class="tool-name">Edit</span> internal/auth/session.go <span class="stat">+4 −2</span>
+            <pre class="diff"><span class="del">-  row := store.Find(token)</span>
+<span class="add">+  row := store.Find(hashToken(token))</span></pre>
+          </div>
+          <div class="tool step">
+            <span class="tool-name">Bash</span> go test ./internal/auth/...
+            <pre class="out">ok   internal/auth   0.42s   38 passed</pre>
+          </div>
+          <div class="msg agent step">
+            <b>Agent</b>
+            Fixed: sessions are looked up by the hashed token again. All 38 auth tests pass.
+          </div>
+        </div>
+
+        <aside class="meta" aria-label="Session details">
+          <img src={logo.src} alt="" width="64" height="64" />
+          <dl>
+            <div><dt>Model</dt><dd>Claude Opus</dd></div>
+            <div><dt>Branch</dt><dd>fix/auth-tests</dd></div>
+            <div><dt>Tokens</dt><dd>18.4k</dd></div>
+            <div><dt>Cost</dt><dd>$0.21</dd></div>
+            <div><dt>Sandbox</dt><dd class="on">On</dd></div>
+          </dl>
+        </aside>
+      </div>
+    </div>
+
+    <ul class="points">
+      {points.map(([title, body]) => (
+        <li><b>{title}</b>{body}</li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<script>
+  // Play the session in when it scrolls into view.
+  const win = document.getElementById('window');
+  if (win) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce || !('IntersectionObserver' in window)) {
+      win.classList.add('play');
+    } else {
+      win.classList.add('ready');
+      const io = new IntersectionObserver((entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          win.classList.add('play');
+          io.disconnect();
+        }
+      }, { threshold: 0.35 });
+      io.observe(win);
+    }
+  }
+</script>
+
+<style>
+  .window {
+    background: var(--card);
+    border: 2px solid var(--ink);
+    box-shadow: 10px 12px 0 rgba(43, 29, 16, 0.2), 10px 12px 0 2px var(--ink);
+    overflow: hidden;
+  }
+  .chrome {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 16px;
+    background: var(--paper-light);
+    border-bottom: 2px solid var(--ink);
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .dots { display: inline-flex; gap: 7px; }
+  .dots i { width: 12px; height: 12px; border-radius: 50%; border: 1.5px solid var(--ink); background: var(--pink); }
+  .dots i:nth-child(2) { background: var(--mustard); }
+  .dots i:nth-child(3) { background: var(--teal); }
+  .url { background: var(--card); border: 1.5px solid var(--edge); padding: 2px 12px; }
+  .kbd { margin-left: auto; border: 1.5px solid var(--ink); background: var(--card); padding: 0 8px; font-weight: 700; color: var(--ink); }
+
+  .body { display: grid; grid-template-columns: 210px 1fr 200px; min-height: 440px; }
+
+  .sessions { border-right: 2px dashed var(--edge); padding: 18px 14px; font-size: 16px; }
+  .side-title, dt {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .side-title { margin-bottom: 10px; }
+  .session {
+    display: grid;
+    grid-template-columns: 12px 1fr;
+    column-gap: 8px;
+    align-items: center;
+    padding: 8px 10px;
+    margin-bottom: 4px;
+    font-family: var(--mono);
+    font-size: 14px;
+  }
+  .session small { grid-column: 2; font-size: 12px; color: var(--ink-soft); }
+  .session.current { background: var(--paper); border: 1.5px solid var(--ink); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--teal); }
+  .working .dot { background: var(--pink); animation: pulse 1.2s ease-in-out infinite; }
+  .waiting .dot { background: var(--mustard); }
+  @keyframes pulse { 50% { opacity: 0.35; } }
+  .new { margin-top: 12px; font-family: var(--mono); font-size: 13px; color: var(--pink-ink); padding: 0 10px; }
+
+  .chat { padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .msg { font-size: 17px; line-height: 1.45; max-width: 46em; }
+  .msg b {
+    display: block;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .msg.user { align-self: flex-end; background: var(--paper); border: 1.5px solid var(--ink); padding: 10px 14px; max-width: 34em; }
+  .tool {
+    font-family: var(--mono);
+    font-size: 14px;
+    background: var(--paper-light);
+    border-left: 4px solid var(--teal);
+    padding: 8px 12px;
+    overflow-x: auto;
+  }
+  .tool-name {
+    display: inline-block;
+    font-weight: 700;
+    background: var(--ink);
+    color: var(--paper-light);
+    padding: 0 6px;
+    margin-right: 6px;
+  }
+  .stat { color: var(--ink-soft); }
+  .diff, .out { margin: 6px 0 0; font-family: var(--mono); font-size: 13px; line-height: 1.5; white-space: pre; }
+  .del { color: #b3261e; }
+  .add { color: #2e7d32; }
+  .out { color: #2e7d32; }
+
+  .meta { border-left: 2px dashed var(--edge); padding: 18px 16px; }
+  .meta img { width: 56px; height: 56px; margin-bottom: 10px; }
+  dl { display: grid; gap: 10px; }
+  dd { font-family: var(--mono); font-size: 15px; }
+  dd.on { color: var(--teal); font-weight: 700; }
+
+  /* Play-in: steps appear one by one once the window is on screen */
+  .window.ready .step { opacity: 0; transform: translateY(8px); }
+  .window.play .step { opacity: 1; transform: none; transition: opacity 0.4s ease, transform 0.4s ease; }
+  .window.play .step:nth-child(2) { transition-delay: 0.6s; }
+  .window.play .step:nth-child(3) { transition-delay: 1.1s; }
+  .window.play .step:nth-child(4) { transition-delay: 1.7s; }
+  .window.play .step:nth-child(5) { transition-delay: 2.5s; }
+  .window.play .step:nth-child(6) { transition-delay: 3.3s; }
+
+  .points {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+    margin-top: 44px;
+  }
+  .points li { font-size: 18px; color: var(--ink-soft); border-top: 3px solid var(--ink); padding-top: 12px; }
+  .points b {
+    display: block;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  @media (max-width: 980px) {
+    .body { grid-template-columns: 1fr 180px; }
+    .sessions { display: none; }
+  }
+  @media (max-width: 680px) {
+    .body { grid-template-columns: 1fr; }
+    .meta { display: none; }
+    .chat { padding: 16px; }
+    .points { grid-template-columns: 1fr; }
+  }
+</style>

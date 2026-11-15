@@ -1,0 +1,62 @@
+---
+import { Image } from 'astro:assets';
+import zen from '../assets/screens/zen.webp';
+import live from '../assets/screens/live.webp';
+import projects from '../assets/screens/projects.webp';
+import remote from '../assets/screens/remote.webp';
+
+// Real screens from the app in the Puppet Theatre theme (seeded demo data).
+const shots = [
+  { src: zen, caption: 'Zen mode: the session as a puppet show', alt: 'An Eggify session in Zen mode: the egg gentleman on a paper stage with bunting and curtains, the agent’s latest reply on a card' },
+  { src: live, caption: 'Live mode: every tool call, token and cent', alt: 'An Eggify session in Live mode: the session list, a chat with a Bash tool call, and context, git and cost details' },
+  { src: projects, caption: 'Projects: open a folder, clone or start fresh', alt: 'The Eggify Projects page listing three projects with their branches, running sessions and a Start session button' },
+  { src: remote, caption: 'Remote access: ngrok, a public address, a QR code', alt: 'Eggify settings for remote access: connect an ngrok account, pick an address and turn it on' },
+];
+---
+<section id="curtain">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">Behind the curtain</div>
+      <h2>The actual app, no puppets harmed</h2>
+      <p>Real screens in the Puppet Theatre theme. The egg is optional; the curtains are not.</p>
+    </div>
+    <div class="shots">
+      {shots.map((s) => (
+        <figure class="shot">
+          <Image src={s.src} alt={s.alt} widths={[600, 1120]} sizes="(max-width: 860px) 92vw, 560px" />
+          <figcaption>{s.caption}</figcaption>
+        </figure>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .shots {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px 40px;
+  }
+  .shot {
+    margin: 0;
+    background: var(--card);
+    border: 2px solid var(--ink);
+    box-shadow: 8px 9px 0 rgba(43, 29, 16, 0.2);
+    padding: 10px 10px 0;
+  }
+  .shot:nth-child(1) { transform: rotate(-0.7deg); }
+  .shot:nth-child(2) { transform: rotate(0.8deg); }
+  .shot:nth-child(3) { transform: rotate(0.5deg); }
+  .shot:nth-child(4) { transform: rotate(-0.5deg); }
+  .shot :global(img) { width: 100%; height: auto; border: 1.5px solid var(--edge); }
+  figcaption {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--ink-soft);
+    padding: 10px 4px 12px;
+  }
+  @media (max-width: 860px) {
+    .shots { grid-template-columns: 1fr; }
+    .shot:nth-child(n) { transform: none; }
+  }
+</style>

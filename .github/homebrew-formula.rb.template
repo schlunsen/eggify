@@ -1,0 +1,36 @@
+class Eggify < Formula
+  desc "Eggify - Control center and wrapper for Claude Code"
+  homepage "https://github.com/schlunsen/eggify"
+  version "{{VERSION}}"
+
+  on_macos do
+    if Hardware::CPU.arm?
+      url "https://github.com/schlunsen/eggify/releases/download/v{{VERSION}}/eggify-darwin-arm64.tar.gz"
+      sha256 "{{SHA256_DARWIN_ARM64}}"
+    else
+      url "https://github.com/schlunsen/eggify/releases/download/v{{VERSION}}/eggify-darwin-amd64.tar.gz"
+      sha256 "{{SHA256_DARWIN_AMD64}}"
+    end
+  end
+
+  on_linux do
+    if Hardware::CPU.arm?
+      url "https://github.com/schlunsen/eggify/releases/download/v{{VERSION}}/eggify-linux-arm64.tar.gz"
+      sha256 "{{SHA256_LINUX_ARM64}}"
+    else
+      url "https://github.com/schlunsen/eggify/releases/download/v{{VERSION}}/eggify-linux-amd64.tar.gz"
+      sha256 "{{SHA256_LINUX_AMD64}}"
+    end
+  end
+
+  def install
+    # Every release tarball ships bin/eggify plus its runtime libraries in lib/.
+    # The binary's rpath is <exe>/../lib on both platforms, so keep that layout.
+    bin.install "bin/eggify"
+    lib.install Dir["lib/*"]
+  end
+
+  test do
+    assert_match version.to_s, shell_output("#{bin}/eggify --version 2>&1", 0)
+  end
+end

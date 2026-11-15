@@ -1,0 +1,118 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+coverage.html
+
+# Go workspace file
+go.work
+
+# Binary output
+/eggify
+/cmd/eggify/eggify
+/dist/
+/bin/
+
+# Dependency directories
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*.backup
+*.log
+.playwright-mcp/
+*~
+
+# Xcode user data
+xcuserdata/
+
+# iOS local config (contains server URLs and secrets)
+**/LocalConfig.plist
+
+# Git worktrees
+.worktrees/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.*
+!.env.example
+.claude/
+!.claude/agents/
+.mcp.json
+
+# Security - Sensitive files (DO NOT COMMIT)
+**/.secret
+**/users.json
+**/sessions.json
+**/*.key
+**/*.crt
+**/*.pem
+**/config.json
+SECURITY_AUDIT.md
+
+# Website build output (source is committed, only ignore build artifacts)
+/website/.nuxt
+/website/.output
+/website/node_modules
+/website/.nitro
+/website/.cache
+south_park/
+
+# Python agent server
+/agents_server/.venv/
+/agents_server/__pycache__/
+/agents_server/src/__pycache__/
+/agents_server/*.pyc
+/agents_server/.pytest_cache/
+/agents_server/.mypy_cache/
+/agents_server/dist/
+/agents_server/build/
+/agents_server/*.egg-info/
+TODOWRITE_IMPLEMENTATION_COMPLETE.md
+settings.local.json
+
+# Built binaries
+eggify-*
+!eggify-*.service
+!docs/eggify-*.png
+!ios/eggify/eggify/Assets.xcassets/**/eggify-*.png
+!internal/server/frontend/public/eggify-logo.*
+!/cmd/eggify-desktop/
+!/cmd/eggify-relay/
+/cct
+/cct-*
+
+# Security scan reports
+zap-reports/
+docker-compose.zap-scan.yml
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+.mcp.json.old
+.mcp-metadata.json
+# ML model weights at repo root only (an unanchored rule hid ios/eggify/eggify/Models/)
+/models/
+.gstack/
+# Local iOS build settings (ios/eggify/Local.xcconfig.example)
+ios/eggify/Local.xcconfig
+
+# Agent instructions: kept out of the public repository
+CLAUDE.md
+ios/eggify/Info.local.plist

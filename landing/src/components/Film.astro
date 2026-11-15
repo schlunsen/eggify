@@ -1,0 +1,38 @@
+---
+// The film for narrow screens, where the hero has no theatre. On desktop the
+// film plays in the hero (Theatre.astro), so this section is hidden there.
+import { getImage } from 'astro:assets';
+import poster from '../assets/film-poster.webp';
+import { FILM_SRC } from '../data/film';
+
+const p = await getImage({ src: poster, width: 960, format: 'webp' });
+---
+<section id="film">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">The film</div>
+      <h2>Sixty seconds, one egg</h2>
+      <p>Eggify in a minute: real screens, a posh announcer and, inevitably, the foot.</p>
+    </div>
+    <div class="screen">
+      <video controls preload="none" playsinline poster={p.src} width="1920" height="1080">
+        <source src={FILM_SRC} type="video/mp4" />
+        <a href={FILM_SRC}>Watch the film</a>
+      </video>
+    </div>
+  </div>
+</section>
+
+<style>
+  .screen {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 10px;
+    background: #e7b73c;
+    border: 3px solid var(--ink);
+    box-shadow: 0 0 0 8px #9e2f4c, 0 0 0 11px var(--ink), 12px 14px 0 11px rgba(43, 29, 16, 0.2);
+    rotate: -0.6deg;
+  }
+  video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: var(--umber); border: 2px solid var(--ink); }
+  @media (min-width: 1000px) { section { display: none; } }
+</style>

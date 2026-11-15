@@ -1,0 +1,76 @@
+---
+import { Image } from 'astro:assets';
+import { sketches } from '../data/sketches';
+---
+<section id="sketches">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="kicker">The programme</div>
+      <h2>Nine sketches, one egg</h2>
+      <p>Everything a developer needs to keep a troupe of AI coding agents productive, accountable and, broadly speaking, under control.</p>
+    </div>
+
+    <div class="grid">
+      {sketches.map((s, i) => (
+        <article class="sketch">
+          <div class="tape">Sketch No. {i + 1}</div>
+          <div class="art">
+            <Image src={s.image} alt={s.alt} widths={[280, 560]} sizes="(max-width: 620px) 80vw, 300px" />
+          </div>
+          <div class="label">{s.label}</div>
+          <h3>{s.title}</h3>
+          <p>{s.body}</p>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px 34px; }
+  .sketch {
+    position: relative;
+    background: var(--card);
+    border: 1.5px solid var(--edge);
+    padding: 30px 26px 28px;
+    box-shadow: var(--shadow);
+    transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1);
+  }
+  .sketch:nth-child(3n+1) { transform: rotate(-1.4deg); }
+  .sketch:nth-child(3n+2) { transform: rotate(1deg) translateY(14px); }
+  .sketch:nth-child(3n) { transform: rotate(-0.6deg); }
+  .sketch:hover { transform: rotate(0) translateY(-6px); }
+  .tape {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-3deg);
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: rgba(212, 160, 23, 0.88);
+    padding: 4px 14px;
+    white-space: nowrap;
+  }
+  .sketch:nth-child(even) .tape { background: rgba(232, 69, 139, 0.85); color: #fff; transform: translateX(-50%) rotate(2deg); }
+  .art { height: 210px; display: grid; place-items: center; margin-bottom: 18px; }
+  .art :global(img) { max-height: 210px; width: auto; object-fit: contain; }
+  .label {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--pink-ink);
+    margin-bottom: 4px;
+  }
+  h3 { font-family: var(--display); font-weight: 700; font-variation-settings: 'SOFT' 100; font-size: 26px; line-height: 1.15; margin-bottom: 10px; }
+  p { font-size: 18px; color: var(--ink-soft); }
+  @media (max-width: 960px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 620px) {
+    .grid { grid-template-columns: 1fr; }
+    .sketch:nth-child(n) { transform: none; }
+  }
+</style>

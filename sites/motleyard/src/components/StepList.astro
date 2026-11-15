@@ -1,0 +1,18 @@
+---
+import type { Step } from '../data/types';
+interface Props {
+  items: readonly Step[];
+}
+const { items } = Astro.props;
+---
+
+<div class="step-list">
+  {items.map((item) => (
+    <article class="step">
+      <div>
+        <h3>{item.title}</h3>
+        <p>{item.description}</p>
+      </div>
+    </article>
+  ))}
+</div>

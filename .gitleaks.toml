@@ -1,0 +1,19 @@
+# Gitleaks configuration (used by .github/workflows/secrets.yml and `gitleaks detect --no-git`).
+# The allowlist names the exact fake values (not whole files), so any other secret in the
+# same files is still reported. Every value was checked by hand: all are test fixtures.
+# (Path + regex with condition = "AND" is not used: gitleaks 8.30 suppresses on the path alone.)
+title = "Eggify"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Fake test values: provider keys, handover token, RFC 6455 sample key, ngrok keys/tokens, license-server test key material"
+regexes = [
+  '''^(ds|glm)-secret-0123456789$''',                      # provider_proxy_test.go
+  '''^0123456789abcdef0123$''',                            # fake handover token in the privileged WS tests
+  '''^dGhlIHNhbXBsZSBub25jZQ==$''',                       # RFC 6455 sample Sec-WebSocket-Key
+  '''^(attacker_key_1234567|tok_1234567890|2abcSECRETkey_77x9)$''', # tunnel tests
+  '''^PUAXw-hDiVqStwqnTRt-vJyYLM8uxJaMwM1V8Sr0Zgw$''',    # license-server test install key (vectors.json)
+  '''^-----BEGIN PRIVATE KEY-----\\nMFECAQEwBQYDK2VwBCIEIJ1hsZ3v/VpguoRK9JLsLMREScVpezJpG''', # test server key (RFC 8032 test 1)
+]

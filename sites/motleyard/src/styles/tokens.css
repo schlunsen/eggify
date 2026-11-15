@@ -1,0 +1,9 @@
+/* Motleyard design tokens */
+:root {
+  --paper: #edece5;
+  --ink: #20211f;
+  --muted: #696c63;
+  --line: #cecec3;
+  --lime: #e4fc54;
+  --mono: 'DM Mono', monospace;
+}

@@ -1,0 +1,21 @@
+---
+interface Props {
+  label?: string;
+}
+const { label = 'ILLUSTRATIVE FORM STUDY / NOT AN APPLE PRODUCT RENDER' } =
+  Astro.props;
+---
+
+<div
+  class="machine-art"
+  role="img"
+  aria-label="Illustrative compact Motleyard computer"
+>
+  <div class="device">
+    <div class="brand">
+      <span class="mark"></span>motleyard
+    </div>
+    <span class="power"></span>
+  </div>
+  <div class="machine-note">{label}</div>
+</div>

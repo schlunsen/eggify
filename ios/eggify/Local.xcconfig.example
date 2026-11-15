@@ -1,0 +1,3 @@
+// Written by scripts/ios-relay-config.sh <relay wildcard domain>, together
+// with Info.local.plist (Info.plist with that domain's ATS exception).
+EGGIFY_INFOPLIST_FILE = Info.local.plist

@@ -1,0 +1,59 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL('/assets/og.jpg', Astro.site);
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content="#efe4c8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content="Eggify: and now for something completely different" />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content="Eggify" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Eggify: the egg gentleman and the AI workstation for writing code" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..900,0..100,0..1&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Courier+Prime:wght@400;700&display=swap"
+    />
+  </head>
+  <body>
+    <slot />
+  <script is:inline>
+  // The page is static, so a visit after a newer release would show the version
+  // it was built with. Ask the published manifest which version is current.
+  fetch('/download/latest.json', { cache: 'no-cache' })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((m) => {
+      if (!m || typeof m.version !== 'string' || !/^\d+(\.\d+){0,3}$/.test(m.version)) return;
+      document.querySelectorAll('[data-desktop-version]').forEach((el) => { el.textContent = m.version; });
+    })
+    .catch(() => {});
+</script>
+</body>
+</html>

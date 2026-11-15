@@ -1,0 +1,43 @@
+/*
+ * Wails desktop app on macOS (html.desktop-mac, set by plugins/desktop-shell.client.ts).
+ * The native title bar is hidden and the traffic lights float over the page, so:
+ *  - the navbar is the window's drag region and leaves room for the traffic lights;
+ *  - pages without the navbar (setup, login) get a thin drag strip at the top.
+ * Dragging uses Wails' runtime: elements with `--wails-draggable: drag` move the
+ * window, `no-drag` opts interactive children back out (the property inherits).
+ * Nothing here applies in a browser or in the Tauri app.
+ */
+html.desktop-mac .navbar {
+  --wails-draggable: drag;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+}
+
+html.desktop-mac .navbar-container {
+  padding-left: 90px;
+}
+
+html.desktop-mac .navbar a,
+html.desktop-mac .navbar button,
+html.desktop-mac .navbar input,
+html.desktop-mac .navbar select,
+html.desktop-mac .navbar [role='button'],
+html.desktop-mac .navbar .nav-right,
+html.desktop-mac .navbar .nav-logo-link {
+  --wails-draggable: no-drag;
+}
+
+html.desktop-mac .desktop-drag-strip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 28px;
+  z-index: 2147483000;
+  --wails-draggable: drag;
+}
+
+html.desktop-mac.has-navbar .desktop-drag-strip {
+  display: none;
+}

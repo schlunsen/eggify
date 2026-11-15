@@ -1,0 +1,99 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import WorkspacePreview from '../components/WorkspacePreview.astro';
+import PageHero from '../components/PageHero.astro';
+import FeatureGrid from '../components/FeatureGrid.astro';
+import StepList from '../components/StepList.astro';
+import FaqSection from '../components/FaqSection.astro';
+import { pageContent } from '../data/pages';
+const content = pageContent.workspace;
+---
+
+<SiteLayout title="The workspace">
+  <PageHero
+    eyebrow="THE WORKSPACE"
+    description="Bring your coding agents out of scattered terminals and into a workspace built around your projects. You set the direction. Keep the work in view."
+  >
+    <Fragment slot="title">
+      Many moving parts.
+      <br />
+      One place to <span class="highlight">build.</span>
+    </Fragment>
+    <div class="actions">
+      <a class="btn" href="/licensing.html">
+        Bring your own machine<span>↗</span>
+      </a>
+      <a class="text-link" href="/machines.html">
+        Or rent one of ours ↗
+      </a>
+    </div>
+  </PageHero>
+  <div class="wrap workspace-detail">
+    <WorkspacePreview />
+  </div>
+  <section class="section wrap">
+    <div class="section-intro">
+      <div class="eyebrow">A WORKSPACE. NOT ANOTHER MODEL.</div>
+      <div>
+        <h2>
+          Use the right agent.
+          <br />
+          Keep your own rhythm.
+        </h2>
+        <p>
+          Claude for one session. Codex for the next. Your projects stay
+          organized while you choose how to approach the work.
+        </p>
+      </div>
+    </div>
+    <FeatureGrid items={content.features} />
+  </section>
+  <section class="band">
+    <div class="wrap split">
+      <div>
+        <div class="eyebrow">FROM FIRST PROMPT TO NEXT ITERATION</div>
+        <h2>
+          Your project.
+          <br />A little more momentum.
+        </h2>
+        <p>
+          A workspace should make the next useful action obvious. Start a
+          session, inspect the result, and keep going.
+        </p>
+        <p class="note">Illustrative workflow, not live agent output.</p>
+      </div>
+      <div class="mini-terminal">
+        <span class="dim">~/projects/something-good</span>
+        <br />
+        <b>01</b>   Open your project
+        <br />
+        <b>02</b>   Pick an agent and set permissions
+        <br />
+        <b>03</b>   Give it a useful piece of work
+        <br />
+        <b>04</b>   Follow the session and inspect changes
+        <br />
+        <b>05</b>   Review. Refine. Make it yours.
+        <br />
+        <br />
+        <span class="dim">A whole lot of possibility. One next step.</span>
+      </div>
+    </div>
+  </section>
+  <section class="section wrap split">
+    <div>
+      <div class="eyebrow">A LITTLE DISTANCE. SAME WORKSPACE.</div>
+      <h2>
+        Step away.
+        <br />
+        Stay connected.
+      </h2>
+      <p class="lead">
+        Your iPhone connects to your licensed Mac, so you can check in on your
+        workspace away from your desk.
+      </p>
+    </div>
+    <StepList items={content.steps} />
+  </section>
+  <FaqSection items={content.faqs} />
+</SiteLayout>

@@ -1,0 +1,27 @@
+---
+import logo from '../assets/logo.svg';
+---
+<footer>
+  <div class="wrap">
+    <div>
+      <a class="brand" href="#top"><img src={logo.src} alt="" width="40" height="40" />Eggify</a>
+      <small>No eggs were harmed in the making of this website. One was stepped on, but he's fine.</small>
+    </div>
+    <div>The AI workstation for writing code · Made for macOS · Paid software, licensed per person</div>
+  </div>
+</footer>
+
+<style>
+  footer {
+    margin-top: 110px;
+    background: var(--umber);
+    color: #cdbb98;
+    padding: 48px 0 40px;
+    font-size: 17px;
+    border-top: 6px solid var(--pink);
+    box-shadow: 0 -12px 0 var(--mustard), 0 -18px 0 var(--teal);
+  }
+  .wrap { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between; }
+  .brand { color: var(--paper-light); }
+  small { display: block; font-style: italic; margin-top: 4px; }
+</style>

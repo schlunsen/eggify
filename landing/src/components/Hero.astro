@@ -1,0 +1,455 @@
+---
+import { Image } from 'astro:assets';
+import Nav from './Nav.astro';
+import Cloud from './Cloud.astro';
+import Theatre from './Theatre.astro';
+import egg from '../assets/egg.webp';
+import cherub from '../assets/cherub.webp';
+import foot from '../assets/foot.webp';
+
+// Bunting: one swag of flags along a gentle curve, drawn once (not tiled).
+const flagColors = ['#e8458b', '#d4a017', '#2a9d8f', '#fbf5e6'];
+const flags = Array.from({ length: 34 }, (_, i) => {
+  const x = 12 + i * 47;
+  const t = i / 33;
+  const y = 6 + Math.sin(t * Math.PI * 2) ** 2 * 16;
+  return { x, y, c: flagColors[i % 4] };
+});
+---
+<header class="hero" id="top">
+  <div class="sky" aria-hidden="true">
+    <svg class="sun" viewBox="0 0 200 200">
+      <g stroke="#2b1d10" stroke-width="2.5" stroke-linejoin="round">
+        {Array.from({ length: 14 }, (_, i) => (
+          <path d="M100 6 L108 40 L92 40 Z" fill={i % 2 ? '#e7b73c' : '#f2cf6b'} transform={`rotate(${i * (360 / 14)} 100 100)`} />
+        ))}
+        <circle cx="100" cy="100" r="54" fill="#f2cf6b" />
+      </g>
+      <circle cx="100" cy="100" r="44" fill="none" stroke="#2b1d10" stroke-width="1.4" opacity="0.35" stroke-dasharray="3 5" />
+    </svg>
+
+    <div class="layer far">
+      <Cloud shape="b" class="c1" />
+      <Cloud shape="c" class="c2" />
+      <Cloud shape="a" class="c3" />
+      <Cloud shape="b" class="c4" />
+    </div>
+    <div class="layer mid">
+      <Cloud shape="a" class="c5" />
+      <Cloud shape="c" class="c6" />
+      <Cloud shape="b" class="c7" />
+    </div>
+
+    <svg class="hills" viewBox="0 0 1600 220" preserveAspectRatio="none">
+      <path d="M0 120 C140 70 260 60 400 96 C520 128 600 70 760 64 C900 58 980 112 1120 104 C1260 96 1340 50 1480 62 C1540 68 1580 80 1600 86 V220 H0 Z"
+        fill="#b9cfa6" stroke="#2b1d10" stroke-width="2" vector-effect="non-scaling-stroke" />
+      <path d="M0 162 C180 128 320 140 500 158 C680 176 760 128 940 128 C1120 128 1220 170 1380 160 C1480 154 1550 140 1600 136 V220 H0 Z"
+        fill="#d8b77a" stroke="#2b1d10" stroke-width="2" vector-effect="non-scaling-stroke" />
+    </svg>
+  </div>
+
+  <div class="foot" id="foot" aria-hidden="true">
+    <Image src={foot} alt="" widths={[300, 600]} sizes="(max-width: 999px) 42vw, 300px" loading="eager" />
+  </div>
+  <div class="layer near" aria-hidden="true">
+    <Cloud shape="c" class="foot-cloud" />
+  </div>
+
+  <div class="bar">
+    <div class="wrap"><Nav /></div>
+    <svg class="bunting" viewBox="0 0 1600 50" preserveAspectRatio="none" aria-hidden="true">
+      <path d={`M0 6 ${flags.map((f) => `L${f.x + 20} ${f.y + 1}`).join(' ')} L1600 6`} fill="none" stroke="#2b1d10" stroke-width="1.5" vector-effect="non-scaling-stroke" />
+      {flags.map((f) => (
+        <path d={`M${f.x} ${f.y} L${f.x + 40} ${f.y + 1} L${f.x + 20} ${f.y + 26} Z`} fill={f.c} stroke="#2b1d10" stroke-width="1.5" stroke-linejoin="round" vector-effect="non-scaling-stroke" />
+      ))}
+    </svg>
+  </div>
+
+  <div class="wrap grid">
+    <div class="copy">
+      <span class="eyebrow">And now for something completely different</span>
+      <h1 class="title">Eggify</h1>
+      <p class="tagline">The AI workstation for writing code.</p>
+      <p class="lede">
+        A Mac app for running Claude Code, Codex and friends on your own repositories:
+        several at once, each with its own terminal, branch and permissions, every token
+        on screen and the risky ones in a <em>very nice cage</em>. Reach it from your
+        iPhone, too.
+      </p>
+      <div class="cta">
+        <a class="btn primary" href="#interest" aria-describedby="dl-note">Get a license</a>
+        <a class="btn film-link" href="#film">Watch the film</a>
+        <a class="btn" href="#sketches">See the sketches</a>
+      </div>
+      <p class="dl-note" id="dl-note">€20 once · relay €20 a year · Apple Silicon · macOS 13.4+</p>
+      <div class="gag">
+        <button class="danger" id="stomp" type="button" aria-describedby="press-note">Do not press this button</button>
+        <span class="press-note" id="press-note">(It releases the foot.)</span>
+      </div>
+    </div>
+
+    <div class="show">
+      <Theatre />
+      <div class="stage" aria-hidden="true">
+        <div class="cherub"><Image src={cherub} alt="" widths={[200, 400]} sizes="(max-width: 999px) 130px, 170px" loading="eager" /></div>
+        <div class="egg" id="egg"><Image src={egg} alt="" widths={[200, 400]} sizes="(max-width: 999px) 200px, 150px" loading="eager" /></div>
+        <div class="splat" id="splat">Splat!</div>
+      </div>
+    </div>
+  </div>
+
+  <svg class="torn" viewBox="0 0 1600 40" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 22 L38 14 L70 24 L104 12 L150 20 L188 10 L226 22 L270 16 L300 26 L346 12 L392 20 L430 14 L476 24 L512 12 L560 18 L598 10 L640 22 L690 14 L724 24 L770 16 L812 22 L850 10 L900 20 L942 14 L980 26 L1024 12 L1070 20 L1110 14 L1150 24 L1196 12 L1240 20 L1282 10 L1326 22 L1370 16 L1404 24 L1450 12 L1494 20 L1540 14 L1574 22 L1600 16 V40 H0 Z"
+      fill="#efe4c8" stroke="#2b1d10" stroke-width="2" vector-effect="non-scaling-stroke" />
+  </svg>
+</header>
+
+<script>
+  const hero = document.getElementById('top')!;
+  const foot = document.getElementById('foot')!;
+  const egg = document.getElementById('egg')!;
+  const splat = document.getElementById('splat')!;
+  const button = document.getElementById('stomp')!;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let busy = false;
+
+  // Gentle parallax for the cloud layers while the hero is on screen.
+  if (!reduce) {
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const y = Math.min(window.scrollY, hero.offsetHeight);
+      hero.style.setProperty('--scroll', `${y}px`);
+    };
+    window.addEventListener('scroll', () => {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+  }
+
+  // The foot peeks out of its cloud once, to establish its intentions.
+  if (!reduce) {
+    setTimeout(() => {
+      foot.classList.add('peek');
+      setTimeout(() => foot.classList.remove('peek'), 1400);
+    }, 900);
+  }
+
+  const squash = () => {
+    egg.classList.add('squashed');
+    splat.classList.add('show');
+  };
+  const recover = () => {
+    egg.classList.remove('squashed');
+    splat.classList.remove('show');
+    busy = false;
+  };
+
+  button.addEventListener('click', () => {
+    if (busy) return;
+    busy = true;
+    if (reduce) {
+      squash();
+      setTimeout(recover, 1200);
+      return;
+    }
+    const f = foot.getBoundingClientRect();
+    const e = egg.getBoundingClientRect();
+    // Line the sole up over the egg's hat and bring it down.
+    const dx = e.left + e.width / 2 - (f.left + f.width / 2);
+    const dy = e.top + e.height * 0.35 - f.bottom;
+    foot.classList.add('stomp');
+    foot.style.transform = `translate(${dx}px, calc(-78% + ${dy + f.height * 0.78}px))`;
+    setTimeout(() => {
+      squash();
+      document.body.classList.add('shake');
+    }, 150);
+    setTimeout(() => {
+      foot.classList.remove('stomp');
+      foot.style.transform = '';
+      document.body.classList.remove('shake');
+    }, 900);
+    setTimeout(recover, 1700);
+  });
+</script>
+
+<style>
+  .hero {
+    --scroll: 0px;
+    position: relative;
+    padding: 0 0 120px;
+    overflow: hidden;
+    background: linear-gradient(180deg, #8fcabd 0%, #a9d9cd 30%, #cfe8dc 62%, #efe6c9 100%);
+    isolation: isolate;
+  }
+  /* paper grain and a faint engraving hatch over the whole backdrop */
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .17 0 0 0 0 .11 0 0 0 0 .06 0 0 0 .1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+      repeating-linear-gradient(135deg, rgba(43, 29, 16, 0.035) 0 1px, transparent 1px 7px);
+  }
+
+  .sky { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+  .sun {
+    position: absolute;
+    top: 118px;
+    right: max(-60px, calc((100vw - 1320px) / 2 - 150px));
+    width: 230px;
+    transform: translateY(calc(var(--scroll) * 0.12));
+    filter: drop-shadow(3px 4px 0 rgba(43, 29, 16, 0.18));
+  }
+
+  .layer { position: absolute; inset: 0; pointer-events: none; }
+  .far { transform: translateY(calc(var(--scroll) * 0.08)); opacity: 0.8; }
+  .mid { transform: translateY(calc(var(--scroll) * 0.18)); }
+  .near { z-index: 3; }
+
+  .layer :global(.cloud) {
+    position: absolute;
+    height: auto;
+    filter: drop-shadow(3px 4px 0 rgba(43, 29, 16, 0.2));
+    animation: drift 70s ease-in-out infinite alternate;
+  }
+  .far :global(.cloud) { filter: drop-shadow(2px 3px 0 rgba(43, 29, 16, 0.12)); }
+  .far :global(.c1) { width: 170px; top: 104px; left: -96px; animation-duration: 90s; }
+  .far :global(.c2) { width: 120px; top: 128px; left: 43.5%; animation-duration: 75s; animation-delay: -30s; }
+  .far :global(.c3) { width: 110px; top: 330px; left: 44%; animation-duration: 84s; animation-delay: -12s; }
+  .far :global(.c4) { width: 170px; top: 520px; left: 93%; animation-duration: 96s; animation-delay: -50s; }
+  .mid :global(.c5) { width: 220px; top: 700px; left: 89%; animation-duration: 60s; }
+  .mid :global(.c6) { width: 130px; top: 790px; left: 33%; animation-duration: 66s; animation-delay: -20s; }
+  .mid :global(.c7) { width: 240px; top: 200px; left: 86%; animation-duration: 72s; animation-delay: -40s; }
+  @keyframes drift {
+    from { transform: translateX(-28px); }
+    to { transform: translateX(28px); }
+  }
+
+  .hills {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 230px;
+  }
+
+  /* The foot lives above the clouds; the near cloud hides its sole. */
+  .foot {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    left: calc(50% - 40px);
+    width: 300px;
+    transform: translateY(-78%);
+    transition: transform 0.6s cubic-bezier(.5, 0, .2, 1);
+    pointer-events: none;
+  }
+  .foot.peek { transform: translateY(-60%); }
+  .foot.stomp { z-index: 40; transition: transform 0.16s cubic-bezier(.7, 0, 1, .5); }
+  .near :global(.foot-cloud) {
+    width: 250px;
+    top: 72px;
+    left: calc(50% - 10px);
+    animation: none;
+  }
+
+  .bar .wrap { width: min(1320px, 100% - 64px); }
+  .bar {
+    position: relative;
+    z-index: 20;
+    background: var(--card);
+    border-bottom: 3px solid var(--ink);
+    box-shadow: 0 3px 0 var(--crimson, #9e2f4c);
+  }
+  .bunting {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 3px);
+    width: 100%;
+    height: 40px;
+    filter: drop-shadow(1px 2px 0 rgba(43, 29, 16, 0.18));
+  }
+
+  .grid {
+    position: relative;
+    z-index: 5;
+    display: grid;
+    grid-template-columns: 0.92fr 1.08fr;
+    gap: 56px;
+    align-items: center;
+    padding-top: 84px;
+    width: min(1320px, 100% - 64px);
+  }
+
+  .eyebrow {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--card);
+    border: 1.5px solid var(--ink);
+    padding: 6px 12px;
+    transform: rotate(-1.5deg);
+    box-shadow: var(--shadow);
+  }
+
+  /* Wordmark: a soft modern serif, printed in ink with the
+     pink / mustard / teal paper strips offset behind it */
+  .title {
+    margin: 22px 0 0;
+    font-family: var(--display);
+    font-weight: 900;
+    font-variation-settings: 'opsz' 144, 'SOFT' 100, 'WONK' 1;
+    font-size: clamp(88px, 8.6vw, 140px);
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+    color: var(--ink);
+    text-shadow:
+      0.035em 0.035em 0 var(--pink),
+      0.07em 0.07em 0 var(--mustard),
+      0.105em 0.105em 0 var(--teal);
+  }
+
+  .tagline {
+    font-family: var(--display);
+    font-weight: 700;
+    font-variation-settings: 'SOFT' 100;
+    font-size: clamp(24px, 2.15vw, 31px);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin: 30px 0 14px;
+  }
+  .lede { font-size: clamp(19px, 1.6vw, 22px); max-width: 32em; color: var(--ink-soft); }
+  .lede em { color: var(--pink-ink); }
+
+  .cta { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 28px; align-items: center; }
+  .cta .v {
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    padding: 1px 6px;
+    margin-left: 6px;
+    vertical-align: 1px;
+  }
+  .film-link { display: none; }
+  .dl-note { font-family: var(--mono); font-size: 14px; color: var(--ink-soft); margin-top: 14px; }
+
+  .gag { display: flex; align-items: center; gap: 16px; margin-top: 18px; }
+  .danger {
+    font-family: var(--mono);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: #b3261e;
+    color: #fff;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    width: 104px;
+    height: 104px;
+    padding: 0;
+    display: inline-grid;
+    place-items: center;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.15;
+    cursor: pointer;
+    box-shadow: 0 6px 0 #6e1712, var(--shadow);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .danger:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #6e1712, var(--shadow); }
+  .danger:active { transform: translateY(5px); box-shadow: 0 1px 0 #6e1712; }
+  .press-note { font-style: italic; font-size: 17px; color: var(--ink-soft); max-width: 12em; }
+
+  .show { position: relative; margin-top: 30px; }
+  .stage { position: absolute; inset: 0; pointer-events: none; z-index: 6; }
+  .egg {
+    position: absolute;
+    bottom: 22px;
+    left: -64px;
+    width: 150px;
+    transform-origin: 50% 100%;
+    transition: transform 0.12s ease;
+    filter: drop-shadow(5px 6px 0 rgba(43, 29, 16, 0.18));
+  }
+  .egg.squashed { transform: scaleY(0.18) scaleX(1.5); }
+  .cherub {
+    position: absolute;
+    top: -96px;
+    right: -64px;
+    width: 170px;
+    animation: hover 5s ease-in-out infinite;
+  }
+  @keyframes hover {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-14px) rotate(2deg); }
+  }
+  .splat {
+    position: absolute;
+    z-index: 6;
+    left: -40px;
+    bottom: 60px;
+    transform: rotate(-8deg) scale(0);
+    font-family: var(--display);
+    font-weight: 900;
+    font-style: italic;
+    font-size: 56px;
+    background: var(--mustard);
+    border: 3px solid var(--ink);
+    padding: 4px 18px;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s cubic-bezier(.34, 1.56, .64, 1);
+    pointer-events: none;
+  }
+  .splat.show { transform: rotate(-8deg) scale(1); }
+
+  .torn {
+    position: absolute;
+    z-index: 7;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    width: 100%;
+    height: 40px;
+  }
+
+  :global(body.shake) { animation: shake 0.35s linear; }
+  @keyframes shake {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-6px, 4px); }
+    40% { transform: translate(5px, -3px); }
+    60% { transform: translate(-4px, 2px); }
+    80% { transform: translate(3px, -1px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .layer, .sun { transform: none !important; }
+  }
+
+  /* Narrow screens: the classic hero, no theatre and no autoplaying video. */
+  @media (max-width: 999px) {
+    .hero { padding-bottom: 90px; }
+    .grid { grid-template-columns: 1fr; gap: 0; padding-top: 90px; width: min(1160px, 100% - 32px); }
+    .title { font-size: clamp(72px, 21vw, 150px); }
+    .film-link { display: inline-block; }
+    .show { margin-top: 10px; height: 400px; }
+    .show :global(.booth) { display: none; }
+    .egg { width: 200px; left: 50%; bottom: 0; margin-left: -100px; }
+    .splat { left: 50%; bottom: 40px; margin-left: -110px; }
+    .cherub { top: 10px; right: 0; width: 130px; }
+    .foot { left: auto; right: 6%; width: 42vw; }
+    .near :global(.foot-cloud) { left: auto; right: 3%; width: 150px; top: 58px; }
+    .bar .wrap { width: min(1160px, 100% - 32px); }
+    .sun { width: 110px; top: 78px; right: -36px; }
+    /* keep clouds out from behind the text: only around the egg's stage */
+    .far, .mid :global(.c7) { display: none; }
+    .mid :global(.c5) { top: auto; bottom: 360px; left: -50px; width: 150px; }
+    .mid :global(.c6) { top: auto; bottom: 470px; left: auto; right: -30px; width: 120px; }
+  }
+  @media (max-width: 520px) {
+    .cta .btn { flex: 1 1 100%; text-align: center; }
+  }
+</style>
