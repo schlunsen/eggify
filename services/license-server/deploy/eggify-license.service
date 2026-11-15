@@ -1,0 +1,58 @@
+# /etc/systemd/system/eggify-license.service
+#
+# Setup (once):
+#   useradd --system --home /var/lib/eggify-license --shell /usr/sbin/nologin eggify-license
+#   install -d -o eggify-license -g eggify-license -m 0700 /var/lib/eggify-license
+#   install -d -o root -g root -m 0700 /etc/eggify-license
+#   eggify-license keygen --out /etc/eggify-license/signing.pem     # root, 0600
+#   systemctl daemon-reload && systemctl enable --now eggify-license
+#
+# The key stays root-owned 0600: systemd reads it as root and hands the service a private
+# copy through LoadCredential (needs systemd >= 248 for %d). On an older systemd, run as
+# root instead (drop User/Group, --key /etc/eggify-license/signing.pem, ReadOnlyPaths for it).
+
+[Unit]
+Description=Eggify license server
+After=network.target
+
+[Service]
+Type=simple
+User=eggify-license
+Group=eggify-license
+LoadCredential=signing.pem:/etc/eggify-license/signing.pem
+ExecStart=/usr/local/bin/eggify-license serve --db /var/lib/eggify-license/license.db --key %d/signing.pem --listen 127.0.0.1:8471
+Restart=on-failure
+RestartSec=2
+KillSignal=SIGTERM
+TimeoutStopSec=15
+
+# Hardening
+ReadWritePaths=/var/lib/eggify-license
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+NoNewPrivileges=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+ProcSubset=pid
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged
+CapabilityBoundingSet=
+AmbientCapabilities=
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

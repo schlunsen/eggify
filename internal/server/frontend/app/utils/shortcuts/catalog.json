@@ -1,0 +1,46 @@
+{
+  "_comment": "The one list of Eggify keyboard shortcuts. Keys: 'mod' is Command on macOS and Ctrl on Windows/Linux. 'other' overrides the Windows/Linux keys. browserFallback: in a plain browser tab the key is reserved by a browser (Chrome: ⌘N, ⇧⌘N, ⇧⌘T, ⌘1-9; Firefox also ⇧⌘P private window), so Alt/Option is added (not to keys the user picked). desktopMenu: in the desktop app a native menu item owns the key (cmd/eggify-desktop/shortcut_menu.go) and the page does not handle it. customizable: false keeps the key out of Settings → Keyboard shortcuts (users override the others, utils/shortcuts/overrides.ts). Read by app/utils/shortcuts/catalog.ts and by the desktop app's tests.",
+  "groups": ["General", "Navigation", "Session", "View", "Help"],
+  "shortcuts": [
+    { "id": "palette.open", "label": "Command palette", "description": "Search sessions, projects, actions, Just commands and settings", "group": "General", "scope": "global", "keys": { "mac": "mod+k" }, "allowInInputs": true, "desktopMenu": true, "palette": false },
+    { "id": "session.new", "label": "New session", "group": "General", "scope": "global", "keys": { "mac": "mod+n" }, "allowInInputs": true, "browserFallback": true, "desktopMenu": true },
+    { "id": "project.new", "label": "New project", "group": "General", "scope": "global", "keys": { "mac": "mod+shift+n" }, "allowInInputs": true, "browserFallback": true, "desktopMenu": true },
+    { "id": "settings.open", "label": "Settings", "group": "General", "scope": "global", "keys": { "mac": "mod+," }, "allowInInputs": true, "desktopMenu": true },
+
+    { "id": "overview.toggle", "label": "Agent overview", "description": "Every agent at a glance", "group": "Navigation", "scope": "global", "keys": { "mac": "mod+o" }, "allowInInputs": true, "desktopMenu": true },
+    { "id": "allagents.toggle", "label": "All agents", "description": "Every session and subagent in one tree", "group": "Navigation", "scope": "global", "keys": { "mac": "mod+shift+s" }, "allowInInputs": true, "browserFallback": true, "desktopMenu": true },
+    { "id": "machine.switch", "label": "Next machine", "description": "Desktop app: switch to the next paired Mac", "group": "Navigation", "scope": "global", "keys": { "mac": "alt+mod+right", "other": "alt+mod+right" }, "allowInInputs": true, "desktopMenu": true, "palette": false },
+    { "id": "machine.previous", "label": "Previous machine", "description": "Desktop app: switch to the previous paired Mac", "group": "Navigation", "scope": "global", "keys": { "mac": "alt+mod+left", "other": "alt+mod+left" }, "allowInInputs": true, "desktopMenu": true, "palette": false },
+    { "id": "project.switch", "label": "Switch project", "group": "Navigation", "scope": "global", "keys": { "mac": "mod+shift+p" }, "allowInInputs": true, "browserFallback": true, "desktopMenu": true },
+    { "id": "file.goto", "label": "Go to file", "description": "Open the Files tab and search", "group": "Navigation", "scope": "session", "keys": { "mac": "mod+p" }, "allowInInputs": true, "desktopMenu": true },
+    { "id": "subagent.prev", "label": "Previous subagent", "description": "In a subagent's window (also K)", "group": "Navigation", "scope": "modal", "keys": { "mac": "left" }, "allowInInputs": false, "palette": false, "customizable": false },
+    { "id": "subagent.next", "label": "Next subagent", "description": "In a subagent's window (also J)", "group": "Navigation", "scope": "modal", "keys": { "mac": "right" }, "allowInInputs": false, "palette": false, "customizable": false },
+    { "id": "subagent.first", "label": "First subagent", "description": "In a subagent's window", "group": "Navigation", "scope": "modal", "keys": { "mac": "home" }, "allowInInputs": false, "palette": false, "customizable": false },
+    { "id": "subagent.last", "label": "Last subagent", "description": "In a subagent's window", "group": "Navigation", "scope": "modal", "keys": { "mac": "end" }, "allowInInputs": false, "palette": false, "customizable": false },
+    { "id": "session.jump", "label": "Jump to session 1–9", "description": "In the sidebar's order", "group": "Navigation", "scope": "session", "keys": { "mac": "mod+1-9" }, "allowInInputs": true, "browserFallback": true, "palette": false, "customizable": false },
+    { "id": "session.prev", "label": "Previous session", "description": "Previous file on the diff page", "group": "Navigation", "scope": "session", "keys": { "mac": "mod+[" }, "allowInInputs": true, "desktopMenu": true },
+    { "id": "session.next", "label": "Next session", "description": "Next file on the diff page", "group": "Navigation", "scope": "session", "keys": { "mac": "mod+]" }, "allowInInputs": true, "desktopMenu": true },
+    { "id": "session.up", "label": "Session above", "description": "The session above in the sidebar", "group": "Navigation", "scope": "session", "keys": { "mac": "mod+alt+up", "other": "alt+up" }, "allowInInputs": true, "desktopMenu": true, "palette": false },
+    { "id": "session.down", "label": "Session below", "description": "The session below in the sidebar", "group": "Navigation", "scope": "session", "keys": { "mac": "mod+alt+down", "other": "alt+down" }, "allowInInputs": true, "desktopMenu": true, "palette": false },
+
+    { "id": "messages.search", "label": "Search messages", "group": "Session", "scope": "session", "keys": { "mac": "mod+f" }, "allowInInputs": true, "desktopMenu": true },
+    { "id": "model.change", "label": "Change model", "group": "Session", "scope": "session", "keys": { "mac": "mod+shift+m" }, "allowInInputs": true, "browserFallback": true, "desktopMenu": true },
+    { "id": "subagents.toggle", "label": "Subagents", "description": "Every subagent of this session", "group": "Session", "scope": "session", "keys": { "mac": "mod+shift+a" }, "allowInInputs": true, "desktopMenu": true },
+    { "id": "tab.terminal", "label": "Terminal", "group": "Session", "scope": "session", "keys": { "mac": "mod+shift+t" }, "allowInInputs": true, "browserFallback": true, "desktopMenu": true },
+    { "id": "tab.files", "label": "Files", "group": "Session", "scope": "session", "keys": { "mac": "mod+shift+e" }, "allowInInputs": true, "desktopMenu": true },
+    { "id": "session.tag", "label": "Add tag", "description": "Tag the open session", "group": "Session", "scope": "session", "keys": { "mac": "mod+s" }, "allowInInputs": true, "browserFallback": true, "desktopMenu": true },
+    { "id": "voice.dictate", "label": "Dictate", "description": "Start or stop voice input", "group": "Session", "scope": "session", "keys": { "mac": "mod+d" }, "allowInInputs": true, "desktopMenu": true },
+    { "id": "voice.finish", "label": "Finish recording", "description": "While the recording dialog is open", "group": "Session", "scope": "modal", "keys": { "mac": "space" }, "allowInInputs": true, "palette": false, "customizable": false },
+    { "id": "agent.stop", "label": "Stop agent", "description": "Interrupt the running turn", "group": "Session", "scope": "session", "keys": { "mac": "mod+." }, "allowInInputs": true, "desktopMenu": true },
+
+    { "id": "sidebar.toggle", "label": "Toggle sidebar", "group": "View", "scope": "global", "keys": { "mac": "mod+b" }, "allowInInputs": true, "desktopMenu": true },
+    { "id": "sidebar.right.toggle", "label": "Toggle right sidebar", "description": "The open session's details sidebar", "group": "View", "scope": "session", "keys": { "mac": "mod+alt+b" }, "allowInInputs": true, "desktopMenu": true },
+    { "id": "view.zen", "label": "Zen / Live", "description": "Switch the session view", "group": "View", "scope": "session", "keys": { "mac": "mod+shift+enter" }, "allowInInputs": true, "desktopMenu": true },
+    { "id": "view.fullscreen", "label": "Full screen", "description": "Zen full screen while in Zen", "group": "View", "scope": "global", "keys": { "mac": "ctrl+mod+f", "other": "f11" }, "allowInInputs": true, "desktopMenu": true, "customizable": false },
+    { "id": "theme.next", "label": "Next theme", "description": "Cycle through the themes, as in Settings", "group": "View", "scope": "global", "keys": { "mac": "mod+alt+]", "other": "ctrl+alt+y" }, "allowInInputs": true, "desktopMenu": true },
+    { "id": "theme.previous", "label": "Previous theme", "description": "Cycle back through the themes", "group": "View", "scope": "global", "keys": { "mac": "mod+alt+[", "other": "ctrl+alt+shift+y" }, "allowInInputs": true, "desktopMenu": true },
+    { "id": "zen.fly", "label": "Fly / land (Zen galaxy)", "group": "View", "scope": "zen", "keys": { "mac": "alt+f" }, "allowInInputs": false, "palette": false },
+
+    { "id": "help.shortcuts", "label": "Keyboard shortcuts", "group": "Help", "scope": "global", "keys": { "mac": "mod+/" }, "allowInInputs": true, "desktopMenu": true }
+  ]
+}

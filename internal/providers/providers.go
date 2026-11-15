@@ -1,0 +1,256 @@
+// Package providers manages AI provider configurations for Claude Code.
+// It handles provider selection, API key storage, and environment variable generation.
+package providers
+
+import (
+	_ "embed"
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
+
+	"github.com/schlunsen/eggify/internal/database"
+)
+
+// shellEscape escapes a string for safe inclusion in a bash script.
+// It wraps the value in single quotes and escapes any embedded single quotes,
+// preventing shell injection attacks from malicious API keys, URLs, or model names.
+func shellEscape(s string) string {
+	return "'" + strings.ReplaceAll(s, "'", "'\\''") + "'"
+}
+
+//go:embed providers.json
+var providersJSON []byte
+
+// Provider represents an AI provider with its configuration
+type Provider struct {
+	Name         string   `json:"name"`          // Display name (e.g., "DeepSeek", "GLM")
+	ID           string   `json:"id"`            // Internal identifier (e.g., "deepseek", "glm")
+	BaseURL      string   `json:"base_url"`      // API base URL for Anthropic-compatible endpoint
+	Icon         string   `json:"icon"`          // Emoji icon for display
+	Models       []string `json:"models"`        // Available models for this provider
+	DefaultModel string   `json:"default_model"` // Default model to use
+	Description  string   `json:"description"`   // Description of the provider
+}
+
+// ProvidersConfig represents the structure of the providers.json file
+type ProvidersConfig struct {
+	Providers []Provider `json:"providers"`
+}
+
+// GetAvailableProviders returns the list of supported providers loaded from JSON
+func GetAvailableProviders() []Provider {
+	var config ProvidersConfig
+	if err := json.Unmarshal(providersJSON, &config); err != nil {
+		// Fallback to empty list on error (should never happen with embedded JSON)
+		fmt.Fprintf(os.Stderr, "Error loading providers config: %v\n", err)
+		return []Provider{}
+	}
+	return config.Providers
+}
+
+// GetProviderByID returns a provider by its ID
+func GetProviderByID(id string) *Provider {
+	providers := GetAvailableProviders()
+	for _, p := range providers {
+		if p.ID == id {
+			return &p
+		}
+	}
+	return nil
+}
+
+// GetEnvScriptPath returns the path to the environment export script
+func GetEnvScriptPath() string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return filepath.Join(".claude", "provider-env.sh")
+	}
+	return filepath.Join(homeDir, ".claude", "provider-env.sh")
+}
+
+// LoadProviderConfig loads the current provider configuration from database
+func LoadProviderConfig(repo *database.Repository) (*database.ProviderConfig, error) {
+	return repo.GetCurrentProvider()
+}
+
+// GetProviderConfig retrieves the configuration for a specific provider from database
+func GetProviderConfig(repo *database.Repository, providerID string) (*database.ProviderConfig, error) {
+	return repo.GetProvider(providerID)
+}
+
+// SaveProviderConfig saves the provider configuration to database
+func SaveProviderConfig(repo *database.Repository, config *database.ProviderConfig) error {
+	return repo.SaveProvider(config)
+}
+
+// modelNamePattern is the charset a model name may use: letters, digits and
+// . _ - : / @ + [ ] (e.g. "claude-opus-5-5[1m]", "qwen2.5:7b",
+// "anthropic/claude-3.5-sonnet").
+var modelNamePattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._:/@+\[\]-]{0,127}$`)
+
+// ValidModelName reports whether name is a safe model name ("" is allowed:
+// no model selected).
+func ValidModelName(name string) bool {
+	return name == "" || modelNamePattern.MatchString(name)
+}
+
+// commentSafe makes s safe for a "# ..." comment line: no line breaks or
+// other control characters.
+func commentSafe(s string) string {
+	return strings.Map(func(r rune) rune {
+		if r < 0x20 || r == 0x7f || r == 0x2028 || r == 0x2029 {
+			return ' '
+		}
+		return r
+	}, s)
+}
+
+// echoLine is a shell `echo` of a fixed label followed by a value. The value
+// is single-quoted (shellEscape) OUTSIDE any double quotes, so nothing in it
+// is expanded.
+func echoLine(label, value string) string {
+	return "echo " + shellEscape(label+value) + "\n"
+}
+
+// GenerateEnvScript generates a shell script to export environment variables.
+//
+// SECURITY: every value (model name, key, URL, provider name) is
+// single-quoted with shellEscape, never interpolated into double quotes, and
+// model names are checked against a safe charset, so a stored value cannot
+// run commands when the script is sourced.
+func GenerateEnvScript(config *database.ProviderConfig) error {
+	if config == nil {
+		return fmt.Errorf("no provider configuration provided")
+	}
+
+	provider := GetProviderByID(config.ProviderID)
+	if provider == nil {
+		return fmt.Errorf("unknown provider: %s", config.ProviderID)
+	}
+
+	model := ""
+	if config.ModelName != nil {
+		model = strings.TrimSpace(*config.ModelName)
+	}
+	if !ValidModelName(model) {
+		return fmt.Errorf("invalid model name")
+	}
+
+	var b strings.Builder
+	header := func(name string) {
+		b.WriteString("#!/bin/bash\n# Generated by Eggify\n")
+		b.WriteString("# Provider: " + commentSafe(name) + "\n")
+		b.WriteString("# Updated: " + config.UpdatedAt.Format("2006-01-02 15:04:05") + "\n\n")
+	}
+
+	if provider.ID == "claude" {
+		// Claude (default): clear custom provider variables.
+		header("Claude (Default)")
+		b.WriteString("# Unset custom provider environment variables to use Claude defaults\n")
+		b.WriteString("unset ANTHROPIC_AUTH_TOKEN\nunset ANTHROPIC_BASE_URL\n")
+		if model != "" {
+			b.WriteString("\n# Set specific model\nexport ANTHROPIC_MODEL=" + shellEscape(model) + "\n\n")
+		} else {
+			b.WriteString("unset ANTHROPIC_MODEL\n\n")
+		}
+		b.WriteString(echoLine("✓ Environment configured for Claude (Default)", ""))
+		b.WriteString(echoLine("  Using default Claude API configuration", ""))
+		if model != "" {
+			b.WriteString(echoLine("  Model: ", model))
+		}
+		return writeEnvScript(b.String())
+	}
+
+	// Determine the base URL for other providers
+	var baseURL string
+	if config.BaseURL != nil {
+		baseURL = *config.BaseURL
+	}
+	if provider.ID == "custom" && config.CustomURL != nil && *config.CustomURL != "" {
+		baseURL = *config.CustomURL
+	}
+	if baseURL == "" {
+		return fmt.Errorf("no base URL configured for provider")
+	}
+
+	apiKey := ""
+	if config.APIKey != nil {
+		apiKey = *config.APIKey
+	}
+
+	header(provider.Name)
+	b.WriteString("export ANTHROPIC_AUTH_TOKEN=" + shellEscape(apiKey) + "\n")
+	b.WriteString("export ANTHROPIC_BASE_URL=" + shellEscape(baseURL) + "\n")
+	// Use the model from config only if explicitly set. Don't fall back to
+	// the provider default: the user may have chosen "No model".
+	if model != "" {
+		b.WriteString("export ANTHROPIC_MODEL=" + shellEscape(model) + "\n")
+	}
+	b.WriteString("\n")
+	b.WriteString(echoLine("✓ Environment configured for ", provider.Name))
+	b.WriteString(echoLine("  ANTHROPIC_AUTH_TOKEN=***", maskAPIKey(apiKey)))
+	b.WriteString(echoLine("  ANTHROPIC_BASE_URL=", baseURL))
+	if model != "" {
+		b.WriteString(echoLine("  ANTHROPIC_MODEL=", model))
+	}
+	return writeEnvScript(b.String())
+}
+
+// writeEnvScript writes the provider env script (0700, directory created).
+func writeEnvScript(script string) error {
+	scriptPath := GetEnvScriptPath()
+	if err := os.MkdirAll(filepath.Dir(scriptPath), 0755); err != nil {
+		return fmt.Errorf("failed to create script directory: %w", err)
+	}
+	if err := os.WriteFile(scriptPath, []byte(script), 0700); err != nil {
+		return fmt.Errorf("failed to write env script: %w", err)
+	}
+	return nil
+}
+
+// maskAPIKey returns a masked version of the API key for display
+func maskAPIKey(apiKey string) string {
+	if len(apiKey) <= 8 {
+		return "****"
+	}
+	return apiKey[len(apiKey)-4:]
+}
+
+// GetCurrentProviderInfo returns display information about the current provider
+func GetCurrentProviderInfo(repo *database.Repository) (providerName string, isConfigured bool, err error) {
+	config, err := repo.GetCurrentProvider()
+	if err != nil {
+		return "", false, err
+	}
+
+	if config == nil {
+		return "", false, nil
+	}
+
+	provider := GetProviderByID(config.ProviderID)
+	if provider == nil {
+		return config.ProviderID, true, nil
+	}
+
+	return provider.Name, true, nil
+}
+
+// DeleteProviderConfig removes the provider configuration
+func DeleteProviderConfig(repo *database.Repository) error {
+	scriptPath := GetEnvScriptPath()
+
+	// Remove all providers from database
+	if err := repo.DeleteAllProviders(); err != nil {
+		return fmt.Errorf("failed to delete providers: %w", err)
+	}
+
+	// Remove env script
+	if err := os.Remove(scriptPath); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("failed to remove env script: %w", err)
+	}
+
+	return nil
+}

@@ -1,0 +1,1053 @@
+/* Input Area */
+.input-area {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid var(--border-color);
+  background: var(--card-bg);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 11;
+}
+
+/* Image Previews */
+.image-previews {
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.preview-count {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.clear-all-btn {
+  padding: 4px 12px;
+  background: rgba(220, 53, 69, 0.1);
+  color: var(--status-error, #dc3545);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clear-all-btn:hover {
+  background: #dc3545;
+  color: white;
+}
+
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.preview-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  overflow: hidden;
+  background: var(--bg-primary);
+  transition: all 0.2s;
+}
+
+.preview-item:hover {
+  border-color: var(--accent-purple);
+  transform: scale(1.02);
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  background: var(--header-bg);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  opacity: 0;
+}
+
+.preview-item:hover .remove-btn {
+  opacity: 1;
+}
+
+.remove-btn:hover {
+  background: #dc3545;
+  transform: scale(1.1);
+}
+
+.image-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 6px 8px;
+  background: var(--header-bg);
+  color: white;
+  font-size: 0.7rem;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Image Error Banner */
+.image-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(220, 53, 69, 0.12);
+  border-bottom: 1px solid rgba(220, 53, 69, 0.3);
+  color: var(--status-error, #dc3545);
+  font-size: 0.85rem;
+}
+
+.image-error-icon {
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+.image-error-text {
+  flex: 1;
+}
+
+.image-error-dismiss {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--status-error, #dc3545);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 4px;
+  opacity: 0.7;
+  line-height: 1;
+}
+
+.image-error-dismiss:hover {
+  opacity: 1;
+}
+
+/* Input Container */
+.input-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  transition: all 0.2s;
+}
+
+.input-container.focused {
+  background: var(--bg-primary);
+}
+
+.input-container.drag-over {
+  background: rgba(var(--accent-purple-rgb, 139, 92, 246), 0.05);
+}
+
+/* Input Toolbar */
+.input-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn-upload,
+.btn-search,
+.btn-just,
+.btn-fullscreen {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-upload:hover:not(:disabled),
+.btn-search:hover:not(:disabled),
+.btn-just:hover:not(:disabled),
+.btn-fullscreen:hover:not(:disabled) {
+  background: var(--accent-purple);
+  color: white;
+  border-color: var(--accent-purple);
+  transform: translateY(-1px);
+}
+
+.btn-upload:disabled,
+.btn-search:disabled,
+.btn-just:disabled,
+.btn-fullscreen:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.upload-text,
+.search-text,
+.just-text,
+.fullscreen-text {
+  font-weight: 500;
+}
+
+.interrupt-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Subagents still working while the main agent is idle */
+.subagents-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--status-processing, #c2185b);
+  background: none;
+  border: 1px dashed color-mix(in srgb, var(--status-processing, #c2185b) 45%, transparent);
+}
+
+.subagents-chip:hover {
+  background: color-mix(in srgb, var(--status-processing, #c2185b) 10%, transparent);
+}
+
+.subagents-chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: subagents-chip-pulse 2s ease-in-out infinite;
+}
+
+@keyframes subagents-chip-pulse {
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .subagents-chip-dot { animation: none; }
+}
+
+/* Make interrupt hint a tappable button */
+.interrupt-btn {
+  background: none;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.interrupt-btn:hover {
+  background: rgba(220, 53, 69, 0.1);
+  border-color: rgba(220, 53, 69, 0.5);
+  color: var(--status-error, #dc3545);
+}
+
+.interrupt-btn:active {
+  background: rgba(220, 53, 69, 0.2);
+}
+
+.interrupt-label-short {
+  display: none;
+}
+
+.interrupt-hint kbd {
+  display: inline-block;
+  padding: 3px 8px;
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--status-error, #dc3545);
+  box-shadow: 0 1px 2px var(--shadow-color);
+}
+
+.char-counter {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.char-counter.warning {
+  color: var(--accent-yellow, #ffc107);
+  font-weight: 600;
+}
+
+/* Input Row */
+.input-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+/* Holds the textarea and its "working" edge. */
+.message-input-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  position: relative;
+  border-radius: 12px;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.message-input {
+  flex: 1;
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  resize: none;
+  height: auto;
+  min-height: 80px;
+  max-height: 400px;
+  overflow-y: auto;
+  transition: height 0.15s ease-out, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  line-height: 1.5;
+}
+
+.message-input:focus {
+  outline: none;
+  border-color: var(--accent-purple);
+  background: var(--bg-primary);
+  box-shadow: 0 0 0 3px rgba(var(--accent-purple-rgb, 139, 92, 246), 0.1);
+}
+
+.message-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-send {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, var(--accent-purple), var(--accent-purple-hover));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(var(--accent-purple-rgb, 139, 92, 246), 0.3);
+  height: 48px;
+  width: 100%;
+}
+
+.btn-send:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(var(--accent-purple-rgb, 139, 92, 246), 0.4);
+}
+
+.btn-send:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-record {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+  height: 48px;
+  width: 100%;
+}
+
+.btn-record:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(220, 53, 69, 0.4);
+}
+
+.btn-record:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-record:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Drag & Drop Overlay */
+.drag-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(var(--accent-purple-rgb, 139, 92, 246), 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  z-index: 10;
+}
+
+.drag-content {
+  text-align: center;
+  color: white;
+}
+
+.drag-content svg {
+  margin-bottom: 12px;
+  opacity: 0.9;
+}
+
+.drag-content p {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Transitions */
+.preview-slide-enter-active,
+.preview-slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.preview-slide-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.preview-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.preview-item-enter-active,
+.preview-item-leave-active {
+  transition: all 0.3s ease;
+}
+
+.preview-item-enter-from {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.preview-item-leave-to {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.preview-item-move {
+  transition: transform 0.3s ease;
+}
+
+/* Dictation Indicator */
+.dictation-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.08), rgba(220, 53, 69, 0.04));
+  border-bottom: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+.dictation-dot {
+  width: 10px;
+  height: 10px;
+  background: #dc3545;
+  border-radius: 50%;
+  animation: dictation-pulse 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes dictation-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+
+.dictation-text {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--status-error, #dc3545);
+  flex: 1;
+}
+
+.dictation-duration {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--status-error, #dc3545);
+  font-variant-numeric: tabular-nums;
+  font-family: monospace;
+}
+
+.input-container.dictating {
+  border-top: 2px solid rgba(220, 53, 69, 0.3);
+}
+
+.input-container.dictating .message-input {
+  border-color: rgba(220, 53, 69, 0.3);
+}
+
+.input-container.dictating .message-input:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+/* Active recording button */
+.btn-record-active {
+  background: linear-gradient(135deg, #dc3545, #c82333) !important;
+  animation: record-glow 2s ease-in-out infinite;
+}
+
+@keyframes record-glow {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+  }
+  50% {
+    box-shadow: 0 2px 20px rgba(220, 53, 69, 0.6);
+  }
+}
+
+/* Dictation slide transition */
+.dictation-slide-enter-active,
+.dictation-slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.dictation-slide-enter-from {
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.dictation-slide-leave-to {
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* ===== MOBILE RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .input-container {
+    padding: 6px;
+  }
+
+  .input-toolbar {
+    margin-bottom: 4px;
+    overflow: hidden;
+  }
+
+  .toolbar-left {
+    gap: 2px;
+    flex-shrink: 1;
+    overflow: hidden;
+  }
+
+  .toolbar-right {
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .btn-upload,
+  .btn-search,
+  .btn-just,
+  .btn-fullscreen {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+
+  .upload-text,
+  .search-text,
+  .just-text,
+  .fullscreen-text {
+    display: none;
+  }
+
+  .message-input {
+    min-height: 48px;
+    max-height: 150px;
+    padding: 8px 10px;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+    border-radius: 10px;
+  }
+
+  .message-input-wrap {
+    border-radius: 10px;
+  }
+
+  .char-counter {
+    font-size: 0.7rem;
+  }
+
+  .input-row {
+    gap: 8px;
+  }
+
+  /* Hide record button on mobile to save space */
+  .btn-record {
+    display: none;
+  }
+
+  .button-group {
+    flex-shrink: 0;
+    align-self: stretch; /* Stretch to full height of textarea */
+  }
+
+  .btn-send {
+    padding: 0;
+    width: 52px;
+    min-width: 52px;
+    height: 100%; /* Fill the full height of the button group / textarea */
+    min-height: 44px; /* iOS recommended touch target */
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+
+  .interrupt-hint {
+    font-size: 0.8rem;
+  }
+
+  .interrupt-btn {
+    padding: 6px 12px;
+    min-height: 36px;
+    background: rgba(220, 53, 69, 0.1);
+    border-color: rgba(220, 53, 69, 0.4);
+    color: var(--status-error, #dc3545);
+  }
+
+  .interrupt-label {
+    display: none;
+  }
+
+  .interrupt-label-short {
+    display: inline;
+  }
+
+  .char-counter {
+    font-size: 0.8rem;
+  }
+
+  .preview-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+  }
+
+  .image-previews {
+    padding: 10px;
+  }
+
+  .dictation-indicator {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .input-container {
+    padding: 8px;
+  }
+
+  .btn-upload,
+  .btn-search,
+  .btn-just,
+  .btn-fullscreen {
+    padding: 6px 8px;
+  }
+
+  .message-input {
+    min-height: 50px;
+    padding: 8px 10px;
+  }
+
+  .btn-send {
+    width: 48px;
+    min-width: 48px;
+    min-height: 40px;
+  }
+}
+
+/* ===================================================================
+   Zen variant — one compact dark glass row that sits on the zen scene
+   (the scene is always dark, so colours are fixed light-on-dark).
+   [attach] [ message …………… ] [stop] [mic] [send]
+   Search / Just / char counter are hidden; their shortcuts still work.
+   =================================================================== */
+.input-area.zen {
+  background: transparent;
+  border-top: none;
+  z-index: auto;
+}
+
+.input-area.zen .input-container {
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 8px;
+  background: rgba(10, 8, 22, 0.62);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-area.zen .input-container.focused {
+  background: rgba(10, 8, 22, 0.7);
+  border-color: rgba(var(--accent-purple-rgb, 139, 92, 246), 0.55);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4), 0 0 0 3px rgba(var(--accent-purple-rgb, 139, 92, 246), 0.15);
+}
+
+.input-area.zen .input-container.drag-over {
+  border-color: rgba(var(--accent-purple-rgb, 139, 92, 246), 0.8);
+}
+
+.input-area.zen .input-toolbar,
+.input-area.zen .input-row {
+  display: contents;
+}
+
+.input-area.zen .toolbar-left { order: 1; gap: 0; }
+.input-area.zen .message-input-wrap { display: contents; }
+.input-area.zen .message-input { order: 2; }
+.input-area.zen .toolbar-right { order: 3; gap: 0; align-self: flex-end; }
+.input-area.zen .button-group { order: 4; flex-direction: row; gap: 6px; }
+
+.input-area.zen .btn-search,
+.input-area.zen .btn-just,
+.input-area.zen .btn-fullscreen,
+.input-area.zen .char-counter,
+.input-area.zen .upload-text,
+.input-area.zen .interrupt-hint kbd,
+.input-area.zen .interrupt-label {
+  display: none;
+}
+
+/* Round ghost icon buttons */
+.input-area.zen .btn-upload,
+.input-area.zen .btn-record,
+.input-area.zen .btn-send {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  padding: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+  transform: none;
+}
+
+.input-area.zen .btn-upload svg,
+.input-area.zen .btn-record svg,
+.input-area.zen .btn-send svg {
+  width: 17px;
+  height: 17px;
+}
+
+.input-area.zen .btn-upload:hover:not(:disabled),
+.input-area.zen .btn-record:hover:not(:disabled) {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: none;
+  box-shadow: none;
+}
+
+.input-area.zen .btn-record.btn-record-active {
+  color: #fff;
+  background: rgba(239, 68, 68, 0.85);
+  border-color: rgba(239, 68, 68, 0.9);
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.45);
+}
+
+.input-area.zen .btn-send {
+  color: #fff;
+  background: rgba(var(--accent-purple-rgb, 139, 92, 246), 0.85);
+  border-color: rgba(var(--accent-purple-rgb, 139, 92, 246), 0.95);
+  box-shadow: 0 0 18px rgba(var(--accent-purple-rgb, 139, 92, 246), 0.35);
+}
+
+.input-area.zen .btn-send:hover:not(:disabled) {
+  background: rgba(var(--accent-purple-rgb, 139, 92, 246), 1);
+  box-shadow: 0 0 24px rgba(var(--accent-purple-rgb, 139, 92, 246), 0.5);
+  transform: none;
+}
+
+.input-area.zen .btn-send:disabled {
+  opacity: 1;
+  color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+
+.input-area.zen .btn-upload:disabled,
+.input-area.zen .btn-record:disabled {
+  opacity: 0.35;
+}
+
+/* Message field: borderless, light text */
+.input-area.zen .message-input,
+.input-area.zen .message-input:focus,
+.input-area.zen .input-container.dictating .message-input {
+  min-height: 38px;
+  max-height: 220px;
+  padding: 9px 8px;
+  color: rgba(255, 255, 255, 0.92);
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  box-shadow: none;
+  font-size: 0.95rem;
+  caret-color: rgb(var(--accent-purple-rgb, 139, 92, 246));
+}
+
+.input-area.zen .message-input::placeholder {
+  color: rgba(255, 255, 255, 0.38);
+}
+
+/* Stop: only while the agent works */
+.input-area.zen .interrupt-btn {
+  display: none;
+}
+
+.input-area.zen.busy .interrupt-btn {
+  display: inline-flex;
+  height: 38px;
+  padding: 0 14px;
+  margin-right: 2px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.input-area.zen.busy .interrupt-btn:hover {
+  color: #fff;
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.input-area.zen .interrupt-label-short {
+  display: inline;
+}
+
+/* Attachments, errors and dictation above the glass row */
+.input-area.zen .image-previews {
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  background: rgba(10, 8, 22, 0.62);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.input-area.zen .dictation-indicator,
+.input-area.zen .image-error-banner {
+  margin-bottom: 8px;
+  border-radius: 999px;
+  background: rgba(10, 8, 22, 0.62);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Zen shows its own listening bar above the composer while dictating */
+.input-area.zen .dictation-indicator {
+  display: none;
+}
+
+/* ===================================================================
+   Zen on the Circus stage ("paper"): the same row printed on aged
+   paper with ink text, like the stage's HUD cards. Colours are fixed
+   (the paper is always light, whatever the app theme).
+   =================================================================== */
+.input-area.zen.paper .input-container {
+  background: #f4e9d0;
+  border: 1px solid #dcc79a;
+  border-radius: 3px;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.45) inset, 0 10px 22px rgba(10, 8, 20, 0.35), 0 2px 0 rgba(0, 0, 0, 0.22);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.input-area.zen.paper .input-container.focused {
+  background: #f6ecd6;
+  border-color: #9a7b48;
+  box-shadow: 0 10px 22px rgba(10, 8, 20, 0.35), 0 0 0 2px rgba(168, 80, 94, 0.55);
+}
+
+.input-area.zen.paper .input-container.drag-over {
+  border-color: #a8505e;
+}
+
+.input-area.zen.paper .message-input,
+.input-area.zen.paper .message-input:focus,
+.input-area.zen.paper .input-container.dictating .message-input {
+  color: #2b1d10;
+  font: italic 400 1.12rem / 1.4 'EB Garamond', Georgia, serif;
+  caret-color: #a8505e;
+}
+
+.input-area.zen.paper .message-input::placeholder {
+  color: #6b5638;
+  opacity: 0.85;
+}
+
+.input-area.zen.paper .btn-upload,
+.input-area.zen.paper .btn-record {
+  color: #2b1d10;
+  background: #e8d8b2;
+  border: 1px solid #9a7b48;
+}
+
+.input-area.zen.paper .btn-upload:hover:not(:disabled),
+.input-area.zen.paper .btn-record:hover:not(:disabled) {
+  color: #2b1d10;
+  background: #dfcb9d;
+  border-color: #6b5638;
+}
+
+.input-area.zen.paper .btn-record.btn-record-active {
+  color: #f4e9d0;
+  background: #a8505e;
+  border-color: #a8505e;
+  box-shadow: none;
+}
+
+.input-area.zen.paper .btn-send {
+  color: #f4e9d0;
+  background: #2b1d10;
+  border-color: #2b1d10;
+  box-shadow: none;
+}
+
+.input-area.zen.paper .btn-send:hover:not(:disabled) {
+  background: #45301b;
+  box-shadow: none;
+}
+
+.input-area.zen.paper .btn-send:disabled {
+  color: rgba(43, 29, 16, 0.4);
+  background: transparent;
+  border-color: rgba(154, 123, 72, 0.5);
+}
+
+.input-area.zen.paper.busy .interrupt-btn {
+  border-radius: 3px;
+  font-family: 'Courier Prime', ui-monospace, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a8505e;
+  background: transparent;
+  border: 1px solid #a8505e;
+}
+
+.input-area.zen.paper.busy .interrupt-btn:hover {
+  color: #f4e9d0;
+  background: #a8505e;
+}
+
+.input-area.zen.paper .image-previews,
+.input-area.zen.paper .image-error-banner {
+  color: #2b1d10;
+  background: #f4e9d0;
+  border: 1px solid #9a7b48;
+  border-radius: 3px;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}

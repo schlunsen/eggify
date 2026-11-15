@@ -1,0 +1,22 @@
+package agents
+
+import (
+	"os"
+	"testing"
+
+	"github.com/schlunsen/eggify/internal/skills"
+)
+
+// TestMain keeps skill snapshots and plugin directories that tests create out
+// of the real ~/.claude/eggify.
+func TestMain(m *testing.M) {
+	dir, err := os.MkdirTemp("", "eggify-skill-store-")
+	if err == nil {
+		os.Setenv(skills.StoreDirEnv, dir)
+	}
+	code := m.Run()
+	if dir != "" {
+		os.RemoveAll(dir)
+	}
+	os.Exit(code)
+}

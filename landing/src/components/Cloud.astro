@@ -1,0 +1,33 @@
+---
+// A paper cut-out cloud: cream card, umber ink outline, a hatched underside.
+// Three hand-drawn silhouettes so a sky never looks tiled.
+interface Props {
+  shape?: 'a' | 'b' | 'c';
+  class?: string;
+  style?: string;
+}
+const { shape = 'a', class: cls, style } = Astro.props;
+
+const shapes = {
+  a: { vb: '0 0 220 110', d: 'M20 92 Q4 92 8 76 Q2 56 26 54 Q26 30 54 34 Q66 10 96 20 Q118 2 142 22 Q172 14 178 42 Q206 42 204 66 Q218 80 202 92 Z', folds: 'M30 80 q30 8 60 0 M110 82 q30 6 64 -2' },
+  b: { vb: '0 0 300 100', d: 'M18 86 Q2 84 10 70 Q6 54 30 54 Q38 36 64 42 Q80 22 108 32 Q126 16 152 30 Q178 14 202 34 Q230 26 240 50 Q270 46 276 66 Q298 72 286 86 Z', folds: 'M40 76 q36 7 74 0 M150 78 q40 6 82 -3' },
+  c: { vb: '0 0 180 124', d: 'M22 106 Q4 104 10 88 Q0 68 24 64 Q20 42 48 42 Q52 14 84 18 Q104 0 126 22 Q152 18 154 46 Q178 52 170 78 Q184 94 162 106 Z', folds: 'M34 94 q26 7 52 0 M96 96 q26 5 52 -3' },
+} as const;
+const s = shapes[shape];
+const id = `cloud-${shape}`;
+---
+<svg class:list={['cloud', cls]} {style} viewBox={s.vb} aria-hidden="true" focusable="false">
+  <defs>
+    <clipPath id={`${id}-clip`}><path d={s.d} /></clipPath>
+    <pattern id={`${id}-hatch`} width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-35)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="#2b1d10" stroke-width="1" opacity="0.22" />
+    </pattern>
+  </defs>
+  <path d={s.d} fill="#fbf5e6" />
+  <g clip-path={`url(#${id}-clip)`}>
+    <ellipse cx="50%" cy="100%" rx="62%" ry="34%" fill="#efe2c2" />
+    <ellipse cx="50%" cy="100%" rx="62%" ry="34%" fill={`url(#${id}-hatch)`} />
+  </g>
+  <path d={s.folds} fill="none" stroke="#2b1d10" stroke-width="1.6" stroke-linecap="round" opacity="0.4" />
+  <path d={s.d} fill="none" stroke="#2b1d10" stroke-width="3" stroke-linejoin="round" />
+</svg>

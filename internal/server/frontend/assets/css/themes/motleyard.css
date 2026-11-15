@@ -1,0 +1,245 @@
+/* Motleyard — the independent workshop.
+ * Paper and sage by day; charcoal green and chalk after hours.
+ * Lime is a highlight, not light-mode body text. The legacy primary accent
+ * serves both text and white-label fills, so dark filled controls below use
+ * olive. Key actions explicitly use dark ink on lime in both variants.
+ */
+
+[data-theme="motleyard-light"] {
+  color-scheme: light;
+  --bg-primary: #edece5;
+  --bg-secondary: #e3e6d9;
+  --bg-tertiary: #f7f7ef;
+  --text-primary: #20251d;
+  --text-secondary: #505947;
+  --text-muted: #56604c;
+  --accent-purple: #526029;
+  --accent-purple-rgb: 82, 96, 41;
+  --accent-purple-hover: #3f4c1e;
+  --accent-cyan: #28665f;
+  --accent-green: #34623c;
+  --accent-yellow: #78600f;
+  --accent-orange: #92471f;
+  --accent-red: #aa3434;
+  --border-color: #c4cabb;
+  --code-bg: #e1e5d7;
+  --card-bg: #f7f7ef;
+  --card-hover: #e8ecde;
+  --progress-start: #28665f;
+  --progress-low: #526029;
+  --progress-medium: #916918;
+  --progress-high: #aa3434;
+  --color-glass: rgba(237, 236, 229, 0.88);
+  --color-glass-heavy: rgba(237, 236, 229, 0.96);
+  --color-glass-card: rgba(247, 247, 239, 0.88);
+  --color-glass-card-border: rgba(32, 37, 29, 0.15);
+  --overlay-text: #56604c;
+  --overlay-text-hover: #3f4c34;
+  --overlay-text-active: #20251d;
+  --overlay-bg: rgba(32, 37, 29, 0.04);
+  --overlay-bg-hover: rgba(32, 37, 29, 0.07);
+  --overlay-bg-active: rgba(82, 96, 41, 0.12);
+  --overlay-border: rgba(32, 37, 29, 0.15);
+  --overlay-border-hover: rgba(32, 37, 29, 0.3);
+  --overlay-divider: rgba(32, 37, 29, 0.15);
+  --header-bg: rgba(32, 37, 29, 0.035);
+  --header-border: rgba(32, 37, 29, 0.15);
+  --badge-bg: rgba(82, 96, 41, 0.1);
+  --shadow-color: rgba(32, 37, 29, 0.15);
+  --shadow-color-light: rgba(32, 37, 29, 0.06);
+  --primary-glow: rgba(82, 96, 41, 0.18);
+  --primary-subtle: rgba(82, 96, 41, 0.08);
+  --primary-border: rgba(82, 96, 41, 0.32);
+  --primary-border-hover: rgba(82, 96, 41, 0.55);
+  --accent-subtle: rgba(40, 102, 95, 0.1);
+  --accent-border: rgba(40, 102, 95, 0.3);
+  --yard-selected: #dce4c9;
+  --yard-focus: #526029;
+  --color-bg: var(--bg-primary);
+  --color-app-bg: var(--bg-secondary);
+  --color-text: var(--text-primary);
+  --text-tertiary: var(--text-muted);
+  --accent-primary: var(--accent-purple);
+  --color-primary-hover: var(--accent-purple-hover);
+  --color-border: var(--border-color);
+  --border-primary: var(--border-color);
+  --color-surface: var(--card-bg);
+  --status-success: var(--accent-green);
+  --status-warning: var(--accent-yellow);
+  --status-error: var(--accent-red);
+  --font-primary: 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-serif: var(--font-primary);
+  --font-mono: 'DM Mono', 'SF Mono', ui-monospace, Menlo, monospace;
+  --yard-lime: #e4fc54;
+  --yard-ink: #20251d;
+}
+
+[data-theme="motleyard-dark"] {
+  color-scheme: dark;
+  --bg-primary: #1c201b;
+  --bg-secondary: #242a21;
+  --bg-tertiary: #30372a;
+  --text-primary: #f0f1e6;
+  --text-secondary: #cbd1bf;
+  --text-muted: #abb59b;
+  --accent-purple: #e4fc54;
+  --accent-purple-rgb: 228, 252, 84;
+  --accent-purple-hover: #edff91;
+  --accent-cyan: #92d4c4;
+  --accent-green: #aed38e;
+  --accent-yellow: #e8cd78;
+  --accent-orange: #efa47c;
+  --accent-red: #f3978f;
+  --border-color: #48523e;
+  --code-bg: #181d16;
+  --card-bg: #282f23;
+  --card-hover: #343e2a;
+  --progress-start: #92d4c4;
+  --progress-low: #e4fc54;
+  --progress-medium: #e8cd78;
+  --progress-high: #f3978f;
+  --color-glass: rgba(28, 32, 27, 0.88);
+  --color-glass-heavy: rgba(28, 32, 27, 0.96);
+  --color-glass-card: rgba(40, 47, 35, 0.88);
+  --color-glass-card-border: rgba(240, 241, 230, 0.14);
+  --overlay-text: #abb59b;
+  --overlay-text-hover: #d4dcc6;
+  --overlay-text-active: #f0f1e6;
+  --overlay-bg: rgba(240, 241, 230, 0.04);
+  --overlay-bg-hover: rgba(240, 241, 230, 0.07);
+  --overlay-bg-active: rgba(228, 252, 84, 0.1);
+  --overlay-border: rgba(240, 241, 230, 0.14);
+  --overlay-border-hover: rgba(240, 241, 230, 0.28);
+  --overlay-divider: rgba(240, 241, 230, 0.14);
+  --header-bg: rgba(0, 0, 0, 0.14);
+  --header-border: rgba(240, 241, 230, 0.14);
+  --badge-bg: rgba(228, 252, 84, 0.1);
+  --shadow-color: rgba(0, 0, 0, 0.35);
+  --shadow-color-light: rgba(0, 0, 0, 0.18);
+  --primary-glow: rgba(228, 252, 84, 0.15);
+  --primary-subtle: rgba(228, 252, 84, 0.08);
+  --primary-border: rgba(228, 252, 84, 0.3);
+  --primary-border-hover: rgba(228, 252, 84, 0.5);
+  --accent-subtle: rgba(146, 212, 196, 0.1);
+  --accent-border: rgba(146, 212, 196, 0.3);
+  --yard-selected: #3a452c;
+  --yard-focus: #e4fc54;
+  --color-bg: var(--bg-primary);
+  --color-app-bg: var(--bg-secondary);
+  --color-text: var(--text-primary);
+  --text-tertiary: var(--text-muted);
+  --accent-primary: var(--accent-purple);
+  --color-primary-hover: var(--accent-purple-hover);
+  --color-border: var(--border-color);
+  --border-primary: var(--border-color);
+  --color-surface: var(--card-bg);
+  --status-success: var(--accent-green);
+  --status-warning: var(--accent-yellow);
+  --status-error: var(--accent-red);
+  --font-primary: 'Space Grotesk', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-serif: var(--font-primary);
+  --font-mono: 'DM Mono', 'SF Mono', ui-monospace, Menlo, monospace;
+  --yard-lime: #e4fc54;
+  --yard-ink: #20251d;
+}
+
+/* Keep the typography practical for a dense workspace. */
+html[data-theme^="motleyard-"] :is(h1, h2, h3, .modal-title, .settings-section__title, .nav-project-label) {
+  font-family: var(--font-primary);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+html[data-theme^="motleyard-"] .sessions-sidebar {
+  font-family: var(--font-primary);
+  background: var(--bg-secondary);
+}
+html[data-theme^="motleyard-"] .navbar {
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: inset 0 -2px 0 var(--yard-lime);
+  backdrop-filter: none;
+}
+html[data-theme^="motleyard-"] :is(.settings-section, .stat-card, .performance-card, .nav-card-compact, .theme-card, .modal-content, .modal-container, .settings-dropdown) {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 2px 0 var(--shadow-color-light);
+}
+html[data-theme^="motleyard-"] :is(.modal-content, .modal-container, .settings-dropdown) {
+  border-top: 3px solid var(--yard-lime);
+}
+html[data-theme^="motleyard-"] .session-item {
+  border-radius: 4px;
+}
+html[data-theme^="motleyard-"] .session-item.active {
+  background: var(--yard-selected);
+}
+html[data-theme^="motleyard-"] .session-item.active::before {
+  background: var(--yard-focus);
+  border-radius: 0;
+}
+html[data-theme^="motleyard-"] .sessions-toolbar {
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  box-shadow: none;
+}
+html[data-theme^="motleyard-"] :focus-visible {
+  outline: 2px solid var(--yard-focus);
+  outline-offset: 3px;
+}
+html[data-theme^="motleyard-"] ::selection {
+  background: var(--yard-lime);
+  color: var(--yard-ink);
+}
+html[data-theme^="motleyard-"] ::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+html[data-theme^="motleyard-"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* White labels need an olive fill, not lime. */
+html[data-theme="motleyard-dark"] :is(
+  .btn-primary, .btn--primary, .btn-sm-primary, .btn-primary-small, .btn-header-primary,
+  .btn-new-session, .btn-create, .btn-save, .btn-install, .btn-scroll,
+  .na-btn--primary, .ra-btn--primary, .key-primary, .model-switcher-apply,
+  .filter-tab-active, .filter-pill.active .filter-badge, .filter-chip.active, .filter-btn.active,
+  .toggle-button.active, .btn-toggle-view.active, .lang-pill.active, .handler-type-active,
+  .recipe-item-active, .tab-btn.active .tab-count, .search-button.has-focus,
+  .code-count, .agent-count, .preview-count, .category-count, .tab-badge, .running-badge,
+  .handoff-badge, .key-badge, .step-number, .choice__check, .thinking-toggle .tool-count,
+  .generator-status.status-active, .connector-icon-wrapper,
+  .tool-pill.active, .avatar-placeholder, .btn-send, .btn-stop, .update-primary,
+  .btn-generate-ai, .session-count-badge, .debug-tab.active, .help-close-btn,
+  .agent-icon, .todo-box-header
+) {
+  --accent-purple: #526029;
+  --accent-purple-rgb: 82, 96, 41;
+  --accent-purple-hover: #3f4c1e;
+}
+html[data-theme="motleyard-dark"] :is(
+  .tool-badge, .action-button, .pagination-button, .copy-btn, .copy-command-btn,
+  .copy-output-btn, .search-button, .tool-use.clickable, .btn-upload, .btn-search,
+  .btn-just, .btn-fullscreen, .quick-chip, .page-btn, .clone-btn
+):hover {
+  --accent-purple: #526029;
+  --accent-purple-rgb: 82, 96, 41;
+  --accent-purple-hover: #3f4c1e;
+}
+
+
+/* Signature actions: dark ink on acid yellow. Keep Zen's own scene intact. */
+html[data-theme^="motleyard-"] .btn-new-session,
+html[data-theme^="motleyard-"] .input-area:not(.zen) .btn-send {
+  background: var(--yard-lime);
+  color: var(--yard-ink);
+  border: 1px solid var(--yard-focus);
+  border-radius: 5px;
+  box-shadow: none;
+}
+html[data-theme^="motleyard-"] .btn-new-session:hover:not(:disabled),
+html[data-theme^="motleyard-"] .input-area:not(.zen) .btn-send:hover:not(:disabled) {
+  background: #edff91;
+  color: var(--yard-ink);
+  box-shadow: 0 2px 0 var(--shadow-color-light);
+}

@@ -1,0 +1,28 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Ticker from '../components/Ticker.astro';
+import Workstation from '../components/Workstation.astro';
+import Film from '../components/Film.astro';
+import Sketches from '../components/Sketches.astro';
+import Curtain from '../components/Curtain.astro';
+import Interlude from '../components/Interlude.astro';
+import Install from '../components/Install.astro';
+import Footer from '../components/Footer.astro';
+---
+<Base
+  title="Eggify: the AI workstation for writing code"
+  description="Eggify is the AI workstation for writing code: a Mac app that runs Claude Code, Codex and other coding agents on your own repositories, side by side, with a terminal, git, live costs, a sandbox for each and remote access from your iPhone."
+>
+  <Hero />
+  <Ticker />
+  <main>
+    <Workstation />
+    <Film />
+    <Sketches />
+    <Curtain />
+    <Interlude />
+    <Install />
+  </main>
+  <Footer />
+</Base>

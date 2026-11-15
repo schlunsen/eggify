@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eggify</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      background: #0a0a1a;
+      color: #e0e0e0;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      min-height: 100vh; overflow: hidden; gap: 18px;
+    }
+    img { width: 96px; height: 96px; animation: pulse 2s ease-in-out infinite; }
+    h1 { font-size: 22px; letter-spacing: 6px; color: #a5b4fc; }
+    .bar { width: 220px; height: 3px; background: rgba(99,102,241,.15); border-radius: 2px; overflow: hidden; }
+    .bar::after { content: ''; display: block; width: 40%; height: 100%; background: #6366f1; animation: slide 1.2s ease-in-out infinite; }
+    #status { font-size: 12px; color: #8b8fa8; letter-spacing: 2px; }
+    #error { display: none; max-width: 640px; padding: 0 24px; color: #fca5a5; font-size: 13px; white-space: pre-wrap; text-align: center; }
+    .drag { position: fixed; top: 0; left: 0; right: 0; height: 28px; --wails-draggable: drag; }
+    body.failed .bar, body.failed img { display: none; }
+    body.failed #error { display: block; }
+    @keyframes pulse { 0%,100% { opacity: .75; transform: scale(1); } 50% { opacity: 1; transform: scale(1.04); } }
+    @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(250%); } }
+  </style>
+</head>
+<body>
+  <div class="drag"></div>
+  <img src="/tray.png" alt="" />
+  <h1>EGGIFY</h1>
+  <div class="bar"></div>
+  <div id="status">STARTING SERVER…</div>
+  <div id="error"></div>
+  <script type="module" src="/wails/runtime.js"></script>
+  <script>
+    // The desktop app serves /status while the in-process server boots; on a
+    // startup failure it reports the error here instead of a blank window.
+    (function poll() {
+      fetch('/status').then(function (r) { return r.json() }).then(function (s) {
+        if (s.error) {
+          document.body.classList.add('failed')
+          document.getElementById('status').textContent = 'STARTUP FAILED'
+          document.getElementById('error').textContent = s.error
+          return
+        }
+        setTimeout(poll, 500)
+      }).catch(function () { setTimeout(poll, 1000) })
+    })()
+  </script>
+</body>
+</html>

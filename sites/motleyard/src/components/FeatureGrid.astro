@@ -1,0 +1,17 @@
+---
+import type { Feature } from '../data/types';
+interface Props {
+  items: readonly Feature[];
+}
+const { items } = Astro.props;
+---
+
+<div class="feature-grid">
+  {items.map((item, index) => (
+    <article class="feature">
+      <span class="number">[ {String(index + 1).padStart(2, '0')} ]</span>
+      <h3>{item.title}</h3>
+      <p>{item.description}</p>
+    </article>
+  ))}
+</div>

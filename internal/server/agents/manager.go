@@ -1,0 +1,1319 @@
+package agents
+
+import (
+	"context"
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/schlunsen/eggify/internal/agentenv"
+	"os/exec"
+	"sync"
+	"sync/atomic"
+	"time"
+
+	"github.com/google/uuid"
+	claude "github.com/schlunsen/claude-agent-sdk-go"
+	"github.com/schlunsen/claude-agent-sdk-go/middleware/rtk"
+	"github.com/schlunsen/claude-agent-sdk-go/types"
+	"github.com/schlunsen/eggify/internal/connectors"
+	"github.com/schlunsen/eggify/internal/database"
+	"github.com/schlunsen/eggify/internal/logging"
+	"github.com/schlunsen/eggify/internal/mcpclient"
+	"github.com/schlunsen/eggify/internal/skills"
+)
+
+// SessionManager manages agent sessions
+type SessionManager struct {
+	sessions      map[uuid.UUID]*AgentSession
+	mu            sync.RWMutex
+	storedInboxMu sync.Mutex // serialises inbox writes to stored (ended) sessions
+	// sendPromptHook replaces the prompts Eggify sends on its own (loop
+	// kickoff, inbox wake-up) in tests; saved reports whether it is stored.
+	sendPromptHook               func(sessionID uuid.UUID, prompt string, saved bool) error
+	config                       *Config
+	Storage                      SessionStorage                                 // Exported for server access
+	db                           *sql.DB                                        // Database connection for loading provider configs
+	repo                         *database.Repository                           // Repository for accessing skills, hooks, etc.
+	skillInjector                *SkillInjector                                 // Skill injector for session system prompts
+	memoryInjector               *MemoryInjector                                // Memory Palace injector for session system prompts
+	sessionUpdateCallback        func(*AgentSession)                            // Callback to notify handler of session state changes
+	callbackMu                   sync.RWMutex                                   // Protects sessionUpdateCallback
+	broadcastMessageCallback     func(uuid.UUID, types.Message)                 // Callback to broadcast messages during recovery
+	broadcastMessageMu           sync.RWMutex                                   // Protects broadcastMessageCallback
+	broadcastToSessionCallback   func(uuid.UUID, interface{})                   // Callback to broadcast arbitrary messages to a session's connections
+	broadcastToSessionCallbackMu sync.RWMutex                                   // Protects broadcastToSessionCallback
+	linkedSessionCallback        linkedSessionEventCallback                     // Sends a child session's events to the connections of the session that started it, never buffered
+	linkedSessionCallbackMu      sync.RWMutex                                   // Protects linkedSessionCallback
+	subagentCallback             subagentTrafficCallback                        // Receives subagent messages and task_* events instead of the parent stream
+	subagentCallbackMu           sync.RWMutex                                   // Protects subagentCallback
+	clientClosedCallback         func(sessionID uuid.UUID)                      // Told when a session's Claude CLI is closed (guarded by subagentCallbackMu)
+	scheduledLoopCallback        func(sessionID uuid.UUID, loop *ScheduledLoop) // Told when a Claude Code loop is scheduled or ends (guarded by subagentCallbackMu)
+	askUserQuestion              askUserQuestionHandler                         // Asks the user AskUserQuestion questions (set by AgentHandler)
+	askUserQuestionMu            sync.RWMutex                                   // Protects askUserQuestion
+	cleanupStopChan              chan struct{}                                  // Channel to signal cleanup goroutine to stop
+	cleanupRunning               bool                                           // Flag to track if cleanup job is running
+	cleanupMu                    sync.Mutex                                     // Protects cleanupRunning and cleanupStopChan
+	connectorEncryptionKey       []byte                                         // Encryption key for decrypting connector API keys
+	n0                           n0State                                        // n0 OAuth/MCP wiring (see n0_integration.go)
+	trust                        trustState                                     // Workspace trust for repo-provided Claude config (see workspace_trust.go)
+	credProxy                    providerProxyState                             // Loopback model-provider proxy (see provider_proxy.go)
+	skillsStore                  *skills.Store                                  // Skill snapshots and plugin dirs; nil = default (see native_skills.go)
+	usageLimit                   usageLimitState                                // Account-wide usage limit and waiting sessions (see usage_limit.go)
+}
+
+// PermissionRequest represents a pending permission request
+type PermissionRequest struct {
+	RequestID    string
+	ToolName     string
+	Input        map[string]interface{}
+	Context      types.ToolPermissionContext
+	ResponseChan chan PermissionResponse
+}
+
+// PermissionResponse represents the user's response to a permission request
+type PermissionResponse struct {
+	Approved           bool
+	UpdatedInput       *map[string]interface{}
+	UpdatedPermissions []types.PermissionUpdate
+	DenyMessage        string
+}
+
+// UserQuestionRequest represents a pending user question
+type UserQuestionRequest struct {
+	QuestionID   string
+	Question     string
+	Header       string
+	Options      []QuestionOption
+	MultiSelect  bool
+	ResponseChan chan UserQuestionAnswerResponse
+}
+
+// UserQuestionAnswerResponse represents the user's answer to a question
+type UserQuestionAnswerResponse struct {
+	Answers   []string // Selected option labels
+	Dismissed bool     // The user dismissed the question instead of answering
+}
+
+// askUserQuestionHandler answers an AskUserQuestion permission request by
+// asking the user, and blocks until they answer, dismiss it, or the turn ends.
+type askUserQuestionHandler func(ctx context.Context, session *AgentSession, input map[string]interface{}) PermissionResponse
+
+// AgentSession represents an active agent session
+type AgentSession struct {
+	Session
+	scheduledLoop            atomic.Pointer[ScheduledLoop] // Pending Claude Code /loop wakeup in this session's CLI (claude_loop.go)
+	loopTurnStartedAt        atomic.Int64                  // Unix nanos when the current turn's first message arrived; 0 between turns (claude_loop.go)
+	pendingWakeup            atomic.Pointer[pendingWakeup] // A ScheduleWakeup call waiting for its result (claude_loop.go)
+	cronMu                   sync.Mutex                    // Guards cronJobs and cronPending (claude_cron.go)
+	cronJobs                 []*ScheduledJob               // Claude Code cron jobs in this session's CLI (claude_cron.go)
+	cronPending              map[string]pendingCronCall    // CronCreate/CronDelete calls waiting for their result
+	limitHit                 atomic.Pointer[string]        // Text of this turn's "rate_limit" error, if any (usage_limit.go)
+	limitTurnStartedAt       atomic.Int64                  // Unix nanos of the current turn's first message; 0 between turns (usage_limit.go)
+	limitAttempts            atomic.Int32                  // Resumes after the usage limit that were refused again (usage_limit.go)
+	ctx                      context.Context
+	cancel                   context.CancelFunc
+	responseChan             chan types.Message
+	permissionReqChan        chan *PermissionRequest              // Outgoing permission requests to frontend
+	permissionRespChan       chan *PermissionResponse             // Incoming permission responses from frontend
+	pendingPermissions       map[string]chan PermissionResponse   // Map of request_id -> response channel
+	pendingPermissionData    map[string]*PendingPermissionSummary // request_id -> what it asks (pending_requests.go)
+	permMu                   sync.Mutex
+	questionReqChan          chan *UserQuestionRequest                  // Outgoing user questions to frontend
+	pendingQuestions         map[string]chan UserQuestionAnswerResponse // Map of question_id -> response channel
+	pendingQuestionData      map[string]*UserQuestionMessage            // Map of question_id -> question data (for session restore)
+	questionWaits            map[string]*questionWait                   // question_id -> auto-answer timer state (agent questions only)
+	questionMu               sync.Mutex
+	questionForwarderRunning bool // Track if question forwarder goroutine is running
+	questionForwarderMu      sync.Mutex
+	permForwarderRunning     bool // Track if permission forwarder goroutine is running
+	permForwarderMu          sync.Mutex
+	permForwarderOwner       any           // Connection the running forwarder writes to
+	permForwarderStop        chan struct{} // Closed to stop the running forwarder goroutine
+	permForwarderGen         uint64        // Bumped on every start; a forwarder only clears its own run
+	wsConnected              bool          // Track WebSocket connection state
+	wsConnMu                 sync.Mutex
+	active                   bool
+	client                   *claude.Client           // Streaming client for this session
+	mu                       sync.Mutex               // Protects client field
+	pendingReload            bool                     // Track if we should reload after next message
+	pendingReloadMu          sync.Mutex               // Protects pendingReload field
+	interruptionSaved        bool                     // Track if interruption message was saved for this cycle
+	interruptionMu           sync.Mutex               // Protects interruptionSaved field
+	subscribedProjects       map[string]bool          // Map of projectID -> true for projects this session is subscribed to
+	subscribedProjectsMu     sync.Mutex               // Protects subscribedProjects field
+	gitStatusCallback        func(*GitStatusData)     // Callback for git status updates (set by handler)
+	gitStatusCallbackMu      sync.Mutex               // Protects gitStatusCallback field
+	autoHandoffTriggered     bool                     // Prevents re-triggering auto-handoff
+	autoHandoffMu            sync.Mutex               // Protects autoHandoffTriggered
+	activeStreamerCount      int32                    // Atomic counter for active streamFiberResponses goroutines
+	missedMessageCount       int32                    // Atomic counter for messages that used fallback broadcast (channel timeout)
+	directMCPClient          *mcpclient.Client        // Cached MCP client for direct provider sessions
+	directMCPMu              sync.Mutex               // Protects directMCPClient
+	claudeToolsStale         atomic.Bool              // Tool set changed (e.g. n0): respawn the Claude CLI at the next prompt
+	trustKey                 string                   // Workspace trust the current client was started with; protected by mu
+	skillsKey                string                   // Skill set (plugin dir) the current client was started with; protected by mu
+	claudeTurnOpen           atomic.Bool              // A prompt was sent to the Claude CLI and its turn has not ended
+	promptedThisRun          atomic.Bool              // A prompt started in this process (a stored "processing" alone is stale)
+	keepUpdatedAtOnce        atomic.Bool              // The next prompt start leaves UpdatedAt alone (resume after restart keeps the sidebar order)
+	trustNoticeKey           string                   // Last untrusted config the user was told about; protected by mu
+	directToolsStale         atomic.Bool              // Tool set changed: reconnect the direct-provider MCP client
+	directLoadedMu           sync.Mutex               // Protects directLoadedTools
+	directLoadedTools        map[string]bool          // Deferred tools loaded with find_tools (direct path only)
+	directTurnMu             sync.Mutex               // Protects directTurnActive and directQueued
+	directTurnActive         bool                     // A direct-provider turn is running
+	directQueued             []string                 // Prompts sent during that turn, picked up by it
+	workspaceTools           map[string]workspaceTool // Tool observations protected by SessionManager.mu
+	lastGitRefresh           atomic.Int64             // UnixNano of the last RefreshGitBranch
+	dbWriteMu                sync.Mutex               // Serializes persistSessionState so writes land in order
+	codexRun                 *codexRun                // Active app-server run; protected by codexTurnMu
+	codexTurnMu              sync.Mutex               // Protects codexRun
+	respMu                   sync.RWMutex             // Guards responseChan: producers RLock while sending, swapResponseChan Locks to swap+close
+
+	// Latest Codex context reading, protected by codexTurnMu.
+	codexContextUsage  *types.ContextUsageResponse
+	codexContextThread string
+
+	// Session reader: one per client, for the client's whole life (see ensureSessionReader).
+	readerMu     sync.Mutex         // Guards readerClient and readerCancel
+	readerClient *claude.Client     // Client being drained; nil when no reader runs
+	readerCancel context.CancelFunc // Stops the session reader
+
+	// Loop mode runtime state (managed by LoopController; not persisted to DB).
+	loopActive    bool       // True while an autonomous loop is running for this session
+	loopStopped   bool       // True once the loop reached a terminal state; blocks auto-restart
+	loopIteration int        // Number of completed loop iterations in the current loop
+	loopStartedAt time.Time  // When the current loop began (for timeout enforcement)
+	loopGen       uint64     // Bumped when a new loop is armed; stale watchdogs compare it
+	loopFailSig   string     // Normalised output of the last failing verify (no-progress detection)
+	loopFailSeen  int        // How many consecutive iterations produced loopFailSig
+	loopMu        sync.Mutex // Protects the loop* fields above
+
+	// Linked-session inbox (session_inbox.go) and the latest loop event,
+	// reported by get_loop_session.
+	inboxMu             sync.Mutex
+	inboxWaking         atomic.Bool
+	lastLoopEvent       *LoopMessage
+	lastMessageToParent time.Time
+	messagesToParent    int
+	workerReports       int // turn-end reports sent to the session that started this worker
+
+	// What this worker has been doing, for the session that started it
+	// (worker_activity.go).
+	workerLog workerActivityLog
+}
+
+// NewSessionManager creates a new session manager
+func NewSessionManager(config *Config, db *sql.DB, repo ...*database.Repository) (*SessionManager, error) {
+	agentenv.LogPolicy(logging.Info)
+	// Initialize storage
+	storage, err := NewSQLiteSessionStorage(db)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize session storage: %w", err)
+	}
+
+	sm := &SessionManager{
+		sessions:        make(map[uuid.UUID]*AgentSession),
+		config:          config,
+		Storage:         storage,
+		db:              db,
+		cleanupStopChan: make(chan struct{}),
+		cleanupRunning:  false,
+	}
+
+	// Set repository and skill injector if provided
+	if len(repo) > 0 && repo[0] != nil {
+		sm.repo = repo[0]
+		sm.skillInjector = NewSkillInjector(repo[0])
+		sm.memoryInjector = NewMemoryInjector(repo[0])
+	}
+
+	// Load active sessions from database
+	if err := sm.loadSessionsFromDB(); err != nil {
+		logging.Warning("Failed to load sessions from database: %v", err)
+		// Don't fail initialization, just log the warning
+	}
+
+	return sm, nil
+}
+
+// GetRepo returns the database repository (for avatar lookups, etc.)
+func (sm *SessionManager) GetRepo() *database.Repository {
+	return sm.repo
+}
+
+// ErrNoActiveClient is returned by GetContextUsage when the session has no
+// running Claude CLI to ask. It is expected for idle and restored sessions.
+var ErrNoActiveClient = errors.New("session has no active Claude connection")
+
+// GetContextUsage queries the context window usage for a session via the SDK's control protocol.
+// Returns structured token usage data (categories, totals, model info, etc.) without sending
+// a chat message — replaces the old /context command interception hack.
+// If the SDK client isn't connected (e.g., restored session), it returns
+// ErrNoActiveClient instead of starting one.
+func (sm *SessionManager) GetContextUsage(sessionID uuid.UUID) (*types.ContextUsageResponse, error) {
+	session, err := sm.GetSession(sessionID)
+	if err != nil {
+		return nil, fmt.Errorf("session not found: %w", err)
+	}
+
+	// Non-Claude models using the direct provider don't have a Claude SDK client.
+	// Return nil usage instead of auto-connecting (which would create an unwanted
+	// Claude CLI subprocess that hijacks subsequent prompt routing).
+	modelToUse := session.ModelName
+	if modelToUse == "" && session.Options.Model != nil {
+		modelToUse = *session.Options.Model
+	}
+	if isCodexSession(session) {
+		return sm.getCodexContextUsage(session), nil
+	}
+	if !isClaudeModel(modelToUse) && sm.shouldUseDirectProvider(session) {
+		logging.Info("GetContextUsage: skipping for non-Claude direct provider model %s", modelToUse)
+		return nil, nil
+	}
+
+	client := session.GetClient()
+	if client == nil {
+		// Never spawn a CLI just to answer this read-only query: the agent
+		// overview polls it for every visible agent, and connecting here left a
+		// long-lived `claude` process behind for each idle session. Callers
+		// fall back to the conversation transcript (GetContextUsageFromJSONL).
+		return nil, ErrNoActiveClient
+	}
+
+	usage, err := client.GetContextUsage(session.ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get context usage: %w", err)
+	}
+
+	return usage, nil
+}
+
+// closeClaudeClient closes the session's Claude CLI and clears it. Background
+// subagents run inside that process and die with it, so the tracker is told
+// to stop the ones still marked running. The caller holds session.mu.
+func (sm *SessionManager) closeClaudeClient(session *AgentSession, ctx context.Context) error {
+	if session.client == nil {
+		return nil
+	}
+	err := session.client.Close(ctx)
+	session.client = nil
+	// A scheduled /loop wakeup and any cron jobs lived in that process.
+	if session.clearCronJobs() && session.scheduledLoop.Load() == nil {
+		sm.notifyScheduledLoop(session)
+	}
+	sm.setScheduledLoop(session, nil)
+
+	sm.subagentCallbackMu.RLock()
+	onClosed := sm.clientClosedCallback
+	sm.subagentCallbackMu.RUnlock()
+	if onClosed != nil {
+		onClosed(session.ID)
+	}
+	return err
+}
+
+// SetClientClosedCallback registers the receiver told when a session's Claude
+// CLI is closed.
+func (sm *SessionManager) SetClientClosedCallback(callback func(sessionID uuid.UUID)) {
+	sm.subagentCallbackMu.Lock()
+	defer sm.subagentCallbackMu.Unlock()
+	sm.clientClosedCallback = callback
+}
+
+// SetConnectorEncryptionKey sets the encryption key used for decrypting connector API keys.
+// This enables agent sessions to inject connector credentials as environment variables.
+func (sm *SessionManager) SetConnectorEncryptionKey(key []byte) {
+	sm.connectorEncryptionKey = key
+}
+
+// loadSessionsFromDB loads active sessions from the database into memory
+func (sm *SessionManager) loadSessionsFromDB() error {
+	sessions, err := sm.Storage.ListSessions("active")
+	if err != nil {
+		return fmt.Errorf("failed to list sessions: %w", err)
+	}
+
+	sm.mu.Lock()
+	defer sm.mu.Unlock()
+
+	for _, sessionMeta := range sessions {
+		// Restore options from database
+		var restoredOptions SessionOptions
+		if sessionMeta.OptionsJSON != "" {
+			if err := json.Unmarshal([]byte(sessionMeta.OptionsJSON), &restoredOptions); err != nil {
+				logging.Warning("Failed to deserialize session options from DB for session %s: %v", sessionMeta.ID, err)
+			}
+		}
+		restoredOptions.AlwaysAllowRules = SanitizeAlwaysAllowRules(restoredOptions.AlwaysAllowRules, "stored session "+sessionMeta.ID.String())
+
+		// Create an in-memory session object
+		session := &AgentSession{
+			Session: Session{
+				ID:               sessionMeta.ID,
+				CreatedAt:        sessionMeta.CreatedAt,
+				UpdatedAt:        sessionMeta.UpdatedAt,
+				Status:           SessionStatus(sessionMeta.Status),
+				Options:          restoredOptions,
+				MessageCount:     sessionMeta.MessageCount,
+				CostUSD:          sessionMeta.CostUSD,
+				NumTurns:         sessionMeta.NumTurns,
+				DurationMS:       sessionMeta.DurationMS,
+				ModelName:        sessionMeta.ModelName,
+				ClaudeSessionID:  sessionMeta.ClaudeSessionID,
+				GitBranch:        sessionMeta.GitBranch,
+				ParentSessionID:  sessionMeta.ParentSessionID,
+				ContextSummary:   sessionMeta.ContextSummary,
+				Provider:         sessionMeta.Provider,
+				ProjectID:        sessionMeta.ProjectID,
+				SelectedAvatarID: sessionMeta.SelectedAvatarID,
+				OwnerUserID:      sessionMeta.OwnerUserID,
+			},
+			active: true,
+		}
+
+		if sessionMeta.ErrorMessage != "" {
+			session.ErrorMessage = &sessionMeta.ErrorMessage
+		}
+
+		// Create context for session
+		session.ctx, session.cancel = context.WithCancel(context.Background())
+
+		// Create channels
+		session.responseChan = make(chan types.Message, 10)
+		session.permissionReqChan = make(chan *PermissionRequest, 10)
+		session.permissionRespChan = make(chan *PermissionResponse, 10)
+		session.pendingPermissions = make(map[string]chan PermissionResponse)
+		session.questionReqChan = make(chan *UserQuestionRequest, 10)
+		session.pendingQuestions = make(map[string]chan UserQuestionAnswerResponse)
+		session.pendingQuestionData = make(map[string]*UserQuestionMessage)
+		session.subscribedProjects = make(map[string]bool)
+		session.wsConnected = false // Will be set to true when WebSocket connects
+
+		sm.sessions[sessionMeta.ID] = session
+
+		logging.Info("Loaded session from database: %s (status: %s, messages: %d)",
+			sessionMeta.ID, sessionMeta.Status, sessionMeta.MessageCount)
+	}
+
+	if len(sessions) > 0 {
+		logging.Info("Loaded %d active sessions from database", len(sessions))
+	}
+
+	return nil
+}
+
+// StartCleanupJob starts a background goroutine that periodically cleans up old sessions
+func (sm *SessionManager) StartCleanupJob() {
+	if !sm.config.CleanupEnabled {
+		logging.Info("Session cleanup job disabled")
+		return
+	}
+
+	sm.cleanupMu.Lock()
+	if sm.cleanupRunning {
+		sm.cleanupMu.Unlock()
+		logging.Warning("Cleanup job already running")
+		return
+	}
+	sm.cleanupRunning = true
+	sm.cleanupMu.Unlock()
+
+	logging.Info("Starting session cleanup job (retention: %d days, interval: %d hours)",
+		sm.config.SessionRetentionDays, sm.config.CleanupIntervalHours)
+
+	go func() {
+		defer func() {
+			sm.cleanupMu.Lock()
+			sm.cleanupRunning = false
+			sm.cleanupMu.Unlock()
+			logging.Info("Session cleanup job stopped")
+		}()
+
+		ticker := time.NewTicker(time.Duration(sm.config.CleanupIntervalHours) * time.Hour)
+		defer ticker.Stop()
+
+		// Run cleanup once immediately
+		sm.runCleanup()
+
+		// Then run on ticker or until stop signal
+		for {
+			select {
+			case <-sm.cleanupStopChan:
+				return
+			case <-ticker.C:
+				sm.runCleanup()
+			}
+		}
+	}()
+}
+
+// StopCleanupJob stops the background cleanup job if it's running.
+// It is safe to call multiple times.
+func (sm *SessionManager) StopCleanupJob() {
+	sm.cleanupMu.Lock()
+	defer sm.cleanupMu.Unlock()
+
+	if !sm.cleanupRunning {
+		return
+	}
+
+	logging.Info("Stopping session cleanup job...")
+	close(sm.cleanupStopChan)
+	// Re-create the channel for potential future use
+	sm.cleanupStopChan = make(chan struct{})
+}
+
+// runCleanup performs the actual cleanup of old sessions and expired handovers
+func (sm *SessionManager) runCleanup() {
+	// Cleanup old sessions
+	deleted, err := sm.Storage.DeleteOldSessions(sm.config.SessionRetentionDays)
+	if err != nil {
+		logging.Error("Failed to cleanup old sessions: %v", err)
+	} else if deleted > 0 {
+		logging.Info("Cleaned up %d old sessions (retention: %d days)", deleted, sm.config.SessionRetentionDays)
+	}
+
+	// Cleanup expired handover tokens
+	repo := database.NewRepository(database.GetInstance())
+	handoversDeleted, err := repo.CleanupExpiredHandovers()
+	if err != nil {
+		logging.Error("Failed to cleanup expired handovers: %v", err)
+	} else if handoversDeleted > 0 {
+		logging.Info("Cleaned up %d expired handover tokens", handoversDeleted)
+	}
+}
+
+// CreateSession creates a new agent session
+
+// sessionToMetadata converts a Session to SessionMetadata
+
+// saveSessionToDB persists a session to the database
+
+// updateSessionInDB updates an existing session in the database
+
+// GetSession retrieves a session by ID
+func (sm *SessionManager) GetSession(sessionID uuid.UUID) (*AgentSession, error) {
+	sm.mu.RLock()
+	defer sm.mu.RUnlock()
+
+	return sm.getSessionLocked(sessionID)
+}
+
+// getSessionLocked retrieves a session by ID without taking the lock.
+// Caller must hold sm.mu (read or write).
+func (sm *SessionManager) getSessionLocked(sessionID uuid.UUID) (*AgentSession, error) {
+	session, exists := sm.sessions[sessionID]
+	if !exists {
+		return nil, fmt.Errorf("session not found: %s", sessionID)
+	}
+
+	return session, nil
+}
+
+// ListSessions returns all active sessions
+func (sm *SessionManager) ListSessions() []Session {
+	sm.mu.RLock()
+	defer sm.mu.RUnlock()
+
+	sessions := make([]Session, 0, len(sm.sessions))
+	for _, s := range sm.sessions {
+		sessions = append(sessions, s.Session)
+	}
+
+	return sessions
+}
+
+// getAllAgentSessions returns all AgentSession objects (for internal use)
+func (sm *SessionManager) getAllAgentSessions() []*AgentSession {
+	sm.mu.RLock()
+	defer sm.mu.RUnlock()
+
+	sessions := make([]*AgentSession, 0, len(sm.sessions))
+	for _, s := range sm.sessions {
+		sessions = append(sessions, s)
+	}
+
+	return sessions
+}
+
+// sessionListStorage is implemented by storage that can load a session
+// listing (with avatars) in one query; see SQLiteSessionStorage.
+type sessionListStorage interface {
+	ListSessionsWithAvatars(statusFilter string, alsoInclude []uuid.UUID) ([]*SessionMetadata, error)
+}
+
+// sessionMatchesStatusFilter reports whether a session status passes a
+// ListAllSessions status filter.
+func sessionMatchesStatusFilter(status SessionStatus, statusFilter string) bool {
+	switch statusFilter {
+	case "", "all":
+		return true
+	case "active":
+		return status != SessionStatusEnded
+	default:
+		return string(status) == statusFilter
+	}
+}
+
+// ListAllSessions combines persisted sessions with their current runtime status.
+func (sm *SessionManager) ListAllSessions(statusFilter string) ([]Session, error) {
+	var sessionMetas []*SessionMetadata
+	var err error
+	listStorage, batched := sm.Storage.(sessionListStorage)
+	if batched {
+		// The status filter runs in SQL. Running sessions whose in-memory
+		// status matches are always fetched too, since their stored status
+		// may still be stale; the in-memory status is re-checked below.
+		var liveMatches []uuid.UUID
+		if statusFilter != "" && statusFilter != "all" {
+			sm.mu.RLock()
+			for id, live := range sm.sessions {
+				if sessionMatchesStatusFilter(live.Status, statusFilter) {
+					liveMatches = append(liveMatches, id)
+				}
+			}
+			sm.mu.RUnlock()
+		}
+		sessionMetas, err = listStorage.ListSessionsWithAvatars(statusFilter, liveMatches)
+	} else {
+		sessionMetas, err = sm.Storage.ListSessions("all")
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to list sessions from storage: %w", err)
+	}
+
+	sessions := make([]Session, 0, len(sessionMetas))
+	for _, meta := range sessionMetas {
+		session := Session{
+			ID:               meta.ID,
+			CreatedAt:        meta.CreatedAt,
+			UpdatedAt:        meta.UpdatedAt,
+			Status:           SessionStatus(meta.Status),
+			MessageCount:     meta.MessageCount,
+			CostUSD:          meta.CostUSD,
+			NumTurns:         meta.NumTurns,
+			DurationMS:       meta.DurationMS,
+			ModelName:        meta.ModelName,
+			ClaudeSessionID:  meta.ClaudeSessionID,
+			GitBranch:        meta.GitBranch,
+			ParentSessionID:  meta.ParentSessionID,
+			ContextSummary:   meta.ContextSummary,
+			Provider:         meta.Provider,
+			ProjectID:        meta.ProjectID,
+			SelectedAvatarID: meta.SelectedAvatarID,
+			OwnerUserID:      meta.OwnerUserID,
+			ViewMode:         meta.ViewMode,
+			SelectedAvatar:   meta.SelectedAvatar,
+		}
+
+		if meta.ErrorMessage != "" {
+			session.ErrorMessage = &meta.ErrorMessage
+		}
+
+		// Deserialize Options from JSON
+		if meta.OptionsJSON != "" {
+			var options SessionOptions
+			if err := json.Unmarshal([]byte(meta.OptionsJSON), &options); err == nil {
+				session.Options = options
+			} else {
+				logging.Warning("Failed to deserialize session options for session %s: %v", meta.ID, err)
+			}
+		}
+
+		// Denormalize avatar data so clients don't need separate API calls
+		// (already joined in when the storage supports batched listing)
+		if !batched && session.SelectedAvatarID != nil && sm.repo != nil {
+			if dbAvatar, err := sm.repo.GetAvatarByID(*session.SelectedAvatarID); err == nil && dbAvatar != nil {
+				session.SelectedAvatar = &Avatar{
+					ID:        dbAvatar.ID,
+					ThemeID:   dbAvatar.ThemeID,
+					Name:      dbAvatar.Name,
+					Type:      string(dbAvatar.Type),
+					ImagePath: dbAvatar.ImagePath,
+					ImageURL:  dbAvatar.ImageURL,
+					Style:     dbAvatar.Style,
+					Seed:      dbAvatar.Seed,
+					Color:     dbAvatar.Color,
+					CreatedAt: dbAvatar.CreatedAt,
+				}
+			}
+		}
+
+		// Turns update memory before persistence. Use the running manager as the
+		// authority, including when filtering, so active agents are never hidden
+		// by an idle database snapshot.
+		sm.mu.RLock()
+		live := sm.sessions[session.ID]
+		if live != nil {
+			session.Status = live.Status
+			session.UpdatedAt = live.UpdatedAt
+			session.MessageCount = live.MessageCount
+			session.CostUSD = live.CostUSD
+		}
+		sm.mu.RUnlock()
+		if live != nil {
+			live.permMu.Lock()
+			session.PendingPermissions = len(live.pendingPermissions)
+			live.permMu.Unlock()
+			live.questionMu.Lock()
+			session.PendingQuestions = len(live.pendingQuestions)
+			live.questionMu.Unlock()
+		}
+		if !sessionMatchesStatusFilter(session.Status, statusFilter) {
+			continue
+		}
+		sessions = append(sessions, session)
+	}
+
+	return sessions, nil
+}
+
+// InterruptSession interrupts an ongoing session without ending it
+// This cancels the current context and closes the client, allowing the session to continue with new prompts
+
+// ReloadSessionSettings closes and recreates the client to reload settings from disk
+// This is useful after adding always-allow rules to settings.local.json
+func (sm *SessionManager) ReloadSessionSettings(sessionID uuid.UUID) error {
+	sm.mu.RLock()
+	session, exists := sm.sessions[sessionID]
+	sm.mu.RUnlock()
+
+	if !exists {
+		return fmt.Errorf("session not found: %s", sessionID)
+	}
+
+	logging.Info("🔄 Reloading settings for session %s (closing and recreating client)", sessionID)
+
+	// Close existing client if exists
+	session.mu.Lock()
+	if session.client != nil {
+		_ = sm.closeClaudeClient(session, session.ctx)
+		logging.Info("  ✅ Closed existing client")
+	}
+	session.mu.Unlock()
+
+	// The next SendPrompt/SendPromptWithContent will automatically create a new client
+	// with fresh settings loaded from disk (settings.local.json)
+	logging.Info("  ✅ Session settings will reload on next prompt")
+
+	return nil
+}
+
+// EndSession ends a session
+
+// DeleteSession deletes a session from the database
+
+// EndAllSessions ends all active sessions
+
+// DeleteAllSessions deletes all sessions from the database
+
+// SendPrompt sends a prompt to an agent session using claude.Query
+
+// SendPromptSilent sends a prompt without saving it to the database or showing it in chat
+// This is used for auto-continue messages after permission approval
+
+// sendPromptInternal sends a prompt to an agent session using claude.Query
+// saveToDb controls whether the user message is saved to the database (and shown in chat)
+
+// SendPromptWithContent sends structured content (text + images) to an agent session
+// This method bypasses the SDK's Query method to support image content blocks
+
+// RestartClient closes the current client and forces a new client to be created
+// on the next SendPrompt. This is useful after updating permissions in settings.local.json.
+func (sm *SessionManager) RestartClient(sessionID uuid.UUID) error {
+	sm.mu.Lock()
+	session, exists := sm.sessions[sessionID]
+	sm.mu.Unlock()
+
+	if !exists {
+		return fmt.Errorf("session not found: %s", sessionID)
+	}
+
+	session.mu.Lock()
+	defer session.mu.Unlock()
+
+	if session.client != nil {
+		logging.Info("Closing existing client for session %s to reload permissions", sessionID)
+		// Close the existing client; a new one is created on the next prompt
+		if err := sm.closeClaudeClient(session, session.ctx); err != nil {
+			logging.Warning("Error closing client: %v", err)
+		}
+		logging.Info("✅ Client restarted for session %s - permissions will be reloaded", sessionID)
+	} else {
+		logging.Info("No active client for session %s - nothing to restart", sessionID)
+	}
+
+	return nil
+}
+
+// SetAskUserQuestionHandler registers who asks the user AskUserQuestion questions.
+func (sm *SessionManager) SetAskUserQuestionHandler(handler askUserQuestionHandler) {
+	sm.askUserQuestionMu.Lock()
+	defer sm.askUserQuestionMu.Unlock()
+	sm.askUserQuestion = handler
+}
+
+// permissionResult turns a permission response into the SDK's result type.
+func permissionResult(toolName, requestID string, response PermissionResponse) interface{} {
+	if !response.Approved {
+		logging.Info("❌ Permission DENIED for %s (request %s): %s", toolName, requestID, response.DenyMessage)
+		return types.PermissionResultDeny{Behavior: "deny", Message: response.DenyMessage}
+	}
+	logging.Info("✅ Permission APPROVED for %s (request %s)", toolName, requestID)
+	result := types.PermissionResultAllow{Behavior: "allow"}
+	if response.UpdatedInput != nil {
+		result.UpdatedInput = response.UpdatedInput
+	}
+	if len(response.UpdatedPermissions) > 0 {
+		result.UpdatedPermissions = response.UpdatedPermissions
+		logging.Info("✨ Including %d permission update(s) in approval response", len(response.UpdatedPermissions))
+	}
+	return result
+}
+
+// createPermissionCallback creates the permission callback function for a session
+func (sm *SessionManager) createPermissionCallback(session *AgentSession) types.CanUseToolFunc {
+	sessionID := session.ID // Capture session ID to look up latest rules
+	return func(ctx context.Context, toolName string, input map[string]interface{}, permCtx types.ToolPermissionContext) (interface{}, error) {
+		requestID := uuid.New().String()
+		logging.Info("🔐 PERMISSION CALLBACK: tool=%s, requestID=%s", toolName, requestID)
+
+		// Sandboxed sessions: web tools run outside the sandbox's egress
+		// proxy, so they are auto-approved only for allowlisted hosts and
+		// otherwise always go to the user (always-allow rules do not apply).
+		sm.mu.RLock()
+		sandboxed := isSandboxed(&session.Options)
+		sm.mu.RUnlock()
+		webHandled, webAllow := false, false
+		if sandboxed {
+			webHandled, webAllow = sandboxWebToolDecision(sandboxed, toolName, input, sm.SandboxPreferences().AllowedDomains)
+		}
+		if webHandled && webAllow {
+			logging.Info("✅ AUTO-APPROVED %s to an allowlisted host (sandboxed session)", toolName)
+			return types.PermissionResultAllow{}, nil
+		} else if webHandled {
+			logging.Info("🧱 Sandboxed session: %s needs the user's approval", toolName)
+		}
+
+		// Check always-allow rules first - get latest rules from session manager
+		sm.mu.RLock()
+		currentSession, exists := sm.sessions[sessionID]
+		if exists && webHandled {
+			logging.Info("📋 Always-allow rules skipped for %s in a sandboxed session", toolName)
+		} else if exists {
+			logging.Info("📋 Checking %d always-allow rules for tool %s", len(currentSession.Options.AlwaysAllowRules), toolName)
+			if matched, ruleDesc := CheckAlwaysAllowRules(currentSession.Options.AlwaysAllowRules, toolName, input); matched {
+				sm.mu.RUnlock()
+				logging.Info("✅ AUTO-APPROVED via always-allow rule: %s (rule: %s)", toolName, ruleDesc)
+				return types.PermissionResultAllow{}, nil
+			}
+			logging.Info("❌ No matching always-allow rule found for tool %s", toolName)
+		} else {
+			logging.Warning("⚠️ Session %s not found in session manager", sessionID)
+		}
+		sm.mu.RUnlock()
+
+		// AskUserQuestion waits for the user, not for a browser: it is answered
+		// outside the per-connection permission queue, so a closed tab, reload or
+		// network blip neither denies it (letting the agent carry on without an
+		// answer) nor blocks other permission requests behind it.
+		if toolName == "AskUserQuestion" {
+			sm.askUserQuestionMu.RLock()
+			ask := sm.askUserQuestion
+			sm.askUserQuestionMu.RUnlock()
+			if ask != nil {
+				return permissionResult(toolName, requestID, ask(ctx, session, input)), nil
+			}
+		}
+
+		// Check if WebSocket is connected before proceeding with permission request
+		if !session.IsWebSocketConnected() {
+			logging.Warning("Permission request rejected: WebSocket not connected (tool=%s, requestID=%s)", toolName, requestID)
+			return types.PermissionResultDeny{Message: "WebSocket connection lost - cannot request permission"}, nil
+		}
+
+		responseChan := make(chan PermissionResponse, 1)
+
+		session.permMu.Lock()
+		session.pendingPermissions[requestID] = responseChan
+		session.trackPendingPermission(requestID, toolName, input)
+		session.permMu.Unlock()
+
+		defer func() {
+			session.permMu.Lock()
+			delete(session.pendingPermissions, requestID)
+			delete(session.pendingPermissionData, requestID)
+			session.permMu.Unlock()
+		}()
+
+		// Send permission request to frontend via channel
+		select {
+		case session.permissionReqChan <- &PermissionRequest{
+			RequestID:    requestID,
+			ToolName:     toolName,
+			Input:        input,
+			Context:      permCtx,
+			ResponseChan: responseChan,
+		}:
+			logging.Info("✅ Permission request sent to channel: %s", requestID)
+		case <-ctx.Done():
+			logging.Warning("Context cancelled while sending permission request")
+			return types.PermissionResultDeny{Message: "Context cancelled"}, nil
+		case <-session.ctx.Done():
+			logging.Warning("Session context cancelled while sending permission request")
+			return types.PermissionResultDeny{Message: "Session ended"}, nil
+		case <-time.After(5 * time.Second):
+			logging.Warning("Timeout sending permission request to channel")
+			return types.PermissionResultDeny{Message: "Permission request timeout"}, nil
+		}
+
+		// Wait for response from frontend with reduced timeout (60 seconds instead of unlimited)
+		select {
+		case response := <-responseChan:
+			return permissionResult(toolName, requestID, response), nil
+		case <-ctx.Done():
+			logging.Warning("⏱️ Context cancelled while waiting for permission (tool=%s, request %s)", toolName, requestID)
+			return types.PermissionResultDeny{Message: "Context cancelled"}, nil
+		case <-session.ctx.Done():
+			logging.Warning("⏱️ Session ended while waiting for permission (tool=%s, request %s)", toolName, requestID)
+			return types.PermissionResultDeny{Message: "Session ended"}, nil
+		case <-time.After(60 * time.Second): // Reduced from unlimited to 60 seconds
+			logging.Warning("⏱️ Permission request TIMEOUT for %s (request %s)", toolName, requestID)
+			return types.PermissionResultDeny{Message: "Permission request timed out after 60 seconds"}, nil
+		}
+	}
+}
+
+// GetResponseChannel returns the response channel for a session
+
+// buildSDKOptions converts SessionOptions to SDK ClaudeAgentOptions
+func (sm *SessionManager) buildSDKOptions(options SessionOptions, sessionID ...uuid.UUID) *types.ClaudeAgentOptions {
+	sdkOptions := types.NewClaudeAgentOptions()
+
+	// Set model
+	var modelForSession string
+	if options.Model != nil && *options.Model != "" {
+		modelForSession = *options.Model
+	} else {
+		modelForSession = sm.config.Model
+	}
+	sdkOptions = sdkOptions.WithModel(modelForSession)
+
+	// Set ANTHROPIC_SMALL_FAST_MODEL to the session's model so that Claude CLI
+	// uses it for internal tool processing (WebFetch/WebSearch summarization)
+	// instead of hardcoded claude-haiku which may not be available on custom providers
+	if modelForSession != "" {
+		sdkOptions = sdkOptions.WithEnvVar("ANTHROPIC_SMALL_FAST_MODEL", modelForSession)
+	}
+
+	// System prompt: Claude Code's own, plus the session's additions.
+	prompt := customSystemPrompt(&options)
+	if len(sessionID) > 0 {
+		prompt = sm.withN0Hint(sessionID[0], prompt)
+	}
+	sdkOptions = sdkOptions.WithSystemPrompt(claudeSystemPrompt(prompt))
+
+	// Set working directory
+	if options.WorkingDirectory != nil && *options.WorkingDirectory != "" {
+		sdkOptions = sdkOptions.WithCWD(*options.WorkingDirectory)
+	}
+
+	// TODO: Set max tokens when SDK supports it
+	// if options.MaxTokens != nil {
+	// 	sdkOptions = sdkOptions.WithMaxTokens(*options.MaxTokens)
+	// }
+
+	// TODO: Set temperature when SDK supports it
+	// if options.Temperature != nil {
+	// 	sdkOptions = sdkOptions.WithTemperature(*options.Temperature)
+	// }
+
+	// Set permission mode
+	// Check if YOLO Mode is enabled first (takes precedence)
+	if options.DangerouslySkipPermissions != nil && *options.DangerouslySkipPermissions {
+		// YOLO Mode enabled - bypass all permissions
+		// Must set BOTH DangerouslySkipPermissions flags AND PermissionMode
+		// The SDK requires all three to fully bypass permission checks
+		logging.Info("YOLO Mode active - setting permission mode to bypass with skip flags")
+		sdkOptions = sdkOptions.WithPermissionMode(types.PermissionModeBypassPermissions).
+			WithAllowDangerouslySkipPermissions(true).
+			WithDangerouslySkipPermissions(true)
+	} else if options.AllowDangerouslySkipPermissions != nil && *options.AllowDangerouslySkipPermissions {
+		// Safety switch enabled but not actively skipping
+		logging.Info("YOLO Mode safety switch enabled (but not active)")
+		sdkOptions = sdkOptions.WithAllowDangerouslySkipPermissions(true)
+	} else if options.PermissionMode != nil {
+		// Use configured permission mode
+		switch {
+		case isYOLOMode(*options.PermissionMode):
+			sdkOptions = sdkOptions.WithPermissionMode(types.PermissionModeBypassPermissions).
+				WithAllowDangerouslySkipPermissions(true).
+				WithDangerouslySkipPermissions(true)
+		case *options.PermissionMode == "allow-all":
+			sdkOptions = sdkOptions.WithPermissionMode(types.PermissionModeBypassPermissions)
+		case *options.PermissionMode == "read-only":
+			sdkOptions = sdkOptions.WithPermissionMode(types.PermissionModeDefault)
+		default:
+			sdkOptions = sdkOptions.WithPermissionMode(types.PermissionModeDefault)
+		}
+	}
+
+	// Model credentials: a provider-proxy capability, or the real key only
+	// when the proxy is unavailable (see provider_proxy.go).
+	{
+		var sid uuid.UUID
+		if len(sessionID) > 0 {
+			sid = sessionID[0]
+		}
+		snap := Session{ID: sid, ModelName: modelForSession, Options: options}
+		sdkOptions = sm.applyClaudeProviderAuth(sid, &snap, sdkOptions)
+	}
+
+	// Inject connector credentials as environment variables (hot-pluggable)
+	// Credentials are resolved on-demand from the current session_connectors state
+	if len(sessionID) > 0 {
+		sdkOptions = sm.injectConnectorCredentials(sessionID[0], sdkOptions)
+	}
+
+	// Configure eggify MCP server (stdio) for session handover, skills, GPU tools, and app deployment.
+	// This ensures all code paths that create Claude CLI subprocesses (ensureClientConnected,
+	// ReloadSessionWithOptions, etc.) include the MCP config with --mcp-config flag.
+	var mcpSessionID uuid.UUID
+	if len(sessionID) > 0 {
+		mcpSessionID = sessionID[0]
+	}
+	sdkOptions = sdkOptions.WithMcpServers(sm.eggifyToolsMCPConfig(mcpSessionID))
+
+	// Set effort level (v0.9.0)
+	if options.EffortLevel != nil && *options.EffortLevel != "" {
+		sdkOptions = sdkOptions.WithEffort(types.EffortLevel(*options.EffortLevel))
+	}
+
+	// Optional RTK (Rust Token Killer) integration. See applyRTKHook().
+	sdkOptions = applyRTKHook(sdkOptions, options.EnableRTK)
+
+	return sdkOptions
+}
+
+// applyRTKHook registers the RTK PreToolUse hook on opts if enableRTK is true.
+//
+// IMPORTANT: this helper MUST be called by EVERY code path that builds SDK
+// options before claude.NewClient() is called. The Claude CLI's hook
+// mechanism is wired up in the initialize control-protocol message that the
+// SDK sends at subprocess startup; hooks cannot be added later. If a code
+// path forgets to call this helper, the CLI is spawned without hooks and
+// RTK compression silently no-ops for that session.
+//
+// Callers (all four must stay wired to this helper):
+//   - buildSDKOptions()          — the session-restart path (manager.go)
+//   - ensureClientConnected()    — the restore/context-query path (manager.go)
+//   - sendPromptInternal()       — the plain-text prompt path (message_handler.go)
+//   - SendPromptWithContent()    — the multi-modal prompt path (message_handler.go)
+//
+// Previously each site built opts from scratch and missed the hook. Do not
+// inline the hook again — add a new caller to this list instead.
+//
+// rtk.OnlyIfInstalled() makes the hook a no-op when the rtk binary is
+// missing, so sessions never break — we still log a warning so operators
+// notice the misconfig.
+func applyRTKHook(opts *types.ClaudeAgentOptions, enableRTK *bool) *types.ClaudeAgentOptions {
+	if opts == nil || enableRTK == nil || !*enableRTK {
+		return opts
+	}
+	if _, err := exec.LookPath("rtk"); err != nil {
+		logging.Info("RTK enabled for session but 'rtk' binary not found on PATH — hook will no-op. Install from https://github.com/rtk-ai/rtk")
+	} else {
+		logging.Info("RTK enabled for session — Bash output will be compressed by rtk")
+	}
+	return opts.WithHook(
+		types.HookEventPreToolUse,
+		rtk.Hook(
+			rtk.WithUltraCompact(true),
+			rtk.OnlyIfInstalled(),
+		),
+	)
+}
+
+// injectConnectorCredentials resolves connector credentials for a session and injects them as env vars.
+// This is called on-demand (at prompt time), enabling hot-pluggable connector access.
+// Returns the (possibly modified) sdkOptions with connector env vars injected.
+func (sm *SessionManager) injectConnectorCredentials(sessionID uuid.UUID, sdkOptions *types.ClaudeAgentOptions) *types.ClaudeAgentOptions {
+	if sm.connectorEncryptionKey == nil || len(sm.connectorEncryptionKey) == 0 {
+		return sdkOptions
+	}
+
+	db := database.GetInstance()
+	if db == nil {
+		return sdkOptions
+	}
+
+	proxied := sm.usesProviderProxy(sdkOptions)
+	connectorRepo := database.NewConnectorRepository(db)
+	connections, err := connectorRepo.GetSessionConnections(sessionID.String())
+	if err != nil {
+		logging.Warning("Failed to get session connectors for %s: %v", sessionID, err)
+		return sdkOptions
+	}
+
+	for _, conn := range connections {
+		if conn.APIKey == nil || *conn.APIKey == "" {
+			continue
+		}
+		// n0 over OAuth is reached only through the eggify-tools proxy; its
+		// tokens never become env vars. The legacy API key is injected only
+		// while no OAuth connection exists.
+		if sm.skipLegacyN0Env(conn.ConnectorSlug) {
+			continue
+		}
+
+		decrypted, err := connectors.Decrypt(*conn.APIKey, sm.connectorEncryptionKey)
+		if err != nil {
+			logging.Warning("Failed to decrypt connector %s API key for session %s: %v", conn.ConnectorSlug, sessionID, err)
+			continue
+		}
+
+		if decrypted == "" {
+			continue
+		}
+
+		envVar := connectors.GetEnvVarName(conn.ConnectorSlug)
+		// The session's model traffic goes through the provider proxy: a
+		// connector (e.g. "anthropic") must not swap the CLI's capability
+		// for a real key.
+		if proxied && proxyManagedEnv[envVar] {
+			logging.Info("🔌 Skipped connector %s → %s: the session's model credentials go through the provider proxy (session %s)", conn.ConnectorSlug, envVar, sessionID)
+			continue
+		}
+		sdkOptions = sdkOptions.WithEnvVar(envVar, decrypted)
+		logging.Info("🔌 Injected connector credential: %s → %s (session %s)", conn.ConnectorSlug, envVar, sessionID)
+
+		// Inject legacy env var aliases for backward compatibility (e.g. NZERO_API_KEY for n0)
+		for _, legacyVar := range connectors.GetLegacyEnvVarNames(conn.ConnectorSlug) {
+			sdkOptions = sdkOptions.WithEnvVar(legacyVar, decrypted)
+		}
+
+		// Inject extra config env vars (e.g. domain for n0)
+		if conn.ExtraConfig != nil && *conn.ExtraConfig != "" {
+			extraVars := connectors.GetExtraEnvVars(conn.ConnectorSlug, *conn.ExtraConfig)
+			for extraEnvVar, extraVal := range extraVars {
+				sdkOptions = sdkOptions.WithEnvVar(extraEnvVar, extraVal)
+				logging.Info("🔌 Injected connector extra config: %s → %s (session %s)", conn.ConnectorSlug, extraEnvVar, sessionID)
+			}
+		}
+	}
+
+	return sdkOptions
+}
+
+// ReloadSessionWithOptions reloads a session with updated options.
+// This is used for hot-swapping configuration (like YOLO mode) on running sessions.
+//
+// Process:
+// 1. Update session options in database
+// 2. Interrupt the current Claude CLI process
+// 3. Restart with --resume flag + new options
+// 4. Preserve conversation history
+//
+// Returns error if session not found or reload fails.
+func (sm *SessionManager) ReloadSessionWithOptions(sessionID uuid.UUID, newOptions SessionOptions) error {
+	sm.mu.Lock()
+	session, exists := sm.sessions[sessionID]
+	sm.mu.Unlock()
+
+	if !exists {
+		return fmt.Errorf("session not found: %s", sessionID)
+	}
+
+	logging.Info("🔄 Reloading session %s with new options", sessionID)
+
+	// Merge new options with existing (only update provided fields)
+	mergedOptions := session.Options
+
+	if newOptions.DangerouslySkipPermissions != nil {
+		mergedOptions.DangerouslySkipPermissions = newOptions.DangerouslySkipPermissions
+		logging.Info("  → DangerouslySkipPermissions: %v", *newOptions.DangerouslySkipPermissions)
+	}
+	if newOptions.AllowDangerouslySkipPermissions != nil {
+		mergedOptions.AllowDangerouslySkipPermissions = newOptions.AllowDangerouslySkipPermissions
+		logging.Info("  → AllowDangerouslySkipPermissions: %v", *newOptions.AllowDangerouslySkipPermissions)
+	}
+
+	// Update session options in memory and database
+	session.Options = mergedOptions
+	session.UpdatedAt = time.Now()
+
+	if err := sm.updateSessionInDB(&session.Session); err != nil {
+		logging.Error("Failed to update session in database: %v", err)
+		return fmt.Errorf("failed to update session in database: %w", err)
+	}
+
+	logging.Info("💾 Session options updated in database")
+
+	// Codex and direct sessions read these options when a turn starts; only
+	// the Claude CLI has to be restarted to pick them up. A running turn is
+	// left alone (Stop ends it).
+	if sm.resolveExecutionPath(session) != ExecutionPathClaudeSDK {
+		return nil
+	}
+
+	// Interrupt current agent (graceful shutdown)
+	logging.Info("⏸️  Interrupting current session...")
+	if err := sm.InterruptSession(sessionID); err != nil {
+		logging.Warning("Failed to interrupt session: %v", err)
+		// Continue anyway - we'll start a new agent
+	}
+
+	// Wait a moment for graceful shutdown
+	time.Sleep(500 * time.Millisecond)
+
+	// Build SDK options with resume flag
+	sdkOptions := sm.buildSDKOptions(mergedOptions, sessionID)
+	reloadTrust := sm.workspaceTrustForOptions(&mergedOptions)
+	sdkOptions = applyWorkspaceTrust(sdkOptions, reloadTrust)
+	sdkOptions, reloadSkills := sm.applySessionSkills(sdkOptions, &mergedOptions)
+	sdkOptions, settingsErr := sm.applyClaudeSessionSettings(sdkOptions, &mergedOptions)
+	if settingsErr != nil {
+		session.Status = SessionStatusError
+		errMsg := settingsErr.Error()
+		session.ErrorMessage = &errMsg
+		return settingsErr
+	}
+	resumeID := sessionID.String()
+	sdkOptions.Resume = &resumeID
+	sdkOptions.Verbose = sm.config.Verbose
+
+	// Create permission callback
+	canUseTool := sm.createPermissionCallback(session)
+	sdkOptions.CanUseTool = canUseTool
+
+	logging.Info("🚀 Restarting session with --resume %s", resumeID)
+
+	// Create new agent client
+	agent, err := claude.NewClient(session.ctx, agentenv.ScrubClaudeOptions(sdkOptions))
+	if err != nil {
+		logging.Error("Failed to create new agent: %v", err)
+		session.Status = SessionStatusError
+		errMsg := fmt.Sprintf("Failed to reload session: %v", err)
+		session.ErrorMessage = &errMsg
+		return err
+	}
+
+	// Connect to Claude
+	if err := agent.Connect(session.ctx); err != nil {
+		logging.Error("Failed to connect agent: %v", err)
+		session.Status = SessionStatusError
+		errMsg := fmt.Sprintf("Failed to connect: %v", err)
+		session.ErrorMessage = &errMsg
+		return err
+	}
+
+	logging.Info("✅ Session reloaded successfully")
+
+	// Update session with new agent instance
+	sm.mu.Lock()
+	session.client = agent
+	recordClientTrust(session, reloadTrust)
+	recordClientSkills(session, reloadSkills)
+	session.Status = SessionStatusIdle
+	session.ErrorMessage = nil
+	sm.mu.Unlock()
+
+	return nil
+}
+
+// gitBranchRefreshInterval caps how often the session reader re-checks the git
+// branch while messages stream in without a shell tool finishing (e.g. an MCP
+// tool or a user's own terminal switching branches).
+const gitBranchRefreshInterval = 3 * time.Second
+
+// gitRefreshDue reports whether the last branch refresh is older than
+// gitBranchRefreshInterval.
+func gitRefreshDue(session *AgentSession) bool {
+	last := session.lastGitRefresh.Load()
+	return last == 0 || time.Since(time.Unix(0, last)) >= gitBranchRefreshInterval
+}
+
+// RefreshGitBranchIfDue is RefreshGitBranch at most once per
+// gitBranchRefreshInterval per session, for polled reads.
+func (sm *SessionManager) RefreshGitBranchIfDue(sessionID uuid.UUID) {
+	sm.mu.RLock()
+	session, exists := sm.sessions[sessionID]
+	sm.mu.RUnlock()
+	if !exists || !gitRefreshDue(session) {
+		return
+	}
+	_, _, _ = sm.RefreshGitBranch(sessionID)
+}
+
+// RefreshGitBranch checks and updates the git branch for a session
+// Returns the new branch name and whether it changed
+func (sm *SessionManager) RefreshGitBranch(sessionID uuid.UUID) (newBranch string, changed bool, err error) {
+	// Read needed fields under lock to avoid races
+	sm.mu.RLock()
+	session, exists := sm.sessions[sessionID]
+	if !exists {
+		sm.mu.RUnlock()
+		return "", false, fmt.Errorf("session not found: %s", sessionID)
+	}
+	oldBranch := session.GitBranch
+	workingDir := sessionGitDirectory(session)
+	sm.mu.RUnlock()
+
+	// Only refresh if we have a working directory
+	if workingDir == "" {
+		return oldBranch, false, nil
+	}
+
+	session.lastGitRefresh.Store(time.Now().UnixNano())
+	sm.observeSessionWorkspace(session, workingDir)
+	sm.mu.RLock()
+	currentBranch := session.GitBranch
+	sm.mu.RUnlock()
+	changed = currentBranch != oldBranch
+
+	return currentBranch, changed, nil
+}
+
+// resendAllMessagesFromDB performs silent message recovery by fetching all messages from the database
+// and broadcasting them to all connected WebSocket clients for this session.
+// This is called when transitioning to idle state to ensure frontend receives all messages.
+// Uses the registered broadcastMessageCallback to perform actual WebSocket broadcasting.
+func (sm *SessionManager) resendAllMessagesFromDB(sessionID uuid.UUID) error {
+	// Fetch all messages from database
+	messages, _, err := sm.GetMessages(sessionID, 10000, 0)
+	if err != nil {
+		return fmt.Errorf("failed to fetch messages from database: %w", err)
+	}
+
+	// If no messages, nothing to recover
+	if len(messages) == 0 {
+		logging.Debug("Session %s: No messages to recover from database", sessionID)
+		return nil
+	}
+
+	// Reconstruct SDK messages from database records
+	var sdkMessages []types.Message
+	for _, record := range messages {
+		for _, msg := range sm.reconstructMessagesForBroadcast([]*MessageRecord{record}) {
+			if record.Role == "assistant" {
+				msg = &recoveredAssistantMessage{Message: msg, Provider: record.Provider, Model: record.ModelName}
+			}
+			sdkMessages = append(sdkMessages, msg)
+		}
+	}
+	if len(sdkMessages) == 0 {
+		logging.Debug("Session %s: No messages to reconstruct for broadcast", sessionID)
+		return nil
+	}
+
+	// Broadcast each message to all connected clients
+	recoveredCount := 0
+	for _, msg := range sdkMessages {
+		sm.invokeBroadcastMessageCallback(sessionID, msg)
+		recoveredCount++
+	}
+
+	logging.Info("🔄 Session %s: Silently recovered %d messages from database for broadcast", sessionID, recoveredCount)
+	return nil
+}

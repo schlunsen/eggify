@@ -1,0 +1,5 @@
+{"type":"launched"}
+{"type":"started","key":"v2:398ba8f3987ab06f4776673c229f55f1f817c48fb3ac54bbff4148086005d56f","agentId":"a352d514bd0ff5c77","label":"a:one","phase":"Echo"}
+{"type":"started","key":"v2:3b48800731956ce9fa3538bbd09dc3b950962ce30a1090389bfc11255af5e90e","agentId":"a552081303c7f8da0","label":"a:two","phase":"Echo"}
+{"type":"result","key":"v2:398ba8f3987ab06f4776673c229f55f1f817c48fb3ac54bbff4148086005d56f","agentId":"a352d514bd0ff5c77","result":"hello-one"}
+{"type":"result","key":"v2:3b48800731956ce9fa3538bbd09dc3b950962ce30a1090389bfc11255af5e90e","agentId":"a552081303c7f8da0","result":"hello-two"}

@@ -1,0 +1,32 @@
+---
+import MachineArt from './MachineArt.astro';
+import type { Machine } from '../lib/rental';
+interface Props {
+  tier: Machine;
+  eyebrow: string;
+  description: string;
+}
+const { tier, eyebrow, description } = Astro.props;
+const name = tier === 'max' ? 'Max' : 'Pro';
+---
+
+<article class:list={['offer', { dark: tier === 'max' }]}>
+  <span class="eyebrow">{eyebrow}</span>
+  <h2>Mac M5 {name}</h2>
+  <p>{description}</p>
+  <MachineArt />
+  <div class="offer-bottom">
+    <small>
+      RENTAL CONFIGURATION
+      <br />
+      Rate to be announced
+    </small>
+    <a
+      class:list={['btn', { 'light-btn': tier === 'max' }]}
+      href={`/configure.html?machine=${tier}`}
+    >
+      Choose {name}
+      <span aria-hidden="true">↗</span>
+    </a>
+  </div>
+</article>

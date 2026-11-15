@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleName</key>
+    <string>Eggify</string>
+    <key>CFBundleDisplayName</key>
+    <string>Eggify</string>
+    <key>CFBundleExecutable</key>
+    <string>eggify-desktop</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.eggify.desktop.wails</string>
+    <key>CFBundleVersion</key>
+    <string>@VERSION@</string>
+    <key>CFBundleShortVersionString</key>
+    <string>@VERSION@</string>
+    <key>CFBundleIconFile</key>
+    <string>icon</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>13.4</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Eggify needs access to your microphone for voice recording and speech-to-text features.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Eggify may need camera access for video features.</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>com.eggify.desktop.wails</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>eggify</string>
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>

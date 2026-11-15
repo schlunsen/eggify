@@ -1,0 +1,398 @@
+/* Puppet Theatre Theme - the Zen "Circus" stage, carried into the whole app.
+ *
+ * The palette is lifted from the paper puppet theatre in Zen mode
+ * (app/composables/agents/zen/sceneCircus.ts): deep crimson velvet curtains,
+ * a teal sky, mustard and green hills, honey floorboards, cream paper clouds
+ * and umber ink. Fraunces for headings, Inter for dense UI, JetBrains Mono
+ * for code.
+ *
+ * Light = the stage in daylight: warm paper surfaces, curtain-crimson primary.
+ * Dark  = a night at the theatre: umber house, teal-night navbar, crimson
+ *         and footlight-gold accents.
+ *
+ * The theatrical extras (bunting, pelmet, paper cards, floorboard
+ * toolbar, footlight focus rings) live at the bottom of this file and are all
+ * scoped to html[data-theme^="theatre"].
+ */
+
+/* Puppet Theatre Light - the stage in daylight */
+[data-theme="theatre-light"] {
+  color-scheme: light;
+  --bg-primary: #f2e8d0;         /* Stage paper */
+  --color-bg: #f2e8d0;
+  --bg-secondary: #f8f1df;       /* Fresh paper */
+  --color-app-bg: #f8f1df;
+  --bg-tertiary: #fdf9ef;        /* Paper cloud */
+  --text-primary: #2b1d10;       /* Umber ink */
+  --color-text: #2b1d10;
+  --text-secondary: #54402c;
+  --text-tertiary: #6a5540;
+  --text-muted: #6a5540;
+  --accent-purple: #9e2f4c;      /* Curtain crimson (primary) */
+  --accent-purple-rgb: 158, 47, 76;
+  --accent-purple-hover: #84243e;
+  --color-primary-hover: #84243e;
+  --accent-primary: #9e2f4c;
+  --accent-cyan: #1d6d66;        /* Teal sky, inked for text */
+  --accent-green: #2f6b3a;       /* Hill green */
+  --accent-yellow: #7a5b0c;      /* Mustard, inked for text */
+  --accent-orange: #9c4718;
+  --accent-red: #a3221b;
+  --border-color: #d9c59a;       /* Scissor-cut paper edge */
+  --color-border: #d9c59a;
+  --border-primary: #d9c59a;
+  --code-bg: #ece0c0;
+  --card-bg: #fdf9ef;
+  --color-surface: #fdf9ef;
+  --card-hover: #f4ead3;
+  --status-success: #2f6b3a;
+  --status-warning: #7a5b0c;
+  --status-error: #a3221b;
+
+  /* Context Progress Bar Colors */
+  --progress-start: #2a8a7e;      /* Teal sky - 0-25% */
+  --progress-low: #c99a12;        /* Mustard hill - 25-50% */
+  --progress-medium: #c2456a;     /* Curtain - 50-75% */
+  --progress-high: #a3221b;       /* Final curtain - 75-100% */
+
+  /* Glass & transparency */
+  --color-glass: rgba(248, 241, 223, 0.85);
+  --color-glass-heavy: rgba(248, 241, 223, 0.95);
+  --color-glass-card: rgba(253, 249, 239, 0.8);
+  --color-glass-card-border: rgba(43, 29, 16, 0.12);
+
+  /* Theme-aware overlay colors (light theme = dark overlays) */
+  --overlay-text: #5f4b37;
+  --overlay-text-hover: #3f2e1d;
+  --overlay-text-active: #2b1d10;
+  --overlay-bg: rgba(43, 29, 16, 0.04);
+  --overlay-bg-hover: rgba(43, 29, 16, 0.07);
+  --overlay-bg-active: rgba(43, 29, 16, 0.1);
+  --overlay-border: rgba(43, 29, 16, 0.14);
+  --overlay-border-hover: rgba(43, 29, 16, 0.26);
+  --overlay-divider: rgba(43, 29, 16, 0.15);
+  --header-bg: rgba(43, 29, 16, 0.035);
+  --header-border: rgba(43, 29, 16, 0.14);
+  --badge-bg: rgba(43, 29, 16, 0.08);
+  --shadow-color: rgba(43, 29, 16, 0.16);
+  --shadow-color-light: rgba(43, 29, 16, 0.08);
+  --primary-glow: rgba(158, 47, 76, 0.22);
+  --primary-subtle: rgba(158, 47, 76, 0.08);
+  --primary-border: rgba(158, 47, 76, 0.32);
+  --primary-border-hover: rgba(158, 47, 76, 0.55);
+  --accent-subtle: rgba(29, 109, 102, 0.1);
+  --accent-border: rgba(29, 109, 102, 0.3);
+
+  /* Typography */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-serif: 'Fraunces', 'EB Garamond', Georgia, serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, monospace;
+
+  /* Stage props (used by the extras at the bottom of this file) */
+  --theatre-ink: #2b1d10;
+  --theatre-crimson: #9e2f4c;        /* Curtain velvet, as in the scene */
+  --theatre-crimson-deep: #7d2139;
+  --theatre-pink: #e8458b;           /* Bunting */
+  --theatre-mustard: #d4a017;        /* Bunting / hills */
+  --theatre-teal: #2a9d8f;           /* Bunting / sky */
+  --theatre-gold: #e7b73c;           /* Paper sun / footlights */
+  --theatre-honey: #ead9ad;          /* Floorboards */
+  --theatre-honey-seam: rgba(43, 29, 16, 0.13);
+  --theatre-nav-bg: #f8f1df;
+  --theatre-nav-text: #2b1d10;
+  --theatre-card-edge: rgba(43, 29, 16, 0.2);
+  --theatre-card-shadow: rgba(43, 29, 16, 0.16);
+  --theatre-focus: #8a5a00;          /* >= 3:1 on every light surface */
+  --theatre-focus-glow: rgba(231, 183, 60, 0.5);
+  --theatre-grain: rgba(43, 29, 16, 0.028);
+}
+
+/* Puppet Theatre Dark - a night at the theatre */
+[data-theme="theatre-dark"] {
+  color-scheme: dark;
+  --bg-primary: #15100c;         /* The house, lights down */
+  --color-bg: #15100c;
+  --bg-secondary: #1b1510;
+  --color-app-bg: #1b1510;
+  --bg-tertiary: #2a2119;
+  --text-primary: #f3e9d2;       /* Cream programme paper */
+  --color-text: #f3e9d2;
+  --text-secondary: #d2c1a0;
+  --text-tertiary: #ab9875;
+  --text-muted: #ab9875;
+  --accent-purple: #e8728c;      /* Crimson under the spotlight (text, links, rings) */
+  --accent-purple-rgb: 232, 114, 140;
+  --accent-purple-hover: #f0889f;
+  --color-primary-hover: #f0889f;
+  --accent-primary: #e8728c;
+  --accent-cyan: #6cc7b8;        /* Night teal */
+  --accent-green: #8fcf8a;
+  --accent-yellow: #f0c45a;      /* Footlight gold */
+  --accent-orange: #f3925a;
+  --accent-red: #ff7a6b;
+  --border-color: #3d3024;
+  --color-border: #3d3024;
+  --border-primary: #3d3024;
+  --code-bg: #110d0a;
+  --card-bg: #211a14;
+  --color-surface: #211a14;
+  --card-hover: #2c2219;
+  --status-success: #8fcf8a;
+  --status-warning: #f0c45a;
+  --status-error: #ff7a6b;
+
+  /* Context Progress Bar Colors */
+  --progress-start: #6cc7b8;
+  --progress-low: #f0c45a;
+  --progress-medium: #e8728c;
+  --progress-high: #ff7a6b;
+
+  /* Glass & transparency */
+  --color-glass: rgba(21, 16, 12, 0.85);
+  --color-glass-heavy: rgba(21, 16, 12, 0.95);
+  --color-glass-card: rgba(33, 26, 20, 0.8);
+  --color-glass-card-border: rgba(243, 233, 210, 0.1);
+
+  /* Theme-aware overlay colors (dark theme = light overlays) */
+  --overlay-text: rgba(243, 233, 210, 0.66);
+  --overlay-text-hover: rgba(243, 233, 210, 0.85);
+  --overlay-text-active: #f3e9d2;
+  --overlay-bg: rgba(243, 233, 210, 0.05);
+  --overlay-bg-hover: rgba(243, 233, 210, 0.08);
+  --overlay-bg-active: rgba(243, 233, 210, 0.11);
+  --overlay-border: rgba(243, 233, 210, 0.11);
+  --overlay-border-hover: rgba(243, 233, 210, 0.22);
+  --overlay-divider: rgba(243, 233, 210, 0.15);
+  --header-bg: rgba(0, 0, 0, 0.18);
+  --header-border: rgba(243, 233, 210, 0.1);
+  --badge-bg: rgba(243, 233, 210, 0.1);
+  --shadow-color: rgba(0, 0, 0, 0.45);
+  --shadow-color-light: rgba(0, 0, 0, 0.25);
+  --primary-glow: rgba(232, 114, 140, 0.3);
+  --primary-subtle: rgba(232, 114, 140, 0.1);
+  --primary-border: rgba(232, 114, 140, 0.32);
+  --primary-border-hover: rgba(232, 114, 140, 0.55);
+  --accent-subtle: rgba(108, 199, 184, 0.1);
+  --accent-border: rgba(108, 199, 184, 0.3);
+
+  /* Typography */
+  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-serif: 'Fraunces', 'EB Garamond', Georgia, serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, monospace;
+
+  /* Stage props */
+  --theatre-ink: #0b0806;
+  --theatre-crimson: #a8304f;        /* Velvet: white text on it is 6.6:1 */
+  --theatre-crimson-deep: #7d2139;
+  --theatre-pink: #e8458b;
+  --theatre-mustard: #d4a017;
+  --theatre-teal: #2a9d8f;
+  --theatre-gold: #f0c45a;
+  --theatre-honey: #2a2017;          /* Floorboards in the dark */
+  --theatre-honey-seam: rgba(0, 0, 0, 0.45);
+  --theatre-nav-bg: #11201f;         /* Teal night sky */
+  --theatre-nav-text: #f3e9d2;
+  --theatre-card-edge: rgba(243, 233, 210, 0.13);
+  --theatre-card-shadow: rgba(0, 0, 0, 0.55);
+  --theatre-focus: #f0c45a;
+  --theatre-focus-glow: rgba(240, 196, 90, 0.35);
+  --theatre-grain: rgba(243, 233, 210, 0.018);
+}
+
+/* ── Puppet Theatre extras ────────────────────────────────────────── */
+
+/* Faint paper grain over the house */
+html[data-theme^="theatre"] body {
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--theatre-grain) 0 1px,
+    transparent 1px 6px
+  );
+}
+
+/* Playbill headings */
+html[data-theme^="theatre"] h1,
+html[data-theme^="theatre"] h2,
+html[data-theme^="theatre"] h3,
+html[data-theme^="theatre"] .sessions-sidebar .sidebar-header h2,
+html[data-theme^="theatre"] .avatar-name,
+html[data-theme^="theatre"] .modal-title,
+html[data-theme^="theatre"] .settings-section__title {
+  font-family: var(--font-serif);
+  font-optical-sizing: auto;
+  letter-spacing: -0.005em;
+}
+html[data-theme^="theatre"] h1,
+html[data-theme^="theatre"] h2 {
+  font-weight: 600;
+}
+
+/* ── The navbar: a crimson pelmet with gold trim and a strip of bunting ── */
+html[data-theme^="theatre"] .navbar {
+  background: var(--theatre-nav-bg);
+  border-bottom: 2px solid var(--theatre-crimson);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+html[data-theme^="theatre"] .navbar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 2px);
+  height: 7px;
+  pointer-events: none;
+  z-index: 2;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='66' height='11' viewBox='0 0 66 11'%3E%3Cg stroke='%232b1d10' stroke-width='0.9' stroke-linejoin='round'%3E%3Cpath d='M2 0.5 L18 0.5 L10 10.5 Z' fill='%23e8458b'/%3E%3Cpath d='M24 0.5 L40 0.5 L32 10.5 Z' fill='%23d4a017'/%3E%3Cpath d='M46 0.5 L62 0.5 L54 10.5 Z' fill='%232a9d8f'/%3E%3C/g%3E%3C/svg%3E") repeat-x 0 0 / 42px 7px;
+  opacity: 0.55;
+}
+html[data-theme="theatre-dark"] .navbar::after {
+  opacity: 0.45;
+}
+html[data-theme^="theatre"] .navbar,
+html[data-theme^="theatre"] .navbar .nav-project-label {
+  color: var(--theatre-nav-text);
+}
+html[data-theme^="theatre"] .navbar .nav-project-label {
+  font-family: var(--font-serif);
+  font-weight: 600;
+}
+
+/* ── Paper cards: a cut-out edge and a soft lift ── */
+html[data-theme^="theatre"] .metrics-sidebar,
+html[data-theme^="theatre"] .metrics-sidebar:hover,
+html[data-theme^="theatre"] .settings-section,
+html[data-theme^="theatre"] .stat-card,
+html[data-theme^="theatre"] .performance-card,
+html[data-theme^="theatre"] .nav-card-compact,
+html[data-theme^="theatre"] .theme-card,
+html[data-theme^="theatre"] .modal-content,
+html[data-theme^="theatre"] .modal-container,
+html[data-theme^="theatre"] .settings-dropdown {
+  border: 1px solid var(--theatre-card-edge);
+  box-shadow: 0 1px 2px var(--shadow-color-light), 0 8px 24px -14px var(--theatre-card-shadow);
+}
+
+/* Modals and the settings menu hang from a crimson rail */
+html[data-theme^="theatre"] .modal-content,
+html[data-theme^="theatre"] .modal-container,
+html[data-theme^="theatre"] .settings-dropdown {
+  border-top: 3px solid var(--theatre-crimson);
+}
+
+/* ── The bottom toolbar is the stage floor: honey boards and footlights ── */
+html[data-theme^="theatre"] .sessions-toolbar {
+  background:
+    radial-gradient(ellipse 22px 5px at 50% 0, var(--theatre-focus-glow), transparent 100%) 0 0 / 120px 8px repeat-x,
+    repeating-linear-gradient(90deg, transparent 0 119px, var(--theatre-honey-seam) 119px 120px),
+    var(--theatre-honey);
+  border-top: 2px solid var(--theatre-ink);
+}
+html[data-theme="theatre-dark"] .sessions-toolbar {
+  border-top-color: var(--theatre-crimson-deep);
+}
+
+/* ── Footlight focus rings ── */
+html[data-theme^="theatre"] :focus-visible {
+  outline: 2px solid var(--theatre-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--theatre-focus-glow);
+}
+
+html[data-theme^="theatre"] ::selection {
+  background: var(--theatre-gold);
+  color: #2b1d10;
+}
+
+html[data-theme^="theatre"] ::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 0;
+}
+html[data-theme^="theatre"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--theatre-crimson);
+}
+
+/* ── Around the Zen Circus stage ──
+   In Zen the chat header and prompt banner become the proscenium: a crimson
+   valance with a gold fringe hangs over the stage, so the chrome and the
+   scene read as one theatre. */
+html[data-theme^="theatre"] .chat-content:has(> .zen-mode.zen-viz-circus) {
+  background: var(--bg-secondary);
+}
+html[data-theme^="theatre"] .zen-mode.zen-viz-circus::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 16px;
+  z-index: 30;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12px 0, var(--theatre-crimson) 10px, var(--theatre-gold) 10.5px, var(--theatre-gold) 12px, transparent 12.5px) 0 2px / 24px 14px repeat-x,
+    linear-gradient(var(--theatre-crimson), var(--theatre-crimson)) 0 0 / 100% 3px no-repeat;
+  filter: drop-shadow(0 2px 0 rgba(43, 29, 16, 0.25));
+}
+html[data-theme^="theatre"] .zen-mode.zen-viz-circus.zen-fullscreen::before {
+  display: none;
+}
+
+/* ── Night at the theatre: filled crimson controls ──
+   In the dark variant --accent-purple is a light rose so crimson text and
+   links stay readable on umber (>= 5.3:1). Controls that put white text on
+   a primary fill would only reach ~2.9:1 on that rose, so they get the deep
+   velvet instead (white on it: 6.6:1). Overriding the variable on the
+   element keeps each component's own hover/active rules intact. */
+html[data-theme="theatre-dark"] :is(
+  .btn-primary, .btn--primary, .btn-sm-primary, .btn-primary-small, .btn-header-primary,
+  .btn-new-session, .btn-create, .btn-save, .btn-install, .btn-scroll,
+  .na-btn--primary, .ra-btn--primary, .key-primary, .model-switcher-apply,
+  .filter-tab-active, .filter-pill.active .filter-badge, .filter-chip.active, .filter-btn.active,
+  .toggle-button.active, .btn-toggle-view.active, .lang-pill.active, .handler-type-active,
+  .recipe-item-active, .tab-btn.active .tab-count, .search-button.has-focus,
+  .code-count, .agent-count, .preview-count, .category-count, .tab-badge, .running-badge,
+  .handoff-badge, .key-badge, .step-number, .choice__check, .thinking-toggle .tool-count,
+  .generator-status.status-active, .connector-icon-wrapper,
+  .tool-pill.active, .avatar-placeholder, .btn-send, .btn-stop, .update-primary,
+  .btn-generate-ai, .session-count-badge, .debug-tab.active, .help-close-btn,
+  .agent-icon, .todo-box-header
+) {
+  --accent-purple: var(--theatre-crimson);
+  --accent-purple-hover: #b93a5a;
+}
+html[data-theme="theatre-dark"] :is(
+  .tool-badge, .action-button, .pagination-button, .copy-btn, .copy-command-btn,
+  .copy-output-btn, .search-button, .tool-use.clickable, .btn-upload, .btn-search,
+  .btn-just, .btn-fullscreen, .quick-chip, .page-btn, .clone-btn
+):hover {
+  --accent-purple: var(--theatre-crimson);
+  --accent-purple-hover: #b93a5a;
+}
+
+/* The stage itself gets a cut-out paper edge, like the cards around it */
+html[data-theme^="theatre"] .zen-mode.zen-viz-circus:not(.zen-fullscreen) {
+  border: 1px solid var(--theatre-card-edge);
+  box-shadow: 0 1px 2px var(--shadow-color-light), 0 8px 24px -14px var(--theatre-card-shadow);
+}
+
+/* The voice button is velvet too, not a stock alarm red */
+html[data-theme^="theatre"] .input-area:not(.zen) .btn-record:not(.btn-record-active) {
+  background: linear-gradient(135deg, var(--theatre-crimson), var(--theatre-crimson-deep));
+  box-shadow: 2px 2px 0 var(--theatre-card-shadow);
+}
+
+/* The effort picker's stock orange fails with white text; use velvet */
+html[data-theme^="theatre"] .effort-btn.active {
+  --accent-color: var(--theatre-crimson);
+}
+
+/* Zen / Live: the chosen view is lit like a stage */
+html[data-theme^="theatre"] .toggle-option.active,
+html[data-theme^="theatre"] .toggle-option.active svg {
+  background: var(--theatre-crimson);
+  color: #fff;
+  box-shadow: none;
+}
+html[data-theme^="theatre"] .toggle-option.active svg {
+  background: transparent;
+}

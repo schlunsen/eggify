@@ -1,0 +1,42 @@
+---
+import logo from '../assets/logo.svg';
+---
+<nav class="nav" aria-label="Main">
+  <a class="brand" href="#top"><img src={logo.src} alt="" width="40" height="40" />Eggify</a>
+  <div class="links">
+    <a href="#sketches">The sketches</a>
+    <a href="#curtain">Behind the curtain</a>
+    <a href="#install">Install</a>
+    <a class="ticket" href="#interest">Get Eggify</a>
+  </div>
+</nav>
+
+<style>
+  .nav {
+    position: relative;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 0;
+  }
+  .links { display: flex; gap: 24px; align-items: center; font-size: 18px; }
+  .links a { color: var(--ink); text-decoration: none; border-bottom: 2px solid transparent; }
+  .links a:hover { border-bottom-color: var(--pink); }
+  .ticket {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: var(--mustard);
+    padding: 8px 14px;
+    border: 2px solid var(--ink) !important;
+    box-shadow: var(--shadow);
+    transform: rotate(-2deg);
+    transition: transform 0.15s ease;
+  }
+  .ticket:hover { transform: rotate(0deg); }
+  @media (max-width: 760px) { .links a:not(.ticket) { display: none; } }
+</style>

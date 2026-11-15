@@ -1,0 +1,210 @@
+/* Flying Circus Theme - And now for something completely different.
+ *
+ * Victorian engravings cut out with scissors and glued onto aged paper:
+ * sepia ink, cream paper, and loud pink / mustard / teal accents in the
+ * spirit of 1970s British surreal cut-out animation. Circus-poster
+ * headings (Rye), engraved-book body text (EB Garamond) and a typewriter
+ * for code (Courier Prime).
+ */
+
+/* Flying Circus Light - aged paper, sepia ink */
+[data-theme="flyingcircus-light"] {
+  color-scheme: light;
+  --bg-primary: #efe4c8;         /* Aged paper */
+  --color-bg: #efe4c8;
+  --bg-secondary: #f6edd6;       /* Fresh paper */
+  --color-app-bg: #f6edd6;
+  --bg-tertiary: #fbf5e6;        /* Cut-out card stock */
+  --text-primary: #2b1d10;       /* Engraving ink */
+  --color-text: #2b1d10;
+  --text-secondary: #5c4630;     /* Faded ink */
+  --text-muted: #6b5640;
+  --accent-purple: #c2185b;      /* Hand-tinted pink (primary) */
+  --accent-purple-rgb: 194, 24, 91;
+  --accent-purple-hover: #a3134b;
+  --color-primary-hover: #a3134b;
+  --accent-cyan: #1f7a70;        /* Sky teal */
+  --accent-green: #2e7d32;
+  --accent-yellow: #8a6510;      /* Mustard, darkened for text */
+  --accent-orange: #b5541c;
+  --border-color: #d9c7a0;       /* Scissor-cut paper edge */
+  --color-border: #d9c7a0;
+  --code-bg: #e9dcbc;
+  --card-bg: #fbf5e6;
+  --color-surface: #fbf5e6;
+  --card-hover: #f3e7c9;
+  --status-success: #2e7d32;
+  --status-warning: #8a6510;
+  --status-error: #b3261e;
+
+  /* Context Progress Bar Colors */
+  --progress-start: #2a9d8f;      /* Teal - 0-25% */
+  --progress-low: #d4a017;        /* Mustard - 25-50% */
+  --progress-medium: #e8458b;     /* Pink - 50-75% */
+  --progress-high: #b3261e;       /* The foot comes down - 75-100% */
+
+  /* Glass & transparency */
+  --color-glass: rgba(246, 237, 214, 0.85);
+  --color-glass-heavy: rgba(246, 237, 214, 0.95);
+  --color-glass-card: rgba(251, 245, 230, 0.8);
+  --color-glass-card-border: rgba(43, 29, 16, 0.12);
+
+  /* Theme-aware overlay colors (light theme = dark overlays) */
+  --overlay-text: rgba(43, 29, 16, 0.6);
+  --overlay-text-hover: rgba(43, 29, 16, 0.8);
+  --overlay-text-active: #2b1d10;
+  --overlay-bg: rgba(43, 29, 16, 0.04);
+  --overlay-bg-hover: rgba(43, 29, 16, 0.07);
+  --overlay-bg-active: rgba(43, 29, 16, 0.1);
+  --overlay-border: rgba(43, 29, 16, 0.12);
+  --overlay-border-hover: rgba(43, 29, 16, 0.22);
+  --overlay-divider: rgba(43, 29, 16, 0.15);
+  --header-bg: rgba(43, 29, 16, 0.04);
+  --header-border: rgba(43, 29, 16, 0.12);
+  --badge-bg: rgba(43, 29, 16, 0.08);
+  --shadow-color: rgba(43, 29, 16, 0.18);
+  --shadow-color-light: rgba(43, 29, 16, 0.08);
+  --primary-glow: rgba(194, 24, 91, 0.25);
+  --primary-subtle: rgba(194, 24, 91, 0.08);
+  --primary-border: rgba(194, 24, 91, 0.3);
+  --primary-border-hover: rgba(194, 24, 91, 0.5);
+  --accent-subtle: rgba(31, 122, 112, 0.1);
+  --accent-border: rgba(31, 122, 112, 0.3);
+
+  /* Typography */
+  --font-primary: 'EB Garamond', 'Iowan Old Style', Georgia, serif;
+  --font-serif: 'Rye', 'EB Garamond', Georgia, serif;
+  --font-mono: 'Courier Prime', 'Courier New', monospace;
+
+  /* Decorative (used by the rules at the bottom of this file) */
+  --circus-pink: #e8458b;
+  --circus-mustard: #d4a017;
+  --circus-teal: #2a9d8f;
+  --circus-hatch: rgba(43, 29, 16, 0.035);
+}
+
+/* Flying Circus Dark - the same collage, after closing time */
+[data-theme="flyingcircus-dark"] {
+  color-scheme: dark;
+  --bg-primary: #1c1610;         /* Burnt umber */
+  --color-bg: #1c1610;
+  --bg-secondary: #241c14;
+  --color-app-bg: #241c14;
+  --bg-tertiary: #2e241a;
+  --text-primary: #f3e9d2;       /* Cream paper */
+  --color-text: #f3e9d2;
+  --text-secondary: #cdbb98;
+  --text-muted: #a8956f;
+  --accent-purple: #ff6fa8;      /* Neon-ish tinted pink (primary) */
+  --accent-purple-rgb: 255, 111, 168;
+  --accent-purple-hover: #ff8cbb;
+  --color-primary-hover: #ff8cbb;
+  --accent-cyan: #5cc8b8;        /* Teal */
+  --accent-green: #7bc67e;
+  --accent-yellow: #f2c14e;      /* Mustard */
+  --accent-orange: #f08a4b;
+  --border-color: #4a3a28;
+  --color-border: #4a3a28;
+  --code-bg: #19130d;
+  --card-bg: #2a2117;
+  --color-surface: #2a2117;
+  --card-hover: #362a1e;
+  --status-success: #7bc67e;
+  --status-warning: #f2c14e;
+  --status-error: #ff6b5e;
+
+  /* Context Progress Bar Colors */
+  --progress-start: #5cc8b8;      /* Teal - 0-25% */
+  --progress-low: #f2c14e;        /* Mustard - 25-50% */
+  --progress-medium: #ff6fa8;     /* Pink - 50-75% */
+  --progress-high: #ff6b5e;       /* The foot comes down - 75-100% */
+
+  /* Glass & transparency */
+  --color-glass: rgba(28, 22, 16, 0.85);
+  --color-glass-heavy: rgba(28, 22, 16, 0.95);
+  --color-glass-card: rgba(42, 33, 23, 0.8);
+  --color-glass-card-border: rgba(243, 233, 210, 0.1);
+
+  /* Theme-aware overlay colors (dark theme = light overlays) */
+  --overlay-text: rgba(243, 233, 210, 0.6);
+  --overlay-text-hover: rgba(243, 233, 210, 0.8);
+  --overlay-text-active: #f3e9d2;
+  --overlay-bg: rgba(243, 233, 210, 0.05);
+  --overlay-bg-hover: rgba(243, 233, 210, 0.08);
+  --overlay-bg-active: rgba(243, 233, 210, 0.11);
+  --overlay-border: rgba(243, 233, 210, 0.1);
+  --overlay-border-hover: rgba(243, 233, 210, 0.2);
+  --overlay-divider: rgba(243, 233, 210, 0.15);
+  --header-bg: rgba(0, 0, 0, 0.2);
+  --header-border: rgba(243, 233, 210, 0.1);
+  --badge-bg: rgba(243, 233, 210, 0.1);
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --shadow-color-light: rgba(0, 0, 0, 0.2);
+  --primary-glow: rgba(255, 111, 168, 0.3);
+  --primary-subtle: rgba(255, 111, 168, 0.1);
+  --primary-border: rgba(255, 111, 168, 0.3);
+  --primary-border-hover: rgba(255, 111, 168, 0.5);
+  --accent-subtle: rgba(92, 200, 184, 0.1);
+  --accent-border: rgba(92, 200, 184, 0.3);
+
+  /* Typography */
+  --font-primary: 'EB Garamond', 'Iowan Old Style', Georgia, serif;
+  --font-serif: 'Rye', 'EB Garamond', Georgia, serif;
+  --font-mono: 'Courier Prime', 'Courier New', monospace;
+
+  /* Decorative */
+  --circus-pink: #ff6fa8;
+  --circus-mustard: #f2c14e;
+  --circus-teal: #5cc8b8;
+  --circus-hatch: rgba(243, 233, 210, 0.025);
+}
+
+/* ── Flying Circus extras ─────────────────────────────────────────── */
+
+/* Engraving hatch over the paper */
+html[data-theme^="flyingcircus"] body {
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--circus-hatch) 0 1px,
+    transparent 1px 7px
+  );
+}
+
+/* Circus-poster headings */
+html[data-theme^="flyingcircus"] h1,
+html[data-theme^="flyingcircus"] h2 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+/* Garamond has a small x-height; nudge body text up a touch */
+html[data-theme^="flyingcircus"] body {
+  font-size: calc(17px * var(--font-size-scale, 1));
+}
+
+/* A strip of cut-out paper under the navbar: pink, mustard, teal */
+html[data-theme^="flyingcircus"] .navbar {
+  border-bottom: 0;
+  box-shadow:
+    0 2px 0 var(--circus-pink),
+    0 4px 0 var(--circus-mustard),
+    0 6px 0 var(--circus-teal);
+}
+
+html[data-theme^="flyingcircus"] ::selection {
+  background: var(--circus-pink);
+  color: #fff;
+}
+
+html[data-theme^="flyingcircus"] ::-webkit-scrollbar-thumb {
+  background: var(--circus-mustard);
+  border-radius: 0;
+}
+
+/* The logo stays sepia ink, and tips its hat in pink when busy */
+html[data-theme^="flyingcircus"] .eggify-egg.active,
+html[data-theme^="flyingcircus"] .eggify-egg.streaming {
+  animation: none;
+  color: var(--circus-pink);
+}

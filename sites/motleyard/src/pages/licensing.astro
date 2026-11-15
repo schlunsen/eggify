@@ -1,0 +1,71 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import FeatureGrid from '../components/FeatureGrid.astro';
+import StepList from '../components/StepList.astro';
+import FaqSection from '../components/FaqSection.astro';
+import { pageContent } from '../data/pages';
+const content = pageContent.licensing;
+---
+
+<SiteLayout title="Licensing">
+  <PageHero
+    eyebrow="THE SOFTWARE LICENSE"
+    description="Use your own computer and make Motleyard part of your working day. A paid workspace activated with a serial number."
+  >
+    <Fragment slot="title">
+      Good tools.
+      <br />
+      <span class="highlight">Clear terms.</span>
+    </Fragment>
+  </PageHero>
+  <section class="wrap split license-intro">
+    <div>
+      <div class="eyebrow">ONE SERIAL. YOUR WORKSPACE.</div>
+      <div class="serial">XXXXX · XXXXX · XXXXX · XXXXX</div>
+      <p class="lead">
+        A desktop at home. A laptop on the move. Room for a third computer.
+      </p>
+      <p class="note">
+        Illustrative serial display. Not a valid activation key.
+      </p>
+    </div>
+    <div class="license-box">
+      <div class="eyebrow">THE WORKSPACE LICENSE</div>
+      <h3>Up to 3 active computers.</h3>
+      <ul>
+        <li>Serial-number activation</li>
+        <li>Up to 30 days offline between license checks</li>
+        <li>Licensed relay access for remote connections</li>
+        <li>iPhone access through a licensed Mac</li>
+      </ul>
+      <p>
+        PRICING TO BE ANNOUNCED
+        <br />
+        The first licensed release is in preparation.
+      </p>
+    </div>
+  </section>
+  <section class="band">
+    <div class="wrap split">
+      <div>
+        <div class="eyebrow">HOW ACTIVATION WORKS</div>
+        <h2>
+          Set up once.
+          <br />
+          Keep making things.
+        </h2>
+        <p>
+          The app renews its license in the background while online. An offline
+          allowance keeps license checks from getting in the way when you
+          travel.
+        </p>
+      </div>
+      <StepList items={content.steps} />
+    </div>
+  </section>
+  <section class="section wrap">
+    <FeatureGrid items={content.features} />
+  </section>
+  <FaqSection items={content.faqs} />
+</SiteLayout>

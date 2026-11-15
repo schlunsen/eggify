@@ -1,0 +1,46 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import FeatureGrid from '../components/FeatureGrid.astro';
+import { pageContent } from '../data/pages';
+const content = pageContent.about;
+---
+
+<SiteLayout title="Our thinking">
+  <PageHero
+    eyebrow="OUR THINKING"
+    description="Different tools. Different models. Different ways of thinking. A good workshop has room for all of them."
+  >
+    <Fragment slot="title">
+      A little motley.
+      <br />A lot of <span class="highlight">possibility.</span>
+    </Fragment>
+  </PageHero>
+  <section class="wrap narrow editorial manifesto">
+    <p>
+      The best thing about building software is the moment an idea becomes
+      something you can actually use.
+    </p>
+    <p>
+      We want <em>more of that moment.</em> Less time preparing the tools. Less
+      time finding the right terminal. More time following a good idea somewhere
+      interesting.
+    </p>
+    <p>
+      Motleyard is a place for your particular mix of tools and ambition. A
+      workspace today. A complete machine-and-software setup to explore next.
+    </p>
+  </section>
+  <section class="band">
+    <div class="wrap">
+      <div class="eyebrow">THREE THINGS WE CARE ABOUT</div>
+      <FeatureGrid items={content.features} />
+    </div>
+  </section>
+  <section class="wrap bottom-cta">
+    <h2>Make yourself a little room.</h2>
+    <a class="btn" href="/workspace.html">
+      Explore the workspace<span>↗</span>
+    </a>
+  </section>
+</SiteLayout>

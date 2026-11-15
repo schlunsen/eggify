@@ -1,0 +1,74 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import StepList from '../components/StepList.astro';
+import { pageContent } from '../data/pages';
+const content = pageContent.login;
+---
+
+<SiteLayout title="Your yard">
+  <PageHero
+    eyebrow="YOUR MOTLEYARD"
+    description="One place for your license, your computers, and the machine you’re building on."
+  >
+    <Fragment slot="title">
+      Your tools.
+      <br />
+      Your <span class="highlight">home base.</span>
+    </Fragment>
+  </PageHero>
+  <section class="wrap account-layout">
+    <div class="account-card" id="signin-card">
+      <div class="eyebrow">SIGN IN BY EMAIL</div>
+      <h2>A link. And you’re in.</h2>
+      <p>
+        The proposed customer account uses an email sign-in link. Your serial
+        number connects your license after you sign in.
+      </p>
+      <form id="signin-form">
+        <label for="email">DEMO EMAIL ADDRESS</label>
+        <input
+          aria-describedby="signin-note"
+          id="email"
+          name="email"
+          readonly
+          type="email"
+          value="builder@example.test"
+        />
+        <button class="btn" type="submit">
+          Preview sign-in <span>↗</span>
+        </button>
+      </form>
+      <p class="note" id="signin-note">
+        INTERACTIVE DEMO · No email is sent. This is not an authentication
+        service. Don’t enter a real serial or personal information.
+      </p>
+    </div>
+    <div class="account-card" hidden id="email-card" tabindex="-1">
+      <div class="eyebrow">THE NEXT STEP / DEMO</div>
+      <h2>
+        A little note
+        <br />
+        in your inbox.
+      </h2>
+      <p>
+        In the live product, we would send a short-lived sign-in link to your
+        email. Only someone with access to that inbox could continue.
+      </p>
+      <p class="note">SIMULATED EMAIL TO BUILDER@EXAMPLE.TEST</p>
+      <a class="btn" href="/account.html">
+        Open your demo yard <span>↗</span>
+      </a>
+      <button class="text-link" id="back-signin">
+        Back to sign-in
+      </button>
+    </div>
+    <div>
+      <StepList items={content.steps} />
+    </div>
+  </section>
+</SiteLayout>
+<script>
+  import { initSignInDemo } from '../scripts/login';
+  initSignInDemo();
+</script>

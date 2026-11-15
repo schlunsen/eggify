@@ -1,0 +1,14 @@
+// Build settings that differ per distributor. Not secret, but not part of the
+// public source. Without Local.xcconfig the project still builds, with the
+// relay exception pointing at a domain that does not exist.
+
+// The Eggify relay's self-signed certificate needs an App Transport Security
+// exception for the relay's wildcard domain (the "r" in <id>.r.example.com, see
+// docs/remote-relay.md). Xcode does not expand build settings in Info.plist
+// keys, so the domain lives in a local copy of Info.plist instead:
+//   scripts/ios-relay-config.sh r.example.com
+// writes Info.local.plist and Local.xcconfig (both gitignored). Run it again
+// after changing Info.plist.
+EGGIFY_INFOPLIST_FILE = Info.plist
+
+#include? "Local.xcconfig"

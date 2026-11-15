@@ -1,0 +1,105 @@
+<div class="workspace-frame" id="workspace">
+  <div class="frame-caption">
+    <span>01 / THE WORKSPACE</span>
+    <span>ILLUSTRATIVE PRODUCT PREVIEW</span>
+  </div>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="app-brand">
+        <span class="mark"></span>motleyard
+      </div>
+      <div class="side-item active">▦   Your workspace</div>
+      <div class="side-item">↗   Activity</div>
+      <small>YOUR PROJECTS</small>
+      <div class="side-item">▱   Fieldnotes</div>
+      <div class="side-item">▱   Little internet shop</div>
+      <div class="side-item">＋   New project</div>
+      <div class="side-bottom">●   On your machine</div>
+    </aside>
+    <div class="app-main">
+      <div class="app-header">
+        <h3>Let’s make something.</h3>
+        <span class="demo-tag">DEMO WORKSPACE</span>
+      </div>
+      <div aria-label="Example projects" class="tabs" role="tablist">
+        <button
+          aria-selected="true"
+          class="selected"
+          data-project="fieldnotes"
+          role="tab"
+        >
+          Fieldnotes
+        </button>
+        <button aria-selected="false" data-project="shop" role="tab">
+          Little internet shop
+        </button>
+      </div>
+      <div aria-live="polite" class="cards">
+        <article class="agent-card">
+          <div class="agent-head">
+            <span class="agent-icon">✳</span> Claude{' '}
+            <span class="status">● WORKING</span>
+          </div>
+          <h4 id="task1">
+            Give the homepage
+            <br />a little personality.
+          </h4>
+          <p id="detail1">
+            ↳ src/pages/index.vue
+            <br />
+            Building the first impression
+          </p>
+          <div class="progress">
+            <i id="prog1"></i>
+          </div>
+        </article>
+        <article class="agent-card">
+          <div class="agent-head">
+            <span class="agent-icon codex">⌘</span> Codex{' '}
+            <span class="status">● WORKING</span>
+          </div>
+          <h4 id="task2">
+            Make search feel
+            <br />
+            instant.
+          </h4>
+          <p id="detail2">
+            ↳ api/search.ts
+            <br />
+            Connecting the moving parts
+          </p>
+          <div class="progress">
+            <i id="prog2" class="progress-codex"></i>
+          </div>
+        </article>
+        <article class="agent-card">
+          <div class="agent-head">
+            <span class="agent-icon review">↗</span> You{' '}
+            <span class="status">IN THE LOOP</span>
+          </div>
+          <h4 id="task3">
+            A fresh pair of eyes.
+            <br />
+            The final say.
+          </h4>
+          <p>
+            Review the changes.
+            <br />
+            Keep the good stuff.
+          </p>
+          <div class="progress">
+            <i class="progress-review"></i>
+          </div>
+        </article>
+      </div>
+      <div class="app-footer">
+        <span>⌁   Multiple sessions. One place.</span>
+        <span>Your tools. Your direction. ↗</span>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  import { initWorkspacePreview } from '../scripts/workspace-preview';
+  initWorkspacePreview();
+</script>

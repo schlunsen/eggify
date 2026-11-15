@@ -1,0 +1,33 @@
+---
+interface Option {
+  value: string;
+  title: string;
+  description: string;
+}
+interface Props {
+  legend: string;
+  name: string;
+  type?: 'radio' | 'checkbox';
+  options: readonly Option[];
+  selected: readonly string[];
+}
+const { legend, name, type = 'radio', options, selected } = Astro.props;
+---
+
+<fieldset class="config-group">
+  <legend>{legend}</legend>
+  <div class="choices">
+    {options.map((option) => (
+      <label class="choice">
+        <input
+          type={type}
+          name={name}
+          value={option.value}
+          checked={selected.includes(option.value)}
+        />
+        <strong>{option.title}</strong>
+        <span>{option.description}</span>
+      </label>
+    ))}
+  </div>
+</fieldset>

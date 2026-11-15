@@ -1,0 +1,7 @@
+# Exclude everything by default
+*
+
+# Allow only what the sandbox Dockerfile needs
+!eggify
+!internal/server/frontend/.output/
+!sherpa-libs/

@@ -1,0 +1,49 @@
+<div class="interlude">
+  <div class="wrap">
+    <blockquote>“I came here for <em>an argument</em> with my agents, and got a perfectly reasonable audit trail.”</blockquote>
+    <cite>A satisfied operator, probably</cite>
+  </div>
+</div>
+
+<style>
+  .interlude {
+    margin-top: 80px;
+    background: var(--umber);
+    color: var(--paper-light);
+    text-align: center;
+    padding: 90px 0;
+    position: relative;
+  }
+  /* pinking-shear edges */
+  .interlude::before, .interlude::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 18px;
+    background:
+      linear-gradient(135deg, var(--paper) 25%, transparent 25%) -9px 0 / 18px 18px,
+      linear-gradient(225deg, var(--paper) 25%, transparent 25%) -9px 0 / 18px 18px;
+  }
+  .interlude::before { top: 0; }
+  .interlude::after { bottom: 0; transform: rotate(180deg); }
+  blockquote {
+    font-family: var(--display);
+    font-weight: 700;
+    font-variation-settings: 'SOFT' 100, 'WONK' 1;
+    font-size: clamp(30px, 5vw, 54px);
+    line-height: 1.15;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  em { color: var(--pink); font-style: normal; }
+  cite {
+    display: block;
+    margin-top: 22px;
+    font-family: var(--mono);
+    font-style: normal;
+    font-size: 16px;
+    color: #cdbb98;
+    letter-spacing: 0.06em;
+  }
+</style>
